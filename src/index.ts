@@ -1,74 +1,83 @@
-#!/usr/bin/env node
+import readline from "readline";
+import * as crypto from "crypto";
 
-import { spinner } from "@clack/prompts";
-import * as crypto from "node:crypto";
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Helper to generate a random UUID for that movie effect
-const getUUID = () => crypto.randomUUID();
-
-// Helper to pause execution briefly
-const sleep = (ms: number) =>
-  new Promise<void>((resolve) => setTimeout(resolve, ms));
-
-async function runHollywoodHack() {
+async function runDynamicBars() {
   console.clear();
-  console.log("\x1b[31m[CRITICAL] INITIALIZING MALWARE DEPLOYMENT...\x1b[0m\n");
+  console.log(
+    "\x1b[31m[CRITICAL] INITIALIZING OVERWHELMING INJECTIONS...\x1b[0m\n",
+  );
 
-  // Create an array of 5 simultaneous Clack progress bars
-  const tasks = Array.from({ length: 5 }, (_, i) => {
-    const s = spinner();
-    return {
-      spinner: s,
-      id: getUUID(),
-      progress: 0,
-      // Random speed so they don't finish at the same time
-      speed: Math.floor(Math.random() * 40) + 10,
-      size: (Math.random() * 4 + 1).toFixed(2), // 1GB to 5GB
-    };
-  });
+  // Define 6 independent, stacked tasks
+  const tasks = Array.from({ length: 6 }, (_, i) => ({
+    lineOffset: i, // Which row the task owns in the stack
+    id: crypto.randomUUID().slice(0, 8).toUpperCase(), // Short punchy ID
+    uuid: crypto.randomUUID(),
+    progress: 0,
+    // Totally random step size and speeds so they finish completely staggered
+    speed: Math.floor(Math.random() * 50) + 20,
+    step: Math.random() * 2 + 0.5,
+    size: (Math.random() * 8 + 2).toFixed(1),
+    status: "DOWNLOADING",
+  }));
 
-  // Start all spin animations at once
-  tasks.forEach((task) => {
-    task.spinner.start(
-      `[Injecting payload] ID: ${task.id} (0% of ${task.size} GB)`,
-    );
-  });
+  // Allocate empty vertical space on screen first so the lines don't clip
+  for (let i = 0; i < tasks.length; i++) console.log("");
 
-  // Keep updating until all progress loops finish
-  while (tasks.some((t) => t.progress < 100)) {
+  let active = true;
+  while (active) {
+    active = false;
+
     for (const task of tasks) {
       if (task.progress < 100) {
-        // Increment progress randomly
+        active = true;
+
+        // Stagger the progression over time
         task.progress = Math.min(
           100,
-          task.progress + Math.floor(Math.random() * 4) + 1,
+          task.progress + Math.random() * task.step,
         );
 
-        // Rapidly roll the UUID string for extra Hollywood chaos
-        const activeID = task.progress < 100 ? getUUID() : task.id;
-
-        // Build a visual progress bar string
-        const bars = "█".repeat(Math.floor(task.progress / 5)).padEnd(20, "░");
-
-        // Update the Clack frame message
-        task.spinner.message(
-          `\x1b[32m[${bars}]\x1b[0m ${task.progress}% | TARGET_UUID: ${activeID} | SYNCING ${task.size} GB`,
-        );
-
-        if (task.progress === 100) {
-          task.spinner.stop(
-            `\x1b[31m[DEPLOYED]\x1b[0m PAYLOAD ${task.id} FULLY INJECTED (${task.size} GB)`,
-          );
+        // Scramble the visible UUID on-the-fly until it finishes
+        if (task.progress < 100) {
+          task.uuid = crypto.randomUUID();
+        } else {
+          task.status = "COMPLETED";
         }
       }
+
+      // 1. Move cursor back up to the top of our progress stack
+      // 2. Move down to this specific task's row line layout
+      readline.cursorTo(process.stdout, 0);
+      readline.moveCursor(process.stdout, 0, -(tasks.length - task.lineOffset));
+
+      // Build the distinct visual layout bar
+      const filledLength = Math.floor(task.progress / 5);
+      const bar = "█".repeat(filledLength).padEnd(20, "░");
+
+      const color = task.status === "COMPLETED" ? "\x1b[32m" : "\x1b[33m";
+      const statusLabel =
+        task.status === "COMPLETED" ? "[SUCCESS]" : "[SYNCING]";
+
+      // Print the entirely distinct row with its unique tracking metrics
+      process.stdout.write(
+        `${color}${statusLabel}\x1b[0m Job #${task.id} [${bar}] ${task.progress.toFixed(1)}% | ${task.size}GB | UUID: ${task.uuid}\x1b[K\n`,
+      );
+
+      // Move cursor back down to the very bottom of the stack to stay clean
+      readline.moveCursor(
+        process.stdout,
+        0,
+        tasks.length - task.lineOffset - 1,
+      );
     }
-    // High refresh rate to make the terminal look incredibly busy
-    await sleep(40);
+
+    // High refresh rate pacing loop
+    await sleep(35);
   }
 
-  console.log(
-    "\n\x1b[31m⚡ CORE EXPLOIT SUCCESSFUL. SYSTEM EXFILTRATION COMPLETE. ⚡\x1b[0m\n",
-  );
+  console.log("\n\x1b[32m✔ ALL PAYLOADS EXECUTED SUCCESSFULLY.\x1b[0m\n");
 }
 
-runHollywoodHack();
+runDynamicBars();
