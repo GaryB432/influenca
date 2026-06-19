@@ -1,83 +1,100 @@
 import readline from "readline";
-import * as crypto from "crypto";
+import crypto from "crypto";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function runDynamicBars() {
+async function runSciFiSimulation() {
   console.clear();
   console.log(
-    "\x1b[31m[CRITICAL] INITIALIZING OVERWHELMING INJECTIONS...\x1b[0m\n",
+    "\x1b[36m⚡ [INITIALIZING DEEP-SPACE NEURAL LINK SYSTEM] ⚡\x1b[0m",
+  );
+  console.log(
+    "\x1b[35m========================================================\x1b[0m\n",
   );
 
-  // Define 6 independent, stacked tasks
-  const tasks = Array.from({ length: 6 }, (_, i) => ({
-    lineOffset: i, // Which row the task owns in the stack
-    id: crypto.randomUUID().slice(0, 8).toUpperCase(), // Short punchy ID
+  const nodes = Array.from({ length: 6 }, (_, i) => ({
+    lineOffset: i,
+    id: `NODE-${100 + i * 14}`,
     uuid: crypto.randomUUID(),
     progress: 0,
-    // Totally random step size and speeds so they finish completely staggered
-    speed: Math.floor(Math.random() * 50) + 20,
-    step: Math.random() * 2 + 0.5,
-    size: (Math.random() * 8 + 2).toFixed(1),
-    status: "DOWNLOADING",
+    speed: Math.floor(Math.random() * 40) + 15,
+    step: Math.random() * 1.8 + 0.3,
+    size: (Math.random() * 140 + 20).toFixed(1), // TB arrays
+    status: "SYNCING",
   }));
 
-  // Allocate empty vertical space on screen first so the lines don't clip
-  for (let i = 0; i < tasks.length; i++) console.log("");
+  // Allocate empty vertical rows
+  for (let i = 0; i < nodes.length; i++) console.log("");
 
   let active = true;
   while (active) {
     active = false;
 
-    for (const task of tasks) {
-      if (task.progress < 100) {
+    for (const node of nodes) {
+      if (node.progress < 100) {
         active = true;
-
-        // Stagger the progression over time
-        task.progress = Math.min(
+        node.progress = Math.min(
           100,
-          task.progress + Math.random() * task.step,
+          node.progress + Math.random() * node.step,
         );
 
-        // Scramble the visible UUID on-the-fly until it finishes
-        if (task.progress < 100) {
-          task.uuid = crypto.randomUUID();
+        if (node.progress < 100) {
+          node.uuid = crypto.randomUUID();
         } else {
-          task.status = "COMPLETED";
+          node.status = "STABLE";
         }
       }
 
-      // 1. Move cursor back up to the top of our progress stack
-      // 2. Move down to this specific task's row line layout
+      // Jump cursor to the specific row
       readline.cursorTo(process.stdout, 0);
-      readline.moveCursor(process.stdout, 0, -(tasks.length - task.lineOffset));
+      readline.moveCursor(process.stdout, 0, -(nodes.length - node.lineOffset));
 
-      // Build the distinct visual layout bar
-      const filledLength = Math.floor(task.progress / 5);
-      const bar = "█".repeat(filledLength).padEnd(20, "░");
+      // Visual progress bar using cyberpunk blocks
+      const filledLength = Math.floor(node.progress / 5);
+      const bar = "■".repeat(filledLength).padEnd(20, "·");
 
-      const color = task.status === "COMPLETED" ? "\x1b[32m" : "\x1b[33m";
-      const statusLabel =
-        task.status === "COMPLETED" ? "[SUCCESS]" : "[SYNCING]";
+      // Styling rules
+      const color = node.status === "STABLE" ? "\x1b[35m" : "\x1b[36m"; // Purple if stable, Cyan if syncing
+      const statusLabel = node.status === "STABLE" ? "[ONLINE]" : "[SYNCING]";
 
-      // Print the entirely distinct row with its unique tracking metrics
+      // Output line
       process.stdout.write(
-        `${color}${statusLabel}\x1b[0m Job #${task.id} [${bar}] ${task.progress.toFixed(1)}% | ${task.size}GB | UUID: ${task.uuid}\x1b[K\n`,
+        `${color}${statusLabel}\x1b[0m ${node.id} ──⪧ ${color}[${bar}]\x1b[0m ${node.progress.toFixed(1)}% | ${node.size} TB | HASH: ${node.uuid.slice(0, 18).toUpperCase()}...\x1b[K\n`,
       );
 
-      // Move cursor back down to the very bottom of the stack to stay clean
+      // Return cursor to bottom row
       readline.moveCursor(
         process.stdout,
         0,
-        tasks.length - task.lineOffset - 1,
+        nodes.length - node.lineOffset - 1,
       );
     }
 
-    // High refresh rate pacing loop
-    await sleep(35);
+    await sleep(30);
   }
 
-  console.log("\n\x1b[32m✔ ALL PAYLOADS EXECUTED SUCCESSFULLY.\x1b[0m\n");
+  // Final Diagnostics Graph & Readout Table
+  console.log(
+    "\n\x1b[35m========================================================\x1b[0m",
+  );
+  console.log("\x1b[36m📊 CORE TELEMETRY CONFIGURATION DIAGNOSTICS:\x1b[0m\n");
+
+  console.log(" ╭────────────────────────┬─────────────┬──────────────╮");
+  console.log(" │ COGNITIVE DATA ARRAY   │ VECTOR STAT │ QUANTUM SYNC │");
+  console.log(" ├────────────────────────┼─────────────┼──────────────┤");
+
+  let totalData = 0;
+  for (const node of nodes) {
+    totalData += parseFloat(node.size);
+    console.log(
+      ` │ ${node.id} CORE ARRAY    │   \x1b[32mREADY\x1b[0m     │    100.0%    │`,
+    );
+  }
+
+  console.log(" ╰────────────────────────┴─────────────┴──────────────╯");
+  console.log(
+    `\n\x1b[32m✔ SUCCESS: ${totalData.toFixed(1)} TB OF SATELLITE TELEMETRY SINKED TO LOCAL CORES.\x1b[0m\n`,
+  );
 }
 
-runDynamicBars();
+runSciFiSimulation();
