@@ -41,6 +41,7 @@
     "vitest": "^4.1.5"
   },
   "dependencies": {
-    "@clack/prompts": "^1.5.1"
+    "@clack/prompts": "^1.5.1",
+    "exifreader": "^4.41.0"
   }
 }
