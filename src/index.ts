@@ -1,100 +1,140 @@
-import readline from "readline";
-import crypto from "crypto";
+#!/usr/bin/env node
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import * as clack from "@clack/prompts";
+import { Database } from "./lib/database";
 
-async function runSciFiSimulation() {
-  console.clear();
-  console.log(
-    "\x1b[36m⚡ [INITIALIZING DEEP-SPACE NEURAL LINK SYSTEM] ⚡\x1b[0m",
-  );
-  console.log(
-    "\x1b[35m========================================================\x1b[0m\n",
-  );
+const mediaLocation = process.env.PWPP || "/mnt/e/bank/bye/pwpp";
 
-  const nodes = Array.from({ length: 6 }, (_, i) => ({
-    lineOffset: i,
-    id: `NODE-${100 + i * 14}`,
-    uuid: crypto.randomUUID(),
-    progress: 0,
-    speed: Math.floor(Math.random() * 40) + 15,
-    step: Math.random() * 1.8 + 0.3,
-    size: (Math.random() * 140 + 20).toFixed(1), // TB arrays
-    status: "SYNCING",
-  }));
+function formatExifTable(tags: any): string {
+  const rows: string[] = [];
 
-  // Allocate empty vertical rows
-  for (let i = 0; i < nodes.length; i++) console.log("");
+  const fields = [
+    { key: "Make", label: "Camera Make" },
+    { key: "Model", label: "Camera Model" },
+    { key: "DateTimeOriginal", label: "Date Taken" },
+    { key: "ExposureTime", label: "Shutter Speed" },
+    { key: "FNumber", label: "Aperture" },
+    { key: "ISOSpeedRatings", label: "ISO" },
+    { key: "FocalLength", label: "Focal Length" },
+    { key: "LensModel", label: "Lens" },
+    { key: "ImageWidth", label: "Width" },
+    { key: "ImageHeight", label: "Height" },
+  ];
 
-  let active = true;
-  while (active) {
-    active = false;
-
-    for (const node of nodes) {
-      if (node.progress < 100) {
-        active = true;
-        node.progress = Math.min(
-          100,
-          node.progress + Math.random() * node.step,
-        );
-
-        if (node.progress < 100) {
-          node.uuid = crypto.randomUUID();
-        } else {
-          node.status = "STABLE";
-        }
-      }
-
-      // Jump cursor to the specific row
-      readline.cursorTo(process.stdout, 0);
-      readline.moveCursor(process.stdout, 0, -(nodes.length - node.lineOffset));
-
-      // Visual progress bar using cyberpunk blocks
-      const filledLength = Math.floor(node.progress / 5);
-      const bar = "■".repeat(filledLength).padEnd(20, "·");
-
-      // Styling rules
-      const color = node.status === "STABLE" ? "\x1b[35m" : "\x1b[36m"; // Purple if stable, Cyan if syncing
-      const statusLabel = node.status === "STABLE" ? "[ONLINE]" : "[SYNCING]";
-
-      // Output line
-      process.stdout.write(
-        `${color}${statusLabel}\x1b[0m ${node.id} ──⪧ ${color}[${bar}]\x1b[0m ${node.progress.toFixed(1)}% | ${node.size} TB | HASH: ${node.uuid.slice(0, 18).toUpperCase()}...\x1b[K\n`,
-      );
-
-      // Return cursor to bottom row
-      readline.moveCursor(
-        process.stdout,
-        0,
-        nodes.length - node.lineOffset - 1,
-      );
-    }
-
-    await sleep(30);
+  for (const { key, label } of fields) {
+    const value = tags[key]?.description || tags[key]?.value || "-";
+    rows.push(`${label.padEnd(20)} ${value}`);
   }
 
-  // Final Diagnostics Graph & Readout Table
-  console.log(
-    "\n\x1b[35m========================================================\x1b[0m",
-  );
-  console.log("\x1b[36m📊 CORE TELEMETRY CONFIGURATION DIAGNOSTICS:\x1b[0m\n");
-
-  console.log(" ╭────────────────────────┬─────────────┬──────────────╮");
-  console.log(" │ COGNITIVE DATA ARRAY   │ VECTOR STAT │ QUANTUM SYNC │");
-  console.log(" ├────────────────────────┼─────────────┼──────────────┤");
-
-  let totalData = 0;
-  for (const node of nodes) {
-    totalData += parseFloat(node.size);
-    console.log(
-      ` │ ${node.id} CORE ARRAY    │   \x1b[32mREADY\x1b[0m     │    100.0%    │`,
-    );
-  }
-
-  console.log(" ╰────────────────────────┴─────────────┴──────────────╯");
-  console.log(
-    `\n\x1b[32m✔ SUCCESS: ${totalData.toFixed(1)} TB OF SATELLITE TELEMETRY SINKED TO LOCAL CORES.\x1b[0m\n`,
-  );
+  return rows.join("\n");
 }
 
-runSciFiSimulation();
+async function namingWorkflow(db: Database): Promise<void> {
+  let continueNaming = true;
+
+  while (continueNaming) {
+    const options = Object.values(db.map)
+      .map((d) => d.mediaFile)
+      .map((mf) => ({
+        value: mf.filename,
+        label: mf.xtitle ? `✓ ${mf.filename}` : mf.filename,
+        hint: mf.xtitle || mf.xcamera,
+      }));
+
+    if (options.length === 0) {
+      clack.log.warn(`no media ${JSON.stringify(db.loc)}`);
+
+      break;
+    } else {
+      const selectedFile = await clack.select({
+        message: "Select a file to name:",
+        options,
+      });
+      if (clack.isCancel(selectedFile)) {
+        clack.cancel("Operation cancelled");
+        return;
+      }
+      const file = db.map[selectedFile].mediaFile;
+      if (!file) {
+        clack.cancel(selectedFile);
+        return;
+      }
+
+      clack.log.success(formatExifTable(file.tags));
+
+      const raw_title = await clack.text({
+        message: `Enter a title for "${file.filename}":`,
+        placeholder: "e.g., Sunset at the beach",
+        defaultValue: file.xtitle,
+        validate: (value) => {
+          if (!value || value.trim().length === 0)
+            return "Please enter a title";
+        },
+      });
+
+      if (clack.isCancel(raw_title)) {
+        clack.cancel("Operation cancelled");
+        return;
+      }
+
+      db.map[file.filename].mediaFile = {
+        ...file,
+        xtitle: raw_title.trim(),
+      };
+      await db.write();
+      clack.log.success(`Saved title for "${file.filename}"`);
+    }
+
+    const continuePrompt = await clack.confirm({
+      message: "Name another file?",
+    });
+
+    if (clack.isCancel(continuePrompt) || !continuePrompt) {
+      continueNaming = false;
+    }
+  }
+}
+
+async function main() {
+  clack.intro("📸 Influenca - EXIF Metadata Viewer");
+
+  let folderPath = mediaLocation;
+
+  if (!folderPath) {
+    const result = await clack.text({
+      message: "Enter the path to your media folder:",
+      placeholder: "./photos",
+      defaultValue: process.env["PWPP"],
+      validate: (value) => {
+        if (!value) return "Please enter a folder path";
+      },
+    });
+
+    if (clack.isCancel(result)) {
+      clack.cancel("Operation cancelled");
+      process.exit(0);
+    }
+
+    folderPath = result;
+  }
+  const db = new Database(folderPath);
+  await db.read();
+
+  if (Object.entries(db.map).length === 0) {
+    const initialize = await clack.confirm({
+      message: "Initialize Media Library",
+    });
+    if (clack.isCancel(initialize)) {
+      clack.cancel("empty");
+    }
+    await db.updateExif();
+  }
+
+  await namingWorkflow(db);
+  clack.outro("Done! 🎉");
+}
+
+if (import.meta.url === new URL(process.argv[1], "file://").href) {
+  if (!mediaLocation) throw new Error("cannot go on like this");
+  main();
+}
