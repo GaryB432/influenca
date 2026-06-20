@@ -4,11 +4,12 @@ import { existsSync } from "node:fs";
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as nap } from "node:timers/promises";
+
 import type { MediaFile, MediaMap } from "./types";
 
 export class Database {
-  map: MediaMap = {};
   readonly loc: string;
+  map: MediaMap = {};
   private readonly DB_JSON = ".influenca-names.json";
 
   constructor(loc: string) {
@@ -26,13 +27,6 @@ export class Database {
         clack.log.warn(`no config at '${dbp}'`);
       }
     } catch {}
-  }
-
-  public async write() {
-    const dbp = join(this.loc, this.DB_JSON);
-
-    await writeFile(dbp, JSON.stringify(this.map, null, 2), "utf-8");
-    clack.log.success(`saved ${dbp}`);
   }
 
   public async updateExif() {
@@ -66,9 +60,9 @@ export class Database {
         } catch {}
 
         mediaFiles.push({
-          tags,
-          path: this.loc,
           filename: file,
+          path: this.loc,
+          tags,
         });
       } else {
         clack.log.warn(`skipping ${ext}`);
@@ -76,8 +70,15 @@ export class Database {
     }
     console.log(mediaFiles);
     mediaFiles.forEach((mediaFile) => {
-      this.map[mediaFile.filename] = { mediaFile, clips: [], keywords: [] };
+      this.map[mediaFile.filename] = { clips: [], keywords: [], mediaFile };
     });
     spinner.stop();
+  }
+
+  public async write() {
+    const dbp = join(this.loc, this.DB_JSON);
+
+    await writeFile(dbp, JSON.stringify(this.map, null, 2), "utf-8");
+    clack.log.success(`saved ${dbp}`);
   }
 }

@@ -1,8 +1,8 @@
 import ExifReader from "exifreader";
 
 export interface MediaFile {
-  path: string;
   filename: string;
+  path: string;
   tags?: Partial<ExifReader.Tags>;
   xcamera?: string;
   xtitle?: string;
@@ -10,8 +10,8 @@ export interface MediaFile {
 
 export interface MediaMap {
   [filename: string]: {
-    mediaFile: MediaFile;
     clips: string[];
     keywords: string[];
+    mediaFile: MediaFile;
   };
 }

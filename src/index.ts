@@ -2,6 +2,7 @@
 
 import * as clack from "@clack/prompts";
 import cac from "cac";
+
 import { Database } from "./lib/database";
 import { setupEnvironment } from "./lib/environment";
 
@@ -38,72 +39,6 @@ function formatExifTable(tags: any): string {
   }
 
   return rows.join("\n");
-}
-
-async function namingWorkflow(db: Database): Promise<void> {
-  let continueNaming = true;
-
-  while (continueNaming) {
-    const options = Object.values(db.map)
-      .map((d) => d.mediaFile)
-      .map((mf) => ({
-        value: mf.filename,
-        label: mf.xtitle ? `✓ ${mf.filename}` : mf.filename,
-        hint: mf.xtitle || mf.xcamera,
-      }));
-
-    if (options.length === 0) {
-      clack.log.warn(`no media ${JSON.stringify(db.loc)}`);
-
-      break;
-    } else {
-      const selectedFile = await clack.select({
-        message: "Select a file to name:",
-        options,
-      });
-      if (clack.isCancel(selectedFile)) {
-        clack.cancel("Operation cancelled");
-        return;
-      }
-      const file = db.map[selectedFile].mediaFile;
-      if (!file) {
-        clack.cancel(selectedFile);
-        return;
-      }
-
-      clack.log.success(formatExifTable(file.tags));
-
-      const raw_title = await clack.text({
-        message: `Enter a title for "${file.filename}":`,
-        placeholder: "e.g., Sunset at the beach",
-        defaultValue: file.xtitle,
-        validate: (value) => {
-          if (!value || value.trim().length === 0)
-            return "Please enter a title";
-        },
-      });
-
-      if (clack.isCancel(raw_title)) {
-        clack.cancel("Operation cancelled");
-        return;
-      }
-
-      db.map[file.filename].mediaFile = {
-        ...file,
-        xtitle: raw_title.trim(),
-      };
-      await db.write();
-      clack.log.success(`Saved title for "${file.filename}"`);
-    }
-
-    const continuePrompt = await clack.confirm({
-      message: "Name another file?",
-    });
-
-    if (clack.isCancel(continuePrompt) || !continuePrompt) {
-      continueNaming = false;
-    }
-  }
 }
 
 async function main() {
@@ -146,6 +81,72 @@ async function main() {
 
   await namingWorkflow(db);
   clack.outro("Done! 🎉");
+}
+
+async function namingWorkflow(db: Database): Promise<void> {
+  let continueNaming = true;
+
+  while (continueNaming) {
+    const options = Object.values(db.map)
+      .map((d) => d.mediaFile)
+      .map((mf) => ({
+        hint: mf.xtitle || mf.xcamera,
+        label: mf.xtitle ? `✓ ${mf.filename}` : mf.filename,
+        value: mf.filename,
+      }));
+
+    if (options.length === 0) {
+      clack.log.warn(`no media ${JSON.stringify(db.loc)}`);
+
+      break;
+    } else {
+      const selectedFile = await clack.select({
+        message: "Select a file to name:",
+        options,
+      });
+      if (clack.isCancel(selectedFile)) {
+        clack.cancel("Operation cancelled");
+        return;
+      }
+      const file = db.map[selectedFile].mediaFile;
+      if (!file) {
+        clack.cancel(selectedFile);
+        return;
+      }
+
+      clack.log.success(formatExifTable(file.tags));
+
+      const raw_title = await clack.text({
+        defaultValue: file.xtitle,
+        message: `Enter a title for "${file.filename}":`,
+        placeholder: "e.g., Sunset at the beach",
+        validate: (value) => {
+          if (!value || value.trim().length === 0)
+            return "Please enter a title";
+        },
+      });
+
+      if (clack.isCancel(raw_title)) {
+        clack.cancel("Operation cancelled");
+        return;
+      }
+
+      db.map[file.filename].mediaFile = {
+        ...file,
+        xtitle: raw_title.trim(),
+      };
+      await db.write();
+      clack.log.success(`Saved title for "${file.filename}"`);
+    }
+
+    const continuePrompt = await clack.confirm({
+      message: "Name another file?",
+    });
+
+    if (clack.isCancel(continuePrompt) || !continuePrompt) {
+      continueNaming = false;
+    }
+  }
 }
 
 // console.log(mediaLocation, process.argv);
