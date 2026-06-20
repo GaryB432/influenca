@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.5.1",
+    "cac": "^7.0.0",
     "exifreader": "^4.41.0"
   }
 }

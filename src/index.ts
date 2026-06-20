@@ -1,12 +1,20 @@
 #!/usr/bin/env node
 
 import * as clack from "@clack/prompts";
+import cac from "cac";
 import { Database } from "./lib/database";
 import { setupEnvironment } from "./lib/environment";
 
 setupEnvironment();
 
-const mediaLocation = process.env.MEDIA || "~/.local/state/influenca";
+// const mediaLocation = process.env.MEDIA || "~/.local/state/influenca";
+// const mediaLocation = process.env.MEDIA || "~/.local/state/influenca";
+
+const cli = cac();
+
+const cliOptions = cli.parse(process.argv, { run: false });
+
+const [argDir] = cliOptions.args;
 
 function formatExifTable(tags: any): string {
   const rows: string[] = [];
@@ -101,13 +109,16 @@ async function namingWorkflow(db: Database): Promise<void> {
 async function main() {
   clack.intro("📸 Influenca - EXIF Metadata Viewer");
 
-  let folderPath = mediaLocation;
+  // let folderPath = mediaLocation;
+
+  // the command line argument (might be empty)
+  let folderPath = argDir || process.env.MEDIA;
 
   if (!folderPath) {
     const result = await clack.text({
       message: "Enter the path to your media folder:",
       placeholder: "./photos",
-      defaultValue: process.env["PWPP"],
+      // defaultValue: process.env.MEDIA,
       validate: (value) => {
         if (!value) return "Please enter a folder path";
       },
@@ -118,7 +129,7 @@ async function main() {
       process.exit(0);
     }
 
-    folderPath = result;
+    folderPath = result ?? argDir;
   }
   const db = new Database(folderPath);
   await db.read();
@@ -147,11 +158,4 @@ async function main() {
 //   console.log({ href, url });
 // }
 
-main().then(
-  () => {
-    console.log("finished");
-  },
-  () => {
-    console.error("nope");
-  },
-);
+void main();

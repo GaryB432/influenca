@@ -1,20 +1,19 @@
 import * as clack from "@clack/prompts";
-import { existsSync } from "node:fs";
-import { readFile, writeFile, readdir } from "node:fs/promises";
-import { join } from "node:path";
-import type { MediaFile, MediaMap } from "./types";
 import ExifReader from "exifreader";
+import { existsSync } from "node:fs";
+import { readdir, readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { setTimeout as nap } from "node:timers/promises";
+import type { MediaFile, MediaMap } from "./types";
 
 export class Database {
   map: MediaMap = {};
   readonly loc: string;
   private readonly DB_JSON = ".influenca-names.json";
 
-  constructor(mloc_argument_needed: string) {
-    this.loc = mloc_argument_needed;
+  constructor(loc: string) {
+    this.loc = loc;
   }
-
   public async read(): Promise<void> {
     const dbp = join(this.loc, this.DB_JSON);
     try {
