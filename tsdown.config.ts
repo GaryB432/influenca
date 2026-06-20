@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsdown'
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
   dts: {
@@ -7,4 +7,4 @@ export default defineConfig({
   exports: true,
   unbundle: true,
   // ...config options
-})
+});
