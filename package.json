@@ -1,33 +1,48 @@
 {
-  "name": "@influenca/cli",
+  "name": "influenca",
   "type": "module",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Social Media Influencers' Terminal Toolbox",
+  "version": "0.0.1",
+  "description": "A starter for creating a TypeScript package.",
+  "author": "Author Name <author.name@mail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/garyb432/influenca#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garyb432/influenca.git"
+  },
+  "bugs": {
+    "url": "https://github.com/garyb432/influenca/issues"
+  },
   "exports": {
     ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
+  "files": [
+    "assets",
+    "dist"
+  ],
   "bin": {
     "influenca": "./dist/index.mjs"
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsdown",
-    "dev": "tsdown --watch"
+    "dev": "tsdown --watch --run",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit",
+    "release": "bumpp",
+    "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@types/node": "^25.2.2",
-    "tsdown": "^0.18.1",
-    "typescript": "^5.9.3"
+    "@types/node": "^25.9.3",
+    "@typescript/native-preview": "7.0.0-dev.20260509.2",
+    "bumpp": "^11.1.0",
+    "tsdown": "^0.22.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   },
   "dependencies": {
-    "@clack/prompts": "^1.0.0",
-    "exifreader": "^4.36.1"
+    "@clack/prompts": "^1.5.1",
+    "cac": "^7.0.0",
+    "exifreader": "^4.41.0"
   }
 }
