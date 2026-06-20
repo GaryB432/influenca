@@ -26,7 +26,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "dev": "tsdown --watch",
+    "dev": "tsdown --watch --run",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
     "release": "bumpp",

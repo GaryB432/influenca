@@ -2,8 +2,11 @@
 
 import * as clack from "@clack/prompts";
 import { Database } from "./lib/database";
+import { setupEnvironment } from "./lib/environment";
 
-const mediaLocation = process.env.PWPP || "/mnt/e/bank/bye/pwpp";
+setupEnvironment();
+
+const mediaLocation = process.env.MEDIA || "~/.local/state/influenca";
 
 function formatExifTable(tags: any): string {
   const rows: string[] = [];
@@ -134,7 +137,21 @@ async function main() {
   clack.outro("Done! 🎉");
 }
 
-if (import.meta.url === new URL(process.argv[1], "file://").href) {
-  if (!mediaLocation) throw new Error("cannot go on like this");
-  main();
-}
+// console.log(mediaLocation, process.argv);
+// const href = new URL(process.argv[1], "file://").href;
+// const url = import.meta.url;
+// if (url === href) {
+//   if (!mediaLocation) throw new Error("cannot go on like this");
+//   main();
+// } else {
+//   console.log({ href, url });
+// }
+
+main().then(
+  () => {
+    console.log("finished");
+  },
+  () => {
+    console.error("nope");
+  },
+);
