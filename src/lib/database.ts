@@ -13,6 +13,9 @@ export class Database {
   private readonly DB_JSON = ".influenca-names.json";
 
   constructor(loc: string) {
+    if (!existsSync(loc)) {
+      throw new Error(` cannot access '${loc}': No such file or directory`);
+    }
     this.loc = loc;
   }
   public async read(): Promise<void> {
