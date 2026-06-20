@@ -33,49 +33,48 @@ export class Database {
   }
 
   public async updateExif() {
-    const files = await readdir(this.loc);
     const mediaFiles: MediaFile[] = [];
 
-    const spinner = clack.spinner();
+    const files = (
+      await readdir(this.loc, {
+        recursive: false,
+        withFileTypes: true,
+        encoding: "utf-8",
+      })
+    ).filter((n) => n.isFile());
 
-    spinner.start("Loading media files...");
+    const prog = clack.progress({ style: "block", max: files.length });
 
-    // // const mediaFiles = await fsReadThisFolderIntoTheADb(folderPath, namingDb);
-    // const unnamed = mediaFiles.filter((f) => !f.title);
+    prog.start();
 
-    // const named = 42;
-    // // const named = mediaFiles.filter((f) => f.title);
+    for (const file of files) {
+      prog.advance(1, `Extracting Exif for ${file.name}`);
+      const ext = file.name.toLowerCase();
 
-    for (const file of files.slice(0, 200)) {
-      const ext = file.toLowerCase();
-      //   spinner.message("going for exif");
       if (ext.match(/\.(jpg|mp4|jpeg|png|tiff|heic|webp|raw|cr2|nef|arw)$/)) {
-        const filePath = join(this.loc, file);
         let tags: Partial<ExifReader.Tags> = {};
         try {
           await nap(200);
-          //   this.map[filePath] = {
-          //     mediaFile: { path: this.loc, filename: filePath, tags },
-          //     clips: [],
-          //     keywords: [],
-          //   };
-          tags = await ExifReader.load(filePath);
-        } catch {}
+
+          tags = await ExifReader.load(join(this.loc, file.name));
+        } catch (e) {
+          // const nodeError = e as NodeJS.ErrnoException;
+          // clack.log.warn(nodeError.message);
+        }
 
         mediaFiles.push({
-          filename: file,
+          filename: file.name,
           path: this.loc,
           tags,
         });
       } else {
-        clack.log.warn(`skipping ${ext}`);
+        clack.log.warn(`skipping ${file.name}`);
       }
     }
-    console.log(mediaFiles);
     mediaFiles.forEach((mediaFile) => {
       this.map[mediaFile.filename] = { clips: [], keywords: [], mediaFile };
     });
-    spinner.stop();
+    prog.stop();
   }
 
   public async write() {
