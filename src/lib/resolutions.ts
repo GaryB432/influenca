@@ -11,7 +11,7 @@ export function greet(name: string): string {
   return `resolutions says: hello to ${name}`;
 }
 
-async function getOptions(db: Database): Promise<any> {
+async function getOptions(db: Database): Promise<clack.Option<MediaFile>[]> {
   const options = Object.values(db.map)
     .map((d) => d.mediaFile)
     .map((mf) => ({

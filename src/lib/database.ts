@@ -51,7 +51,7 @@ export class Database {
         let tags: Partial<ExifReader.Tags> = {};
         try {
           tags = await ExifReader.load(join(this.loc, file.name));
-        } catch (e) {
+        } catch {
           errorCount++;
         }
 
