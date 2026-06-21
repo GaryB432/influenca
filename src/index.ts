@@ -53,7 +53,6 @@ async function main() {
     const result = await clack.text({
       message: "Enter the path to your media folder:",
       placeholder: "./photos",
-      // defaultValue: process.env.MEDIA,
       validate: (value) => {
         if (!value) return "Please enter a folder path";
       },
@@ -61,7 +60,7 @@ async function main() {
 
     if (clack.isCancel(result)) {
       clack.cancel("Operation cancelled");
-      process.exit(0);
+      process.exit();
     }
 
     folderPath = result ?? argDir;
@@ -73,90 +72,93 @@ async function main() {
     const initialize = await clack.confirm({
       message: "Initialize Media Library",
     });
-    if (clack.isCancel(initialize)) {
-      clack.cancel("empty");
+    if (clack.isCancel(initialize) || !initialize) {
+      clack.cancel("Media database is uninitialized");
+      process.exit();
+    } else {
+      await db.updateExif();
+      await db.write();
     }
-    await db.updateExif();
   }
-
   await namingWorkflow(db);
   clack.outro("Done! 🎉");
 }
 
 async function namingWorkflow(db: Database): Promise<void> {
-  let continueNaming = true;
+  console.log(db.loc);
+  // let continueNaming = true;
 
-  while (continueNaming) {
-    const options = Object.values(db.map)
-      .map((d) => d.mediaFile)
-      .map((mf) => ({
-        hint: mf.xtitle || mf.xcamera,
-        label: mf.xtitle ? `✓ ${mf.filename}` : mf.filename,
-        value: mf.filename,
-      }));
+  //   while (continueNaming) {
+  //     const options = Object.values(db.map)
+  //       .map((d) => d.mediaFile)
+  //       .map((mf) => ({
+  //         hint: mf.xtitle || mf.xcamera,
+  //         label: mf.xtitle ? `✓ ${mf.filename}` : mf.filename,
+  //         value: mf.filename,
+  //       }));
 
-    if (options.length === 0) {
-      clack.log.warn(`no media ${JSON.stringify(db.loc)}`);
+  //     if (options.length === 0) {
+  //       clack.log.warn(`no media ${JSON.stringify(db.loc)}`);
 
-      break;
-    } else {
-      const selectedFile = await clack.select({
-        message: "Select a file to name:",
-        options,
-      });
-      if (clack.isCancel(selectedFile)) {
-        clack.cancel("Operation cancelled");
-        return;
-      }
-      const file = db.map[selectedFile].mediaFile;
-      if (!file) {
-        clack.cancel(selectedFile);
-        return;
-      }
+  //       break;
+  //     } else {
+  //       const selectedFile = await clack.select({
+  //         message: "Select a file to name:",
+  //         options,
+  //       });
+  //       if (clack.isCancel(selectedFile)) {
+  //         clack.cancel("Operation cancelled");
+  //         return;
+  //       }
+  //       const file = db.map[selectedFile].mediaFile;
+  //       if (!file) {
+  //         clack.cancel(selectedFile);
+  //         return;
+  //       }
 
-      clack.log.success(formatExifTable(file.tags));
+  //       clack.log.success(formatExifTable(file.tags));
 
-      const raw_title = await clack.text({
-        defaultValue: file.xtitle,
-        message: `Enter a title for "${file.filename}":`,
-        placeholder: "e.g., Sunset at the beach",
-        validate: (value) => {
-          if (!value || value.trim().length === 0)
-            return "Please enter a title";
-        },
-      });
+  //       const raw_title = await clack.text({
+  //         defaultValue: file.xtitle,
+  //         message: `Enter a title for "${file.filename}":`,
+  //         placeholder: "e.g., Sunset at the beach",
+  //         validate: (value) => {
+  //           if (!value || value.trim().length === 0)
+  //             return "Please enter a title";
+  //         },
+  //       });
 
-      if (clack.isCancel(raw_title)) {
-        clack.cancel("Operation cancelled");
-        return;
-      }
+  //       if (clack.isCancel(raw_title)) {
+  //         clack.cancel("Operation cancelled");
+  //         return;
+  //       }
 
-      db.map[file.filename].mediaFile = {
-        ...file,
-        xtitle: raw_title.trim(),
-      };
-      await db.write();
-      clack.log.success(`Saved title for "${file.filename}"`);
-    }
+  //       db.map[file.filename].mediaFile = {
+  //         ...file,
+  //         xtitle: raw_title.trim(),
+  //       };
+  //       await db.write();
+  //       clack.log.success(`Saved title for "${file.filename}"`);
+  //     }
 
-    const continuePrompt = await clack.confirm({
-      message: "Name another file?",
-    });
+  //     const continuePrompt = await clack.confirm({
+  //       message: "Name another file?",
+  //     });
 
-    if (clack.isCancel(continuePrompt) || !continuePrompt) {
-      continueNaming = false;
-    }
-  }
+  //     if (clack.isCancel(continuePrompt) || !continuePrompt) {
+  //       continueNaming = false;
+  //     }
+  //   }
+  // }
+
+  // console.log(mediaLocation, process.argv);
+  // const href = new URL(process.argv[1], "file://").href;
+  // const url = import.meta.url;
+  // if (url === href) {
+  //   if (!mediaLocation) throw new Error("cannot go on like this");
+  //   main();
+  // } else {
+  //   console.log({ href, url });
 }
-
-// console.log(mediaLocation, process.argv);
-// const href = new URL(process.argv[1], "file://").href;
-// const url = import.meta.url;
-// if (url === href) {
-//   if (!mediaLocation) throw new Error("cannot go on like this");
-//   main();
-// } else {
-//   console.log({ href, url });
-// }
 
 void main();
