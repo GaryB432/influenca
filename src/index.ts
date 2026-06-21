@@ -6,6 +6,7 @@ import cac from "cac";
 import { Database } from "./lib/database";
 import { setupEnvironment } from "./lib/environment";
 import { resolveMediaName, resolveSubjectFile } from "./lib/resolutions";
+import { formatExifTable } from "./lib/tables";
 
 setupEnvironment();
 
@@ -15,36 +16,9 @@ const cliOptions = cli.parse(process.argv, { run: false });
 
 const [argDir] = cliOptions.args;
 
-function formatExifTable(tags: any): string {
-  const rows: string[] = [];
-
-  const fields = [
-    { key: "Make", label: "Camera Make" },
-    { key: "Model", label: "Camera Model" },
-    { key: "DateTimeOriginal", label: "Date Taken" },
-    { key: "ExposureTime", label: "Shutter Speed" },
-    { key: "FNumber", label: "Aperture" },
-    { key: "ISOSpeedRatings", label: "ISO" },
-    { key: "FocalLength", label: "Focal Length" },
-    { key: "LensModel", label: "Lens" },
-    { key: "ImageWidth", label: "Width" },
-    { key: "ImageHeight", label: "Height" },
-  ];
-
-  for (const { key, label } of fields) {
-    const value = tags[key]?.description || tags[key]?.value || "-";
-    rows.push(`${label.padEnd(20)} ${value}`);
-  }
-
-  return rows.join("\n");
-}
-
 async function main() {
   clack.intro("📸 Influenca - EXIF Metadata Viewer");
 
-  // let folderPath = mediaLocation;
-
-  // the command line argument (might be empty)
   let folderPath = argDir || process.env.MEDIA;
 
   if (!folderPath) {
@@ -90,7 +64,11 @@ async function namingWorkflow(db: Database): Promise<void> {
     if (clack.isCancel(subject)) {
       continueNaming = false;
     } else {
-      clack.log.success(formatExifTable(subject.tags));
+      if (subject.tags) {
+        clack.log.success(formatExifTable(subject.tags));
+      } else {
+        clack.log.warn(`No Exif Tags (${subject.filename})`);
+      }
       const betterName = await resolveMediaName(subject);
       if (clack.isCancel(betterName)) {
         continueNaming = false;
