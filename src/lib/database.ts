@@ -3,14 +3,13 @@ import ExifReader from "exifreader";
 import { existsSync } from "node:fs";
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { setTimeout as nap } from "node:timers/promises";
 
 import type { MediaFile, MediaMap } from "./types";
 
 export class Database {
   readonly loc: string;
   map: MediaMap = {};
-  private readonly DB_JSON = ".influenca-names.json";
+  private readonly DB_JSON = ".influenca.json";
 
   constructor(loc: string) {
     if (!existsSync(loc)) {
@@ -20,16 +19,12 @@ export class Database {
   }
   public async read(): Promise<void> {
     const dbp = join(this.loc, this.DB_JSON);
-    try {
-      if (existsSync(dbp)) {
-        const data = await readFile(dbp, "utf-8");
-        // console.log(data.length);
-        // return {};
-        this.map = JSON.parse(data);
-      } else {
-        clack.log.warn(`no config at '${dbp}'`);
-      }
-    } catch {}
+    if (existsSync(dbp)) {
+      const data = await readFile(dbp, "utf-8");
+      this.map = JSON.parse(data);
+    } else {
+      clack.log.warn(`No Media Library at '${dbp}'`);
+    }
   }
 
   public async updateExif() {
@@ -37,16 +32,17 @@ export class Database {
 
     const files = (
       await readdir(this.loc, {
+        encoding: "utf-8",
         recursive: false,
         withFileTypes: true,
-        encoding: "utf-8",
       })
     ).filter((n) => n.isFile());
 
-    const prog = clack.progress({ style: "block", max: files.length });
-
+    const prog = clack.progress({ max: files.length, style: "heavy" });
     prog.start();
 
+    let skippedCount = 0;
+    let errorCount = 0;
     for (const file of files) {
       prog.advance(1, `Extracting Exif for ${file.name}`);
       const ext = file.name.toLowerCase();
@@ -54,12 +50,9 @@ export class Database {
       if (ext.match(/\.(jpg|mp4|jpeg|png|tiff|heic|webp|raw|cr2|nef|arw)$/)) {
         let tags: Partial<ExifReader.Tags> = {};
         try {
-          await nap(200);
-
           tags = await ExifReader.load(join(this.loc, file.name));
         } catch (e) {
-          // const nodeError = e as NodeJS.ErrnoException;
-          // clack.log.warn(nodeError.message);
+          errorCount++;
         }
 
         mediaFiles.push({
@@ -68,19 +61,26 @@ export class Database {
           tags,
         });
       } else {
-        clack.log.warn(`skipping ${file.name}`);
+        skippedCount++;
       }
     }
+    prog.stop();
     mediaFiles.forEach((mediaFile) => {
       this.map[mediaFile.filename] = { clips: [], keywords: [], mediaFile };
     });
-    prog.stop();
+    clack.log.warn(
+      `Initialized. ${mediaFiles.length} media files, ${skippedCount} skipped, ${errorCount} errors`,
+    );
   }
 
   public async write() {
     const dbp = join(this.loc, this.DB_JSON);
 
-    await writeFile(dbp, JSON.stringify(this.map, null, 2), "utf-8");
-    clack.log.success(`saved ${dbp}`);
+    await writeFile(
+      dbp,
+      JSON.stringify(this.map, null, 2).concat("\n"),
+      "utf-8",
+    );
+    clack.log.success(`Saved ${dbp}.`);
   }
 }
