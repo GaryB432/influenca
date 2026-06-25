@@ -41,9 +41,9 @@ export async function resolveMediaName(
       ? enterTitleMessage.concat(` (Leave blank for "${existingTitle}")`)
       : enterTitleMessage,
     placeholder: "e.g., Sunset at the beach",
-    validate: (d) => {
-      if (!d && !existingTitle) {
-        return "stop resisting";
+    validate: (value) => {
+      if (!value && !existingTitle) {
+        return "Please enter a title";
       }
     },
   });
