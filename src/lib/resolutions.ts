@@ -29,12 +29,22 @@ export const meaning: { life: number } = {
 export async function resolveMediaName(
   file: MediaFile,
 ): Promise<string | symbol> {
+  if (file.tags?.ImageDescription) {
+    clack.log.info(file.tags?.ImageDescription?.description);
+  }
+  const existingTitle = file.xtitle || file.tags?.ImageDescription?.description;
+  const enterTitleMessage = `Enter a title for "${file.filename}":`;
   const new_title = await clack.text({
-    defaultValue: file.xtitle,
-    message: `Enter a title for "${file.filename}":`,
+    defaultValue: existingTitle || "",
+
+    message: existingTitle
+      ? enterTitleMessage.concat(` (Leave blank for "${existingTitle}")`)
+      : enterTitleMessage,
     placeholder: "e.g., Sunset at the beach",
-    validate: (value) => {
-      if (!value || value.trim().length === 0) return "Please enter a title";
+    validate: (d) => {
+      if (!d && !existingTitle) {
+        return "stop resisting";
+      }
     },
   });
   return new_title;
