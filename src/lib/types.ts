@@ -1,5 +1,13 @@
 import ExifReader from "exifreader";
 
+export interface CacParsedArgv {
+  args: ReadonlyArray<string>;
+  options: Partial<{
+    dryRun: boolean;
+    list: boolean;
+  }>;
+}
+
 export interface MediaFile {
   filename: string;
   path: string;

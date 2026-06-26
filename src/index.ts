@@ -3,6 +3,8 @@
 import * as clack from "@clack/prompts";
 import cac from "cac";
 
+import type { CacParsedArgv } from "./lib/types";
+
 import { Database } from "./lib/database";
 import { setupEnvironment } from "./lib/environment";
 import { resolveMediaName, resolveSubjectFile } from "./lib/resolutions";
@@ -10,9 +12,11 @@ import { formatExifTable } from "./lib/tables";
 
 setupEnvironment();
 
-const cli = cac();
+const clic = cac();
 
-const cliOptions = cli.parse(process.argv, { run: false });
+clic.option("--list, -l", "List Media");
+
+const cliOptions: CacParsedArgv = clic.parse(process.argv, { run: false });
 
 const [argDir] = cliOptions.args;
 
