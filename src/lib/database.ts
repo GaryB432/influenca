@@ -55,6 +55,10 @@ export class Database {
           errorCount++;
         }
 
+        if (tags.Images) {
+          delete tags.Images;
+        }
+
         mediaFiles.push({
           filename: file.name,
           path: this.loc,
