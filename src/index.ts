@@ -20,6 +20,20 @@ const cliOptions: CacParsedArgv = clic.parse(process.argv, { run: false });
 
 const [argDir] = cliOptions.args;
 
+function listMedia(db: Database): void {
+  console.log(
+    Object.values(db.map)
+      .map((m) => {
+        const mediaTitle = m.mediaFile.xtitle || m.mediaFile.filename;
+        m.keywords.push("test");
+        return { mediaTitle, keywordString: m.keywords.join() };
+      })
+      .toSorted((a, b) => a.mediaTitle.localeCompare(b.mediaTitle))
+      .map((m) => m.mediaTitle.concat(" > ").concat(m.keywordString))
+      .join("\n"),
+  );
+}
+
 async function main() {
   clack.intro("📸 Influenca - EXIF Metadata Viewer");
 
@@ -56,8 +70,14 @@ async function main() {
       await db.write();
     }
   }
-  await namingWorkflow(db);
-  await db.write();
+
+  if (cliOptions.options.list) {
+    listMedia(db);
+  } else {
+    await namingWorkflow(db);
+    await db.write();
+  }
+
   clack.outro("Done! 🎉");
 }
 
