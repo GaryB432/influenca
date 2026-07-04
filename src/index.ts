@@ -37,7 +37,7 @@ function listMedia(db: Database): void {
 async function main() {
   clack.intro("📸 Influenca - EXIF Metadata Viewer");
 
-  let folderPath = argDir || process.env.MEDIA;
+  let folderPath = argDir || process.env.INFLUENCA_MEDIA;
 
   if (!folderPath) {
     const result = await clack.text({
@@ -55,7 +55,13 @@ async function main() {
 
     folderPath = result ?? argDir;
   }
-  const db = new Database(folderPath);
+  const db = Database.create(folderPath);
+
+  if (!db) {
+    clack.cancel(`nope on the loc`);
+    process.exit(1);
+  }
+
   await db.read();
 
   if (Object.entries(db.map).length === 0) {

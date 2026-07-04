@@ -11,10 +11,7 @@ export class Database {
   map: MediaMap = {};
   private readonly DB_JSON = ".influenca.json";
 
-  constructor(loc: string) {
-    if (!existsSync(loc)) {
-      throw new Error(` cannot access '${loc}': No such file or directory`);
-    }
+  private constructor(loc: string) {
     this.loc = loc;
   }
   public async read(): Promise<void> {
@@ -25,6 +22,14 @@ export class Database {
     } else {
       clack.log.warn(`No Media Library at '${dbp}'`);
     }
+  }
+
+  // TODO: order members
+  public static create(loc: string): Database | undefined {
+    if (existsSync(loc)) {
+      return new Database(loc);
+    }
+    return undefined;
   }
 
   public async updateExif() {
