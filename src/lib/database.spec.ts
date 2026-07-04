@@ -6,8 +6,8 @@ describe("Database", () => {
     const db = new Database("tests/fixtures/media");
     await db.read();
     expect(listMedia(db)).toMatchInlineSnapshot(`
-      "f > test
-      fd > test"
+      "An exciting time at the park > test
+      PXL_20260203_141534372.jpg > test"
     `);
   });
 });
