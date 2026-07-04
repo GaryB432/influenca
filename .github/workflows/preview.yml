@@ -36,7 +36,7 @@ jobs:
 
       - name: Publish Preview
         id: publish
-        run: pnpm exec pkg-pr-new publish --commentWithSha --bin
+        run: pnpm exec pkg-pr-new publish --commentWithSha --bin --template ./examples/stackblitz-cli
 
   preview_smoke_test:
     runs-on: ubuntu-latest

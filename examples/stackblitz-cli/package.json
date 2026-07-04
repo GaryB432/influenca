@@ -1,0 +1,7 @@
+{
+  "name": "influenca-stackblitz-cli",
+  "private": true,
+  "stackblitz": {
+    "startCommand": "npm exec influenca -- --help"
+  }
+}

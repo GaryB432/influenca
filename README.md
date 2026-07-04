@@ -44,8 +44,11 @@ The preview workflow is in `.github/workflows/preview.yml` and uses lockfile-bas
 ```yaml
 - name: Publish Preview
 	id: publish
-	run: pnpm exec pkg-pr-new publish --commentWithSha --bin
+	run: pnpm exec pkg-pr-new publish --commentWithSha --bin --template ./examples/stackblitz-cli
 ```
+
+The StackBlitz template in `examples/stackblitz-cli` uses `stackblitz.startCommand`
+to run the CLI help output on open.
 
 ### Smoke test example using publish outputs
 
