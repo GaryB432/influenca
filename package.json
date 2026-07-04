@@ -41,6 +41,7 @@
     "bumpp": "^11.1.0",
     "eslint": "^10.5.0",
     "globals": "^17.6.0",
+    "pkg-pr-new": "^0.0.50",
     "tsdown": "^0.22.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.1",
