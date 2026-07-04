@@ -54,33 +54,20 @@ jobs:
 
       - name: Create fixture project
         run: |
-          mkdir -p .tmp/pkg-pr-new-smoke/media
-
-          cat > .tmp/pkg-pr-new-smoke/package.json << 'JSON'
-          {
-            "name": "pkg-pr-new-smoke",
-            "private": true
-          }
-          JSON
-
-          cat > .tmp/pkg-pr-new-smoke/media/.influenca.json << 'JSON'
-          {
-            "placeholder.jpg": {
-              "clips": [],
-              "keywords": ["preview"],
-              "mediaFile": {
-                "filename": "placeholder.jpg",
-                "path": ".",
-                "xtitle": "Preview Fixture"
-              }
-            }
-          }
-          JSON
+          mkdir -p .tmp/pkg-pr-new-smoke
+          cp -R tests/fixtures/media .tmp/pkg-pr-new-smoke/media
+          printf '{"name":"pkg-pr-new-smoke","private":true}\n' > .tmp/pkg-pr-new-smoke/package.json
 
       - name: Install preview package URL
+        if: ${{ needs.publish.outputs.urls != '' || needs.publish.outputs.packages != '' }}
         working-directory: .tmp/pkg-pr-new-smoke
-        run: pnpm add ${{ needs.publish.outputs.urls }}
+        run: pnpm add ${{ needs.publish.outputs.urls || needs.publish.outputs.packages }}
 
       - name: Run preview binary
+        if: ${{ needs.publish.outputs.urls != '' || needs.publish.outputs.packages != '' }}
         working-directory: .tmp/pkg-pr-new-smoke
         run: pnpm exec influenca ./media --list
+
+      - name: Skip smoke test when no publish outputs
+        if: ${{ needs.publish.outputs.urls == '' && needs.publish.outputs.packages == '' }}
+        run: echo "pkg-pr-new returned no install targets; skipping smoke test."
