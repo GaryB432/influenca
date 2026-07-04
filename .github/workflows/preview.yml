@@ -1,17 +1,86 @@
 name: Preview Release
-on: [push, pull_request]
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "!**"
+
+permissions: {}
 
 jobs:
-  build_and_preview:
+  publish:
     runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.publish.outputs.sha }}
+      urls: ${{ steps.publish.outputs.urls }}
+      packages: ${{ steps.publish.outputs.packages }}
+
     steps:
       - uses: actions/checkout@v6
+
+      - run: corepack enable
+
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
-      - run: npm install
-      - run: npm run build
+          cache: "pnpm"
 
-      # This publishes the temporary package to pkg.pr.new
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        run: pnpm run build
+
       - name: Publish Preview
-        run: npx pkg-pr-new publish
+        id: publish
+        run: pnpm exec pkg-pr-new publish --commentWithSha --bin
+
+  preview_smoke_test:
+    runs-on: ubuntu-latest
+    needs: publish
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - run: corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: "pnpm"
+
+      - name: Create fixture project
+        run: |
+          mkdir -p .tmp/pkg-pr-new-smoke/media
+
+          cat > .tmp/pkg-pr-new-smoke/package.json << 'JSON'
+          {
+            "name": "pkg-pr-new-smoke",
+            "private": true
+          }
+          JSON
+
+          cat > .tmp/pkg-pr-new-smoke/media/.influenca.json << 'JSON'
+          {
+            "placeholder.jpg": {
+              "clips": [],
+              "keywords": ["preview"],
+              "mediaFile": {
+                "filename": "placeholder.jpg",
+                "path": ".",
+                "xtitle": "Preview Fixture"
+              }
+            }
+          }
+          JSON
+
+      - name: Install preview package URL
+        working-directory: .tmp/pkg-pr-new-smoke
+        run: pnpm add ${{ needs.publish.outputs.urls }}
+
+      - name: Run preview binary
+        working-directory: .tmp/pkg-pr-new-smoke
+        run: pnpm exec influenca ./media --list
