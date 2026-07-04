@@ -20,4 +20,4 @@ jobs:
 
       # This publishes the temporary package to pkg.pr.new
       - name: Publish Preview
-        run: pnpm exec pkg-pr-new publish --commentWithSha --bin --template ./examples/stackblitz-cli
+        run: npx pkg-pr-new publish --commentWithSha --bin --template ./examples/stackblitz-cli
