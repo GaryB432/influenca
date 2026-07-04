@@ -16,7 +16,6 @@ jobs:
         run: |
           mkdir -p examples/stackblitz-cli/fun/pkg-pr-new-smoke
           cp -R tests/fixtures examples/stackblitz-cli/fun/pkg-pr-new-smoke
-          printf '{"name":"pkg-pr-new-smoke","private":true}\n' > examples/stackblitz-cli/fun/pkg-pr-new-smoke/package.json
 
       # This publishes the temporary package to pkg.pr.new
       - name: Publish Preview
