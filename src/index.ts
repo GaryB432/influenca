@@ -29,7 +29,7 @@ function listMedia(db: Database): void {
         return { mediaTitle, keywordString: m.keywords.join() };
       })
       .toSorted((a, b) => a.mediaTitle.localeCompare(b.mediaTitle))
-      .map((m) => m.mediaTitle.concat(" > ").concat(m.keywordString))
+      .map((m) => m.mediaTitle.concat(" 💯 ").concat(m.keywordString))
       .join("\n"),
   );
 }
@@ -37,7 +37,7 @@ function listMedia(db: Database): void {
 async function main() {
   clack.intro("📸 Influenca - EXIF Metadata Viewer");
 
-  let folderPath = argDir || process.env.MEDIA;
+  let folderPath = argDir || process.env.INFLUENCA_MEDIA;
 
   if (!folderPath) {
     const result = await clack.text({
@@ -55,7 +55,18 @@ async function main() {
 
     folderPath = result ?? argDir;
   }
-  const db = new Database(folderPath);
+  const db = Database.create(folderPath);
+
+  if (!db) {
+    clack.log.warn(
+      `Hint: use environment variable INFLUENCA_MEDIA=~/your_media`,
+    );
+    clack.cancel(
+      `"${folderPath}" is an unsuitable folder for media as it does not exist.`,
+    );
+    process.exit(1);
+  }
+
   await db.read();
 
   if (Object.entries(db.map).length === 0) {

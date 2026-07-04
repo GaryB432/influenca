@@ -1,7 +1,7 @@
 {
   "name": "influenca",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "A starter for creating a TypeScript package.",
   "author": "Author Name <author.name@mail.com>",
   "license": "MIT",
@@ -41,6 +41,7 @@
     "bumpp": "^11.1.0",
     "eslint": "^10.5.0",
     "globals": "^17.6.0",
+    "pkg-pr-new": "^0.0.50",
     "tsdown": "^0.22.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.1",
@@ -50,5 +51,8 @@
     "@clack/prompts": "^1.5.1",
     "cac": "^7.0.0",
     "exifreader": "^4.41.0"
+  },
+  "stackblitz": {
+    "startCommand": "pwd && ls -lah fun/pkg-pr-new-smoke/fixtures/media && npx -y . --help"
   }
 }

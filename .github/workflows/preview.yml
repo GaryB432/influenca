@@ -12,6 +12,11 @@ jobs:
       - run: npm install
       - run: npm run build
 
+      - name: Create fixture project
+        run: |
+          mkdir -p examples/stackblitz-cli/fun/pkg-pr-new-smoke
+          cp -R tests/fixtures examples/stackblitz-cli/fun/pkg-pr-new-smoke
+
       # This publishes the temporary package to pkg.pr.new
       - name: Publish Preview
-        run: npx pkg-pr-new publish
+        run: npx pkg-pr-new publish --commentWithSha --bin --no-template

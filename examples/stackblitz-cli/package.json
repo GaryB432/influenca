@@ -1,0 +1,7 @@
+{
+  "name": "influenca-stackblitz-cli",
+  "private": true,
+  "stackblitz": {
+    "startCommand": "pwd && ls -lah fun/pkg-pr-new-smoke/fixtures/media && npx influenca --help"
+  }
+}
