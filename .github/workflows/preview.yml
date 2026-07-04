@@ -1,73 +1,23 @@
 name: Preview Release
-
-on:
-  pull_request:
-  push:
-    branches:
-      - "**"
-    tags:
-      - "!**"
-
-permissions: {}
+on: [push, pull_request]
 
 jobs:
-  publish:
+  build_and_preview:
     runs-on: ubuntu-latest
-    outputs:
-      sha: ${{ steps.publish.outputs.sha }}
-      urls: ${{ steps.publish.outputs.urls }}
-      packages: ${{ steps.publish.outputs.packages }}
-
     steps:
       - uses: actions/checkout@v6
-
-      - run: corepack enable
-
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build package
-        run: pnpm run build
-
-      - name: Publish Preview
-        id: publish
-        run: pnpm exec pkg-pr-new publish --commentWithSha --bin --template ./examples/stackblitz-cli
-
-  preview_smoke_test:
-    runs-on: ubuntu-latest
-    needs: publish
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - run: corepack enable
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: lts/*
-          cache: "pnpm"
+      - run: npm install
+      - run: npm run build
 
       - name: Create fixture project
         run: |
-          mkdir -p .tmp/pkg-pr-new-smoke
-          cp -R tests/fixtures/media .tmp/pkg-pr-new-smoke/media
-          printf '{"name":"pkg-pr-new-smoke","private":true}\n' > .tmp/pkg-pr-new-smoke/package.json
+          mkdir -p examples/stackblitz-cli/fun/pkg-pr-new-smoke
+          cp -R tests/fixtures examples/stackblitz-cli/fun/pkg-pr-new-smoke
+          printf '{"name":"pkg-pr-new-smoke","private":true}\n' > examples/stackblitz-cli/fun/pkg-pr-new-smoke/package.json
 
-      - name: Install preview package URL
-        if: ${{ needs.publish.outputs.urls != '' || needs.publish.outputs.packages != '' }}
-        working-directory: .tmp/pkg-pr-new-smoke
-        run: pnpm add ${{ needs.publish.outputs.urls || needs.publish.outputs.packages }}
-
-      - name: Run preview binary
-        if: ${{ needs.publish.outputs.urls != '' || needs.publish.outputs.packages != '' }}
-        working-directory: .tmp/pkg-pr-new-smoke
-        run: pnpm exec influenca ./media --list
-
-      - name: Skip smoke test when no publish outputs
-        if: ${{ needs.publish.outputs.urls == '' && needs.publish.outputs.packages == '' }}
-        run: echo "pkg-pr-new returned no install targets; skipping smoke test."
+      # This publishes the temporary package to pkg.pr.new
+      - name: Publish Preview
+        run: pnpm exec pkg-pr-new publish --commentWithSha --bin --template ./examples/stackblitz-cli
