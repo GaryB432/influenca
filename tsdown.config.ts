@@ -1,10 +1,12 @@
 import { defineConfig } from "tsdown";
 
-export default defineConfig({
-  dts: {
-    tsgo: true,
+export default defineConfig([
+  {
+    entry: "src/cli.ts",
+    platform: "node",
   },
-  exports: true,
-  unbundle: true,
-  // ...config options
-});
+  {
+    entry: "src/index.ts",
+    platform: "node",
+  },
+]);

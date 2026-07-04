@@ -1,4 +1,6 @@
-#!/usr/bin/env node
+export function runCLI(args: string[]) {
+  console.log("CLI logic running with:", args);
+}
 
 import * as clack from "@clack/prompts";
 import cac from "cac";
