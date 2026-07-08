@@ -18,8 +18,22 @@ resolveFolderPath(argDir).then(async (loc) => {
     cancel("no db path was given");
     process.exit(1);
   }
-  const db = new Database(loc);
-  await db.read();
+
+  let db: Database | false = false;
+  do {
+    Database.tryCreate(loc).then(
+      (d) => {
+        console.log(d);
+        db = d;
+      },
+      (q) => {
+        console.log(q);
+      },
+    );
+  } while (!db);
+
+  // const db = new Database(loc);
+  // await db.read();
   if (cliOptions.options.list) {
     listMedia(db);
   } else {

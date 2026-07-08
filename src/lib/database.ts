@@ -3,28 +3,29 @@ import ExifReader from "exifreader";
 import { existsSync } from "node:fs";
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-
 import type { MediaFile, MediaMap } from "../lib/types";
 
+const DB_JSON = ".influenca.json";
 export class Database {
   readonly loc: string;
   map: MediaMap = {};
   private readonly DB_JSON = ".influenca.json";
 
-  constructor(loc: string) {
-    if (!existsSync(loc)) {
-      throw new Error(` cannot access '${loc}': No such file or directory`);
-    }
+  private constructor(loc: string) {
     this.loc = loc;
   }
-  public async read(): Promise<void> {
-    const dbp = join(this.loc, this.DB_JSON);
+
+  public static async tryCreate(loc: string): Promise<Database | false> {
+    const dbp = join(loc, DB_JSON);
     if (existsSync(dbp)) {
+      const db = new Database(loc);
       const data = await readFile(dbp, "utf-8");
-      this.map = JSON.parse(data);
+      db.map = JSON.parse(data);
+      return db;
     } else {
       clack.log.warn(`No Media Library at '${dbp}'`);
     }
+    return false;
   }
 
   public async updateExif() {
