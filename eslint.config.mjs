@@ -10,17 +10,11 @@ export default tseslint.config(
   { 
     ignores: ["**/dist/**", "**/node_modules/**"], 
   },
+  
+  // 1. Core JavaScript base rules (Scoped safely to code files)
   {
-    files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
-    plugins: {
-      "@eslint/js": js,
-    },
-    // Safely apply JS, TS, and perfectionist rules only to scripts
-    rules: {
-      ...js.configs.recommended.rules,
-      ...tseslint.configs.recommended.reduce((acc, config) => ({ ...acc, ...config.rules }), {}),
-      ...perfectionist.configs["recommended-alphabetical"].rules,
-    },
+    files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+    ...js.configs.recommended,
     languageOptions: {
       globals: { 
         ...globals.browser, 
@@ -28,6 +22,20 @@ export default tseslint.config(
       },
     },
   },
+
+  // 2. TypeScript Recommended Rules (Scoped safely to TS/JS code files)
+  ...tseslint.configs.recommended.map(config => ({
+    ...config,
+    files: ["**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"],
+  })),
+
+  // 3. Perfectionist Sorting Rules (FIX: Scoped safely to code files only)
+  {
+    files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+    ...perfectionist.configs["recommended-alphabetical"],
+  },
+
+  // 4. JSON configurations (Using dedicated @eslint/json parsers)
   { 
     files: ["**/*.json"], 
     ...json.configs.recommended, 
@@ -42,11 +50,18 @@ export default tseslint.config(
     ...json.configs.recommended, 
     language: "json/json5", 
   }, 
-  ...markdown.configs.recommended, 
+
+  // 5. Markdown configurations (Safely scoped)
+  ...markdown.configs.recommended.map(config => ({
+    ...config,
+    files: config.files || ["**/*.md"]
+  })), 
   { 
     files: ["**/*.md"], 
     language: "markdown/gfm", 
   }, 
+
+  // 6. Custom Monorepo Architecture Rules
   { 
     files: ["packages/core/**/*.ts"], 
     plugins: { 
