@@ -2,6 +2,10 @@
 
 This CLI uses a command-per-file pattern under `packages/cli/src/commands` and wires each command in `packages/cli/src/main.ts`.
 
+- **Primary Interface**: Guided, conversational wizard prompts for missing properties using visual terminal tools. "argument is required" errors are rare and individually permitted as appropriate
+- **UX Philosophy**: `Progressive Disclosure` minimizes upfront flag complexity by asking for details only when required.
+- **CI/CD Guardrail**: `Interactive Fallback` detects headless or non-TTY environments to skip inputs, enforcing strict reliance on passed arguments or environmental defaults without hanging.
+
 ## Feature Work
 
 When you are the main/orchestrator agent and the user asks to create a new command, load and follow add-command-workflow skill before making code changes.
