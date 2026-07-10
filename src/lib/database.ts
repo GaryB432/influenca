@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { MediaFile, MediaMap } from "./types";
+import type { MediaFile, MediaMap } from "../lib/types";
 
 export class Database {
   readonly loc: string;
@@ -87,4 +87,15 @@ export class Database {
     );
     clack.log.success(`Saved ${dbp}.`);
   }
+}
+export function listMedia(db: Database): string {
+  return Object.values(db.map)
+    .map((m) => {
+      const mediaTitle = m.mediaFile.xtitle || m.mediaFile.filename;
+      m.keywords.push("test");
+      return { mediaTitle, keywordString: m.keywords.join() };
+    })
+    .toSorted((a, b) => a.mediaTitle.localeCompare(b.mediaTitle))
+    .map((m) => m.mediaTitle.concat(" > ").concat(m.keywordString))
+    .join("\n");
 }
