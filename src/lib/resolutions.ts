@@ -1,7 +1,7 @@
 import * as clack from "@clack/prompts";
 
-import type { Database } from "./database";
-import type { MediaFile } from "./types";
+import type { Database } from "../lib/database";
+import type { MediaFile } from "../lib/types";
 
 export function add(a: number, b: number): number {
   return a + b;
@@ -59,4 +59,45 @@ export async function resolveSubjectFile(
     message: "Select a file to name:",
     options,
   });
+}
+
+export async function resolveFolderPath(
+  argDir: string | undefined,
+): Promise<string | undefined> {
+  // const options = await getOptions(db);
+
+  let folderPath = argDir || process.env.MEDIA;
+
+  if (!folderPath) {
+    const result = await clack.text({
+      message: "Enter the path to your media folder:",
+      placeholder: "./photos",
+      validate: (value) => {
+        if (!value) return "Please enter a folder path";
+      },
+    });
+
+    if (clack.isCancel(result)) {
+      clack.cancel("Operation cancelled");
+      return undefined;
+    }
+
+    folderPath = result ?? argDir;
+  }
+  return folderPath;
+  // const db = new Database(folderPath);
+  // await db.read();
+
+  // if (Object.entries(db.map).length === 0) {
+  //   const initialize = await clack.confirm({
+  //     message: "Initialize Media Library",
+  //   });
+  //   if (clack.isCancel(initialize) || !initialize) {
+  //     clack.cancel("Media database is uninitialized");
+  //     process.exit();
+  //   } else {
+  //     await db.updateExif();
+  //     await db.write();
+  //   }
+  // }
 }
