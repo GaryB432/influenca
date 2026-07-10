@@ -1,6 +1,9 @@
-# Add an arbitrary command: `promote`
+---
+name: add-command-workflow
+description: Use when the user asks to create a new command.
+---
 
-This CLI uses a command-per-file pattern under `packages/cli/src/commands` and wires each command in `packages/cli/src/main.ts`.
+# Add an arbitrary command: `promote`
 
 ## 1. Create the command implementation
 
