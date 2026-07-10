@@ -60,17 +60,7 @@ test("prints greet command help", async () => {
 });
 
 test("greet requires --offset in strict non-interactive mode", async () => {
-  await assert.rejects(
-    async () => {
-      await main([
-        "node",
-        "bin.js",
-        "greet",
-        "bob",
-        "--interactive",
-        "no",
-      ]);
-    },
-    /Name and --offset are required/i,
-  );
+  await assert.rejects(async () => {
+    await main(["node", "bin.js", "greet", "bob", "--interactive", "no"]);
+  }, /Name and --offset are required/i);
 });
