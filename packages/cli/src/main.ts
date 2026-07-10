@@ -51,16 +51,16 @@ import { GreetCommand } from "./commands/greet-command.js";
 const greetCommand = new GreetCommand();
 const ascessionCommand = new AscessionCommand();
 
+type AscessionOptions = {
+  output: string;
+} & CommonInteractiveOptions;
+
 type CommonInteractiveOptions = {
   interactive?: string;
 };
 
 type GreetOptions = {
   offset?: number | string;
-} & CommonInteractiveOptions;
-
-type AscessionOptions = {
-  output: string;
 } & CommonInteractiveOptions;
 
 type PromptMode = "always" | "auto" | "never";
