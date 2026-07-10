@@ -1,7 +1,10 @@
 import { spawn } from "node:child_process";
 import { readdirSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { type CliCommand, type ParsedCommandArgs } from "../command-contract.js";
+import {
+  type CliCommand,
+  type ParsedCommandArgs,
+} from "../command-contract.js";
 
 export type AscessionOptions = {
   output: string;
@@ -22,10 +25,13 @@ function analyzeMotion(inputPath: string): Promise<{
     let currentFrame: Partial<FrameStats> = {};
 
     const ffmpeg = spawn("ffmpeg", [
-      "-i", inputPath,
-      "-vf", "select='isnan(prev_selected_t)+gte(t,prev_selected_t+0.5)',showinfo",
-      "-f", "null",
-      "-"
+      "-i",
+      inputPath,
+      "-vf",
+      "select='isnan(prev_selected_t)+gte(t,prev_selected_t+0.5)',showinfo",
+      "-f",
+      "null",
+      "-",
     ]);
 
     ffmpeg.stderr.on("data", (data) => {
@@ -53,7 +59,11 @@ function analyzeMotion(inputPath: string): Promise<{
         if (line.includes("mean:")) {
           const match = line.match(/mean:\[([\d.]+)\s+([\d.]+)\s+([\d.]+)\]/);
           if (match) {
-            currentFrame.mean = [parseFloat(match[1]), parseFloat(match[2]), parseFloat(match[3])];
+            currentFrame.mean = [
+              parseFloat(match[1]),
+              parseFloat(match[2]),
+              parseFloat(match[3]),
+            ];
           }
         }
 
@@ -61,7 +71,11 @@ function analyzeMotion(inputPath: string): Promise<{
         if (line.includes("stdev:")) {
           const match = line.match(/stdev:\[([\d.]+)\s+([\d.]+)\s+([\d.]+)\]/);
           if (match) {
-            currentFrame.stdev = [parseFloat(match[1]), parseFloat(match[2]), parseFloat(match[3])];
+            currentFrame.stdev = [
+              parseFloat(match[1]),
+              parseFloat(match[2]),
+              parseFloat(match[3]),
+            ];
             // Frame is complete, push it
             if (currentFrame.pts_time !== undefined && currentFrame.checksum) {
               frames.push(currentFrame as FrameStats);
@@ -74,20 +88,22 @@ function analyzeMotion(inputPath: string): Promise<{
 
     ffmpeg.on("close", () => {
       resolve({
-        frames
+        frames,
       });
     });
 
     ffmpeg.on("error", () => {
       resolve({
-        frames: []
+        frames: [],
       });
     });
   });
 }
 
 export class AscessionCommand implements CliCommand<AscessionOptions> {
-  public async execute(input: ParsedCommandArgs<AscessionOptions>): Promise<string> {
+  public async execute(
+    input: ParsedCommandArgs<AscessionOptions>,
+  ): Promise<string> {
     const [inputDir] = input.args;
     if (!inputDir) {
       throw new Error("Input directory is required.");
@@ -99,12 +115,14 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
     }
 
     // Resolve tilde in inputDir if present
-    const resolvedInputDir = inputDir.startsWith("~") 
-      ? inputDir.replace("~", process.env.HOME || "") 
+    const resolvedInputDir = inputDir.startsWith("~")
+      ? inputDir.replace("~", process.env.HOME || "")
       : inputDir;
 
-    const files = readdirSync(resolvedInputDir).filter(f => f.toLowerCase().endsWith(".avi"));
-    
+    const files = readdirSync(resolvedInputDir).filter((f) =>
+      f.toLowerCase().endsWith(".avi"),
+    );
+
     if (files.length === 0) {
       return `No AVI files found in ${resolvedInputDir}`;
     }
@@ -118,49 +136,56 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
 
     for (const file of files) {
       const inputPath = join(resolvedInputDir, file);
-      const outputFileName = file.replace(/\.[^.]+$/, "").toLowerCase() + ".mp4";
+      const outputFileName =
+        file.replace(/\.[^.]+$/, "").toLowerCase() + ".mp4";
       const outputPath = join(output, outputFileName);
 
       console.log(`Converting ${file} -> ${outputFileName}...`);
-      
+
       manifest[file] = await new Promise((resolve) => {
         const stats: Record<string, any> = {
           "encoding-stats": {
-            "frames": 0,
-            "fps": 0,
-            "bitrate": "N/A",
-            "total_size": 0,
-          }
+            frames: 0,
+            fps: 0,
+            bitrate: "N/A",
+            total_size: 0,
+          },
         };
 
         // Use a high quality, fast preset: libx264, fast preset, crf 23 (standard quality)
         const ffmpeg = spawn("ffmpeg", [
-          "-i", inputPath,
-          "-c:v", "libx264",
-          "-preset", "fast",
-          "-crf", "23",
-          "-c:a", "aac",
-          "-b:a", "128k",
+          "-i",
+          inputPath,
+          "-c:v",
+          "libx264",
+          "-preset",
+          "fast",
+          "-crf",
+          "23",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "128k",
           outputPath,
-          "-y"
+          "-y",
         ]);
 
         // Parse stderr where ffmpeg writes its progress
         ffmpeg.stderr.on("data", (data) => {
           const output = data.toString();
-          
+
           // Parse frame=X pattern
           const frameMatch = output.match(/frame=\s*(\d+)/);
           if (frameMatch) {
             stats["encoding-stats"]["frames"] = parseInt(frameMatch[1]);
           }
-          
+
           // Parse fps=X pattern
           const fpsMatch = output.match(/fps=\s*(\d+\.?\d*)/);
           if (fpsMatch) {
             stats["encoding-stats"]["fps"] = parseFloat(fpsMatch[1]);
           }
-          
+
           // Parse bitrate pattern
           const bitrateMatch = output.match(/bitrate=\s*(\d+\.?\d*[a-zA-Z]+)/);
           if (bitrateMatch) {
@@ -175,8 +200,8 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
             console.log(`  📊 Sampling frames...`);
             const motion = await analyzeMotion(outputPath);
             stats["frame-samples"] = {
-              "sample_interval_seconds": 0.5,
-              "frames": motion.frames
+              sample_interval_seconds: 0.5,
+              frames: motion.frames,
             };
           } else {
             console.error(`  ✗ Conversion failed with code ${code}`);
@@ -192,7 +217,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
     }
 
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-    
+
     return `Processed ${files.length} files. Manifest saved to ${manifestPath}`;
   }
 }
