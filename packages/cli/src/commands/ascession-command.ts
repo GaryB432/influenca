@@ -130,6 +130,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
     // Create output directory if it doesn't exist
     mkdirSync(output, { recursive: true });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const manifest: Record<string, any> = {};
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const manifestPath = join(output, `videos-${timestamp}.json`);
@@ -143,6 +144,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
       console.log(`Converting ${file} -> ${outputFileName}...`);
 
       manifest[file] = await new Promise((resolve) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const stats: Record<string, any> = {
           "encoding-stats": {
             frames: 0,
