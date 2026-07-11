@@ -2,54 +2,13 @@ import { cancel, intro, isCancel, outro, select, text } from "@clack/prompts";
 import { timeZoneUtcOffsetMinutes } from "@influenca/core/time";
 import { cac } from "cac";
 
+import { AnalyzeCommand } from "./commands/analyze-command.js";
 import { AscessionCommand } from "./commands/ascession-command.js";
 import { GreetCommand } from "./commands/greet-command.js";
 
-// import { cancel, intro, outro } from "@clack/prompts";
-// import cac from "cac";
-// import { Database, listMedia } from "./lib/database";
-// import { resolveFolderPath } from "./lib/resolutions";
-// import type { CacParsedArgv } from "./lib/types";
-// import { namingWorkflow } from "./lib/workflows";
-
-// const cli = cac();
-// cli.option("--list, -l", "List Media");
-// const cliOptions: CacParsedArgv = cli.parse(process.argv, { run: false });
-// const [argDir] = cliOptions.args;
-
-// intro("📸 Influenca - EXIF Metadata Viewer");
-// resolveFolderPath(argDir).then(async (loc) => {
-//   if (!loc) {
-//     cancel("no db path was given");
-//     process.exit(1);
-//   }
-
-//   let db: Database | false = false;
-//   do {
-//     Database.tryCreate(loc).then(
-//       (d) => {
-//         console.log(d);
-//         db = d;
-//       },
-//       (q) => {
-//         console.log(q);
-//       },
-//     );
-//   } while (!db);
-
-//   // const db = new Database(loc);
-//   // await db.read();
-//   if (cliOptions.options.list) {
-//     listMedia(db);
-//   } else {
-//     await namingWorkflow(db);
-//     db.write();
-//   }
-//   outro("Done! 🎉");
-// });
-
 const greetCommand = new GreetCommand();
 const ascessionCommand = new AscessionCommand();
+const analyzeCommand = new AnalyzeCommand();
 
 type AscessionOptions = {
   output: string;
@@ -85,24 +44,20 @@ export async function main(rawArguments: string[]): Promise<void> {
 
   cli
     .command(
-      "ascession <inputDir>",
+      "ascession [inputDir]",
       "Convert AVI videos to MP4 and catalog them",
     )
     .option("-o, --output <path>", "Output directory for MP4s and manifest")
     .example("ascession ~/dogfood/videos_raw --output ~/dogfood/videos")
-    .action(async (inputDir: string, options: AscessionOptions) => {
-      try {
-        const result = await ascessionCommand.execute({
-          args: [inputDir],
-          options: options,
-        });
-        console.log(result);
-      } catch (error) {
-        console.error(
-          "Error:",
-          error instanceof Error ? error.message : String(error),
-        );
-      }
+    .action(async (inputDir: string | undefined, options: AscessionOptions) => {
+      await runAscession(inputDir, options);
+    });
+
+  cli
+    .command("analyze [inputDir]", "Analyze a manifest directory")
+    .example("analyze ./fixtures/vidz")
+    .action(async (inputDir: string | undefined) => {
+      await runAnalyze(inputDir);
     });
 
   const parsedArgs = cli.parse(rawArguments, { run: false });
@@ -313,6 +268,92 @@ async function resolveGreetingOffsetHoursFromPrompt(
   }
 
   return response;
+}
+
+async function runAnalyze(inputDir: string | undefined): Promise<void> {
+  let currentDir = inputDir ?? process.env.INFLUENCA_MEDIA;
+
+  while (true) {
+    if (currentDir) {
+      try {
+        const result = await analyzeCommand.execute({
+          args: [currentDir],
+          options: {},
+        });
+        console.log(result);
+        return;
+      } catch (error) {
+        // If it's a file not found or JSON parse error, we continue the loop to prompt again
+        if (
+          error instanceof Error &&
+          (error.message.includes("ENOENT") ||
+            error.message.includes("Unexpected token"))
+        ) {
+          // continue to prompt
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    const response = await text({
+      defaultValue: currentDir,
+      message: "Please enter the path to the manifest directory",
+      placeholder: "./media",
+    });
+
+    if (isCancel(response)) {
+      cancel("Analysis cancelled.");
+      return;
+    }
+
+    currentDir = response;
+  }
+}
+
+async function runAscession(
+  inputDir: string | undefined,
+  options: AscessionOptions,
+): Promise<void> {
+  let currentInputDir = inputDir ?? process.env.INFLUENCA_MEDIA;
+  let currentOutputDir = options.output;
+
+  while (!currentInputDir) {
+    const response = await text({
+      message: "Please enter the input directory containing AVI files",
+      placeholder: "./videos_raw",
+    });
+    if (isCancel(response)) {
+      cancel("Ascession cancelled.");
+      return;
+    }
+    currentInputDir = response;
+  }
+
+  while (!currentOutputDir) {
+    const response = await text({
+      message: "Please enter the output directory for MP4s and manifest",
+      placeholder: "./videos",
+    });
+    if (isCancel(response)) {
+      cancel("Ascession cancelled.");
+      return;
+    }
+    currentOutputDir = response;
+  }
+
+  try {
+    const result = await ascessionCommand.execute({
+      args: [currentInputDir],
+      options: { ...options, output: currentOutputDir },
+    });
+    console.log(result);
+  } catch (error) {
+    console.error(
+      "Error:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
 }
 
 async function runGreet(
