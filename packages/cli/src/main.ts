@@ -297,10 +297,10 @@ async function runAnalyze(inputDir: string | undefined): Promise<void> {
     }
 
     const response = await text({
-      defaultValue: currentDir,
-      message: "Please enter the path to the manifest directory",
-      placeholder: "./media",
-    });
+        defaultValue: '',
+        message: "Please enter the path to the manifest directory",
+        placeholder: "./media",
+      });
 
     if (isCancel(response)) {
       cancel("Analysis cancelled.");
@@ -329,6 +329,8 @@ async function runAscession(
     }
     currentInputDir = response;
   }
+
+  console.log(currentInputDir);
 
   while (!currentOutputDir) {
     const response = await text({
