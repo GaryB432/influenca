@@ -1,3 +1,5 @@
+import type { FrameStats, Manifest, VideoEntry } from "@influenca/core";
+
 import { spawn } from "node:child_process";
 import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -9,13 +11,6 @@ import {
 
 export type AscessionOptions = {
   output: string;
-};
-
-type FrameStats = {
-  checksum: string;
-  mean: number[];
-  pts_time: number;
-  stdev: number[];
 };
 
 export class AscessionCommand implements CliCommand<AscessionOptions> {
@@ -48,8 +43,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
     // Create output directory if it doesn't exist
     mkdirSync(output, { recursive: true });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const manifest: Record<string, any> = {};
+    const manifest: Manifest = {};
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const manifestPath = join(output, `videos-${timestamp}.json`);
 
@@ -62,8 +56,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
       console.log(`Converting ${file} -> ${outputFileName}...`);
 
       manifest[file] = await new Promise((resolve) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const stats: Record<string, any> = {
+        const stats: VideoEntry = {
           "encoding-stats": {
             bitrate: "N/A",
             fps: 0,
@@ -97,19 +90,19 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
           // Parse frame=X pattern
           const frameMatch = output.match(/frame=\s*(\d+)/);
           if (frameMatch) {
-            stats["encoding-stats"]["frames"] = parseInt(frameMatch[1]);
+            stats["encoding-stats"].frames = parseInt(frameMatch[1]);
           }
 
           // Parse fps=X pattern
           const fpsMatch = output.match(/fps=\s*(\d+\.?\d*)/);
           if (fpsMatch) {
-            stats["encoding-stats"]["fps"] = parseFloat(fpsMatch[1]);
+            stats["encoding-stats"].fps = parseFloat(fpsMatch[1]);
           }
 
           // Parse bitrate pattern
           const bitrateMatch = output.match(/bitrate=\s*(\d+\.?\d*[a-zA-Z]+)/);
           if (bitrateMatch) {
-            stats["encoding-stats"]["bitrate"] = bitrateMatch[1];
+            stats["encoding-stats"].bitrate = bitrateMatch[1];
           }
         });
 
