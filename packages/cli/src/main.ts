@@ -5,12 +5,14 @@ import { cac } from "cac";
 import { AnalyzeCommand } from "./commands/analyze-command.js";
 import { AscessionCommand } from "./commands/ascession-command.js";
 import { GreetCommand } from "./commands/greet-command.js";
+import { setupEnvironment } from "./environment.js";
 
 const greetCommand = new GreetCommand();
 const ascessionCommand = new AscessionCommand();
 const analyzeCommand = new AnalyzeCommand();
 
 type AscessionOptions = {
+  dryRun?: boolean;
   output: string;
 } & CommonInteractiveOptions;
 
@@ -23,6 +25,7 @@ type GreetOptions = {
 } & CommonInteractiveOptions;
 
 type PromptMode = "always" | "auto" | "never";
+setupEnvironment();
 
 export async function main(rawArguments: string[]): Promise<void> {
   intro("📸 Influenca - EXIF Metadata Viewer");
@@ -47,6 +50,7 @@ export async function main(rawArguments: string[]): Promise<void> {
       "ascession [inputDir]",
       "Convert AVI videos to MP4 and catalog them",
     )
+    .option("-d, --dry-run", "Do not write to disk")
     .option("-o, --output <path>", "Output directory for MP4s and manifest")
     .example("ascession ~/dogfood/videos_raw --output ~/dogfood/videos")
     .action(async (inputDir: string | undefined, options: AscessionOptions) => {
@@ -297,10 +301,10 @@ async function runAnalyze(inputDir: string | undefined): Promise<void> {
     }
 
     const response = await text({
-        defaultValue: '',
-        message: "Please enter the path to the manifest directory",
-        placeholder: "./media",
-      });
+      defaultValue: "",
+      message: "Please enter the path to the manifest directory",
+      placeholder: "./media",
+    });
 
     if (isCancel(response)) {
       cancel("Analysis cancelled.");
@@ -316,13 +320,19 @@ async function runAscession(
   options: AscessionOptions,
 ): Promise<void> {
   let currentInputDir = inputDir ?? process.env.INFLUENCA_MEDIA;
-  let currentOutputDir = options.output;
+  let currentOutputDir = options.output ?? process.env.INFLUENCA_MEDIA;
 
-  while (!currentInputDir) {
+  if (!currentInputDir) {
     const response = await text({
       message: "Please enter the input directory containing AVI files",
       placeholder: "./videos_raw",
+      validate(value) {
+        if (!value || value.trim().length === 0) {
+          return "Enter AVI directory";
+        }
+      },
     });
+
     if (isCancel(response)) {
       cancel("Ascession cancelled.");
       return;
@@ -330,13 +340,17 @@ async function runAscession(
     currentInputDir = response;
   }
 
-  console.log(currentInputDir);
-
-  while (!currentOutputDir) {
+  if (!currentOutputDir) {
     const response = await text({
       message: "Please enter the output directory for MP4s and manifest",
       placeholder: "./videos",
+      validate(value) {
+        if (!value || value.trim().length === 0) {
+          return "Enter MP4 directory";
+        }
+      },
     });
+
     if (isCancel(response)) {
       cancel("Ascession cancelled.");
       return;

@@ -22,10 +22,8 @@ sudo mkdir -p /mnt/f
 sudo mount -t drvfs F: /mnt/f
 
 echo "☕ Synchronizing media from F:\\"
-rsync -rtv --progress \
-  --include="*/" --include="*.AVI" --include="*.avi" --exclude="*" \
-  /mnt/f/DCIMA/ \
-  "$HOME/.local/state/influenca/$TIMESTAMP/videos/"
+
+rsync -rtv --progress --include="*/" --include="*.AVI" --include="*.avi" --exclude="*" /mnt/f/DCIMA/ "$HOME/.local/state/influenca/$TIMESTAMP/videos/"
 
 rm -rf /mnt/f/AUDIO /mnt/f/DCIMA
 echo "2026-01-01 00:00:00 N" > /mnt/f/TIME.TXT
