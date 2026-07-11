@@ -31,7 +31,9 @@ export async function main(rawArguments: string[]): Promise<void> {
     )
     .option("-d, --dry-run", "Do not write to disk")
     .option("-o, --output <path>", "Output directory for MP4s and manifest")
-    .example("ascession ~/dogfood/videos_raw --output ~/dogfood/videos")
+    .example(
+      "ascession ~/alpo/videos_raw --output /cloud-storage/influenca/videos",
+    )
     .action(async (inputDir: string | undefined, options: AscessionOptions) => {
       await runAscession(inputDir, options);
     });
@@ -104,7 +106,7 @@ async function runAscession(
   inputDir: string | undefined,
   options: AscessionOptions,
 ): Promise<void> {
-  let currentInputDir = inputDir ?? process.env.INFLUENCA_MEDIA;
+  let currentInputDir = inputDir;
   let currentOutputDir = options.output ?? process.env.INFLUENCA_MEDIA;
 
   if (!currentInputDir) {
