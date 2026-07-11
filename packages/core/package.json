@@ -7,14 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./dist/index.mjs"
-    },
-    "./time": {
-      "types": "./src/time/index.ts",
-      "import": "./dist/time/index.mjs"
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts src/time/index.ts --dts"
+    "build": "tsdown src/index.ts --dts"
   },
   "dependencies": {}
 }
