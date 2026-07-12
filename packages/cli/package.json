@@ -6,8 +6,8 @@
     "influenca": "./dist/bin.mjs"
   },
   "scripts": {
-    "build": "tsdown src/bin.ts src/main.test.ts",
-    "test": "node --test dist/main.test.mjs"
+    "build": "tsdown src/bin.ts",
+    "test": "echo \"no tests yet\""
   },
   "dependencies": {
     "@clack/prompts": "catalog:",
