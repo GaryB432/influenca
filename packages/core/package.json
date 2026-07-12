@@ -10,7 +10,8 @@
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts --dts"
+    "build": "tsdown src/index.ts --dts",
+    "test": "node --test dist/main.test.mjs"
   },
   "dependencies": {}
 }
