@@ -1,0 +1,17 @@
+{
+  "name": "@influenca/cli",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "influenca": "./dist/bin.mjs"
+  },
+  "scripts": {
+    "build": "tsdown src/bin.ts src/main.test.ts",
+    "test": "node --test dist/main.test.mjs"
+  },
+  "dependencies": {
+    "@clack/prompts": "catalog:",
+    "@influenca/core": "workspace:^",
+    "cac": "catalog:"
+  }
+}

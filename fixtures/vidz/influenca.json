@@ -1,0 +1,4954 @@
+{
+  "VID00122.AVI": {
+    "encoding-stats": {
+      "bitrate": "8931.8kbits",
+      "fps": 202,
+      "frames": 1799,
+      "total_size": 0
+    },
+    "frame-samples": {
+      "frames": [
+        {
+          "pts_time": 0,
+          "checksum": "A4AA3539",
+          "mean": [117, 126, 128],
+          "stdev": [93.9, 5.1, 3.5]
+        },
+        {
+          "pts_time": 0.5,
+          "checksum": "A2DDCB8B",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5.2, 3.6]
+        },
+        {
+          "pts_time": 1,
+          "checksum": "225EEA53",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5.2, 3.6]
+        },
+        {
+          "pts_time": 1.5,
+          "checksum": "502FAF9A",
+          "mean": [117, 126, 128],
+          "stdev": [93.8, 5.2, 3.5]
+        },
+        {
+          "pts_time": 2,
+          "checksum": "6ED9EC4B",
+          "mean": [117, 126, 128],
+          "stdev": [93.9, 5.2, 3.5]
+        },
+        {
+          "pts_time": 2.5,
+          "checksum": "3D6E351D",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5.2, 3.6]
+        },
+        {
+          "pts_time": 3,
+          "checksum": "A68EB923",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5.2, 3.6]
+        },
+        {
+          "pts_time": 3.5,
+          "checksum": "2FD6B0C3",
+          "mean": [117, 126, 128],
+          "stdev": [93.9, 5.2, 3.5]
+        },
+        {
+          "pts_time": 4,
+          "checksum": "B9F6F54C",
+          "mean": [117, 126, 128],
+          "stdev": [93.9, 5.2, 3.5]
+        },
+        {
+          "pts_time": 4.5,
+          "checksum": "71A22E0D",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5.2, 3.6]
+        },
+        {
+          "pts_time": 5,
+          "checksum": "FE50BEFF",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5.2, 3.6]
+        },
+        {
+          "pts_time": 5.5,
+          "checksum": "9E2973D5",
+          "mean": [117, 126, 128],
+          "stdev": [93.8, 5.2, 3.5]
+        },
+        {
+          "pts_time": 6,
+          "checksum": "F50FC5C3",
+          "mean": [117, 126, 128],
+          "stdev": [93.9, 5.2, 3.5]
+        },
+        {
+          "pts_time": 6.5,
+          "checksum": "16A64257",
+          "mean": [118, 126, 128],
+          "stdev": [94.2, 5.2, 3.6]
+        },
+        {
+          "pts_time": 7,
+          "checksum": "CAD16C4D",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5.2, 3.6]
+        },
+        {
+          "pts_time": 7.5,
+          "checksum": "A652FDF0",
+          "mean": [117, 126, 128],
+          "stdev": [93.9, 5.2, 3.5]
+        },
+        {
+          "pts_time": 8,
+          "checksum": "18197343",
+          "mean": [117, 126, 128],
+          "stdev": [94, 5.1, 3.5]
+        },
+        {
+          "pts_time": 8.5,
+          "checksum": "8884F5C0",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 5.1, 3.5]
+        },
+        {
+          "pts_time": 9,
+          "checksum": "D6084F9C",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 5.1, 3.6]
+        },
+        {
+          "pts_time": 9.5,
+          "checksum": "22968BB7",
+          "mean": [117, 126, 128],
+          "stdev": [94, 5.1, 3.5]
+        },
+        {
+          "pts_time": 10,
+          "checksum": "AF6D8BE4",
+          "mean": [117, 126, 128],
+          "stdev": [94, 5.1, 3.5]
+        },
+        {
+          "pts_time": 10.5,
+          "checksum": "B5F169F0",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 5.1, 3.6]
+        },
+        {
+          "pts_time": 11,
+          "checksum": "5718EDCD",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 5.1, 3.6]
+        },
+        {
+          "pts_time": 11.5,
+          "checksum": "FF006B3B",
+          "mean": [117, 126, 128],
+          "stdev": [94, 5.1, 3.5]
+        },
+        {
+          "pts_time": 12,
+          "checksum": "D85F84C8",
+          "mean": [117, 126, 128],
+          "stdev": [94, 5.1, 3.5]
+        },
+        {
+          "pts_time": 12.5,
+          "checksum": "122424C1",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 5.1, 3.6]
+        },
+        {
+          "pts_time": 13,
+          "checksum": "078FDFF0",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 5.1, 3.6]
+        },
+        {
+          "pts_time": 13.5,
+          "checksum": "62803685",
+          "mean": [117, 126, 128],
+          "stdev": [94, 5.1, 3.5]
+        },
+        {
+          "pts_time": 14,
+          "checksum": "56DFAB7E",
+          "mean": [117, 126, 128],
+          "stdev": [94, 5.1, 3.5]
+        },
+        {
+          "pts_time": 14.5,
+          "checksum": "559208CB",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 5.1, 3.6]
+        },
+        {
+          "pts_time": 15,
+          "checksum": "8A1A44EA",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 5.1, 3.6]
+        },
+        {
+          "pts_time": 15.5,
+          "checksum": "A576AC2F",
+          "mean": [117, 126, 128],
+          "stdev": [94, 5.1, 3.5]
+        },
+        {
+          "pts_time": 16,
+          "checksum": "460A3B6B",
+          "mean": [117, 126, 128],
+          "stdev": [94, 5.1, 3.5]
+        },
+        {
+          "pts_time": 16.5,
+          "checksum": "1BD84F99",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 5.1, 3.6]
+        },
+        {
+          "pts_time": 17,
+          "checksum": "F0EDB9AA",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 5.1, 3.6]
+        },
+        {
+          "pts_time": 17.5,
+          "checksum": "AF70D170",
+          "mean": [116, 126, 128],
+          "stdev": [94.1, 5.1, 3.5]
+        },
+        {
+          "pts_time": 18,
+          "checksum": "EDE5ED1A",
+          "mean": [116, 126, 128],
+          "stdev": [94.1, 5.1, 3.5]
+        },
+        {
+          "pts_time": 18.5,
+          "checksum": "587D929B",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 5.1, 3.5]
+        },
+        {
+          "pts_time": 19,
+          "checksum": "F68C771D",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 5.1, 3.6]
+        },
+        {
+          "pts_time": 19.5,
+          "checksum": "5969127E",
+          "mean": [116, 126, 128],
+          "stdev": [94.1, 5.1, 3.5]
+        },
+        {
+          "pts_time": 20,
+          "checksum": "4FD3635F",
+          "mean": [116, 126, 128],
+          "stdev": [94.1, 5, 3.4]
+        },
+        {
+          "pts_time": 20.5,
+          "checksum": "CAB82C73",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 5, 3.5]
+        },
+        {
+          "pts_time": 21,
+          "checksum": "DD02AB55",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5.1, 3.6]
+        },
+        {
+          "pts_time": 21.5,
+          "checksum": "BA04728E",
+          "mean": [116, 126, 128],
+          "stdev": [94.1, 5, 3.5]
+        },
+        {
+          "pts_time": 22,
+          "checksum": "EF79E86E",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 22.5,
+          "checksum": "14735ECB",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 5, 3.5]
+        },
+        {
+          "pts_time": 23,
+          "checksum": "1A9E9FC9",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5.1, 3.5]
+        },
+        {
+          "pts_time": 23.5,
+          "checksum": "057797F5",
+          "mean": [116, 126, 128],
+          "stdev": [94.1, 5, 3.5]
+        },
+        {
+          "pts_time": 24,
+          "checksum": "11A08FFA",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 24.5,
+          "checksum": "86F0EBFF",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 25,
+          "checksum": "9EBC6233",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 25.5,
+          "checksum": "A5411950",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 26,
+          "checksum": "768DEC0A",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 26.5,
+          "checksum": "3527DE9B",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 27,
+          "checksum": "F539019B",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 27.5,
+          "checksum": "00417C0D",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 28,
+          "checksum": "26DD893D",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 28.5,
+          "checksum": "CD18F485",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 29,
+          "checksum": "976F6AB1",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 29.5,
+          "checksum": "75E77C35",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 30,
+          "checksum": "3C93C2A8",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 30.5,
+          "checksum": "3E0868AD",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 31,
+          "checksum": "58C47CA9",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 31.5,
+          "checksum": "D86ED41E",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 32,
+          "checksum": "526036BC",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 32.5,
+          "checksum": "4C4C1379",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 33,
+          "checksum": "07AEBBEC",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 5, 3.5]
+        },
+        {
+          "pts_time": 33.5,
+          "checksum": "C0BA40E5",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.4]
+        },
+        {
+          "pts_time": 34,
+          "checksum": "C7DA7308",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 34.5,
+          "checksum": "5E8C3956",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 35,
+          "checksum": "BD934352",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 5, 3.5]
+        },
+        {
+          "pts_time": 35.5,
+          "checksum": "F641228D",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 36,
+          "checksum": "E86C4800",
+          "mean": [116, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 36.5,
+          "checksum": "306E5D19",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 37,
+          "checksum": "7D60A9E0",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 5, 3.5]
+        },
+        {
+          "pts_time": 37.5,
+          "checksum": "57F57B34",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 38,
+          "checksum": "64A6398B",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5, 3.4]
+        },
+        {
+          "pts_time": 38.5,
+          "checksum": "3CE186CD",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 39,
+          "checksum": "F8B874AD",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 5, 3.5]
+        },
+        {
+          "pts_time": 39.5,
+          "checksum": "CA067656",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5, 3.4]
+        },
+        {
+          "pts_time": 40,
+          "checksum": "C796FDE3",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5, 3.4]
+        },
+        {
+          "pts_time": 40.5,
+          "checksum": "6F0E4979",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 5, 3.5]
+        },
+        {
+          "pts_time": 41,
+          "checksum": "D2CDBA9F",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 5, 3.6]
+        },
+        {
+          "pts_time": 41.5,
+          "checksum": "97475136",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 42,
+          "checksum": "F9941992",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 5, 3.4]
+        },
+        {
+          "pts_time": 42.5,
+          "checksum": "17AA85FB",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.9, 3.5]
+        },
+        {
+          "pts_time": 43,
+          "checksum": "04A35BF2",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 5, 3.5]
+        },
+        {
+          "pts_time": 43.5,
+          "checksum": "08D2B674",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 5, 3.5]
+        },
+        {
+          "pts_time": 44,
+          "checksum": "A709D7AD",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 5, 3.4]
+        },
+        {
+          "pts_time": 44.5,
+          "checksum": "B2B4246D",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.9, 3.5]
+        },
+        {
+          "pts_time": 45,
+          "checksum": "FEF13636",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 5, 3.5]
+        },
+        {
+          "pts_time": 45.5,
+          "checksum": "26466AEE",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.5]
+        },
+        {
+          "pts_time": 46,
+          "checksum": "D54B7DD1",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.4]
+        },
+        {
+          "pts_time": 46.5,
+          "checksum": "E51DAC01",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.9, 3.5]
+        },
+        {
+          "pts_time": 47,
+          "checksum": "0D5DD896",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 5, 3.5]
+        },
+        {
+          "pts_time": 47.5,
+          "checksum": "7204312D",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.5]
+        },
+        {
+          "pts_time": 48,
+          "checksum": "3B15BCC6",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.5]
+        },
+        {
+          "pts_time": 48.5,
+          "checksum": "32065369",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.9, 3.5]
+        },
+        {
+          "pts_time": 49,
+          "checksum": "A6D37D66",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 49.5,
+          "checksum": "D9583927",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.4]
+        },
+        {
+          "pts_time": 50,
+          "checksum": "58D6C7A2",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 50.5,
+          "checksum": "8F98846B",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 51,
+          "checksum": "16394FED",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 51.5,
+          "checksum": "E59124CA",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.4]
+        },
+        {
+          "pts_time": 52,
+          "checksum": "A2F81DC3",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.4]
+        },
+        {
+          "pts_time": 52.5,
+          "checksum": "23B654F4",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.9, 3.5]
+        },
+        {
+          "pts_time": 53,
+          "checksum": "D6A3DD4C",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 53.5,
+          "checksum": "95030143",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.4]
+        },
+        {
+          "pts_time": 54,
+          "checksum": "EE05D5D0",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.4]
+        },
+        {
+          "pts_time": 54.5,
+          "checksum": "25135F32",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 55,
+          "checksum": "4329480E",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.9, 3.5]
+        },
+        {
+          "pts_time": 55.5,
+          "checksum": "5370EA57",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 56,
+          "checksum": "CF2CE94A",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.4]
+        },
+        {
+          "pts_time": 56.5,
+          "checksum": "608212F6",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 57,
+          "checksum": "352548E4",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 57.5,
+          "checksum": "3CADD18E",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.9, 3.5]
+        },
+        {
+          "pts_time": 58,
+          "checksum": "287B4565",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.9, 3.4]
+        },
+        {
+          "pts_time": 58.5,
+          "checksum": "B100AC2B",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 59,
+          "checksum": "F39E8AF8",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 59.5,
+          "checksum": "5D3A46C6",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        }
+      ],
+      "sample_interval_seconds": 0.5
+    }
+  },
+  "VID00123.AVI": {
+    "encoding-stats": {
+      "bitrate": "8760.3kbits",
+      "fps": 199,
+      "frames": 1801,
+      "total_size": 0
+    },
+    "frame-samples": {
+      "frames": [
+        {
+          "pts_time": 0,
+          "checksum": "AE0E543A",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.4]
+        },
+        {
+          "pts_time": 0.5,
+          "checksum": "47DFF0B9",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 1,
+          "checksum": "2C1DAEC0",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 1.5,
+          "checksum": "5C7620D5",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 2,
+          "checksum": "7842EF61",
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 2.5,
+          "checksum": "97C595E5",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 3,
+          "checksum": "39CD9E9A",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 3.5,
+          "checksum": "EC3ACD82",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 4,
+          "checksum": "D7FB0A07",
+          "mean": [117, 126, 128],
+          "stdev": [94.7, 4.9, 3.5]
+        },
+        {
+          "pts_time": 4.5,
+          "checksum": "9F829692",
+          "mean": [116, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 5,
+          "checksum": "01B608C7",
+          "mean": [116, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 5.5,
+          "checksum": "07AD1DE8",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 6,
+          "checksum": "4A92408D",
+          "mean": [117, 126, 128],
+          "stdev": [94.7, 4.9, 3.5]
+        },
+        {
+          "pts_time": 6.5,
+          "checksum": "B028851A",
+          "mean": [116, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 7,
+          "checksum": "37B89710",
+          "mean": [116, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 7.5,
+          "checksum": "29D0D3E2",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 8,
+          "checksum": "E987D5A9",
+          "mean": [117, 126, 128],
+          "stdev": [94.7, 4.9, 3.5]
+        },
+        {
+          "pts_time": 8.5,
+          "checksum": "C079480A",
+          "mean": [116, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 9,
+          "checksum": "A9015B13",
+          "mean": [116, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 9.5,
+          "checksum": "63739E95",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 10,
+          "checksum": "C80AA608",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 10.5,
+          "checksum": "51E4533A",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 11,
+          "checksum": "DBCF9BF9",
+          "mean": [116, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 11.5,
+          "checksum": "EFF22D27",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 12,
+          "checksum": "EF954DF4",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.9, 3.5]
+        },
+        {
+          "pts_time": 12.5,
+          "checksum": "B7FE53DA",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.5]
+        },
+        {
+          "pts_time": 13,
+          "checksum": "C166AA6B",
+          "mean": [116, 126, 128],
+          "stdev": [94.3, 4.9, 3.4]
+        },
+        {
+          "pts_time": 13.5,
+          "checksum": "A6FBB8D3",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 14,
+          "checksum": "A49CB974",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 14.5,
+          "checksum": "9AB1F7D5",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 15,
+          "checksum": "A44729F7",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 15.5,
+          "checksum": "19D8BCA9",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 16,
+          "checksum": "F2A5D790",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 16.5,
+          "checksum": "E42C465B",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 17,
+          "checksum": "0E08DE3D",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 17.5,
+          "checksum": "FE3F5085",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 18,
+          "checksum": "B7755840",
+          "mean": [117, 126, 128],
+          "stdev": [94.7, 4.8, 3.5]
+        },
+        {
+          "pts_time": 18.5,
+          "checksum": "2042B789",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 19,
+          "checksum": "62CFD686",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 19.5,
+          "checksum": "607AAF72",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 20,
+          "checksum": "62A0F3E2",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 20.5,
+          "checksum": "C1A9C274",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 21,
+          "checksum": "D5AC3E21",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 21.5,
+          "checksum": "CCFE3D26",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 22,
+          "checksum": "315F90E5",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 22.5,
+          "checksum": "4139F94A",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 23,
+          "checksum": "B62DB2C3",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 23.5,
+          "checksum": "C713A7A7",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 24,
+          "checksum": "BC8567F0",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 24.5,
+          "checksum": "CAC5D0EC",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 25,
+          "checksum": "30FC3233",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.7, 3.3]
+        },
+        {
+          "pts_time": 25.5,
+          "checksum": "D537A031",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.4]
+        },
+        {
+          "pts_time": 26,
+          "checksum": "E7A04CED",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 26.5,
+          "checksum": "9CBB8CC8",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 27,
+          "checksum": "74DAD259",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 27.5,
+          "checksum": "4A5960DF",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 28,
+          "checksum": "FF797E7F",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 28.5,
+          "checksum": "8746827E",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 29,
+          "checksum": "6C60A18F",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 29.5,
+          "checksum": "3D51A001",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 30,
+          "checksum": "70EA167D",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 30.5,
+          "checksum": "00D778EF",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 31,
+          "checksum": "6076EEB6",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 31.5,
+          "checksum": "B843773F",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 32,
+          "checksum": "976CB39B",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 32.5,
+          "checksum": "C63DEB12",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 33,
+          "checksum": "822B1A01",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 33.5,
+          "checksum": "28977238",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 34,
+          "checksum": "188E35AD",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 34.5,
+          "checksum": "EAC78CF4",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 35,
+          "checksum": "DA3918C5",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 35.5,
+          "checksum": "458AB3F6",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 36,
+          "checksum": "5539DF1B",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 36.5,
+          "checksum": "7459B385",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 37,
+          "checksum": "97AED046",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 37.5,
+          "checksum": "B2A32F96",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 38,
+          "checksum": "3E16CB04",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 38.5,
+          "checksum": "F1FC4055",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 39,
+          "checksum": "7A5DA8E2",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 39.5,
+          "checksum": "C9B61286",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 40,
+          "checksum": "FCCCC244",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 40.5,
+          "checksum": "CA9CD2CF",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 41,
+          "checksum": "03AA69F4",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 41.5,
+          "checksum": "61FEC4FA",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 42,
+          "checksum": "DE3ABE0D",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 42.5,
+          "checksum": "893C941C",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 43,
+          "checksum": "5EEC8BCD",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 43.5,
+          "checksum": "979919CE",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 44,
+          "checksum": "3471DF25",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 44.5,
+          "checksum": "A11133CC",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 45,
+          "checksum": "15281221",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 45.5,
+          "checksum": "F32B37DD",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 46,
+          "checksum": "2BD4DE14",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 46.5,
+          "checksum": "1CF84E43",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 47,
+          "checksum": "0613C5D0",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 47.5,
+          "checksum": "08166043",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 48,
+          "checksum": "1894A261",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 48.5,
+          "checksum": "A5CAC0F5",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 49,
+          "checksum": "215C5720",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 49.5,
+          "checksum": "E992DF2B",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 50,
+          "checksum": "3998A82B",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 50.5,
+          "checksum": "2538A9EC",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 51,
+          "checksum": "D72039F3",
+          "mean": [117, 126, 128],
+          "stdev": [94.3, 4.8, 3.4]
+        },
+        {
+          "pts_time": 51.5,
+          "checksum": "86D9DEAC",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.7, 3.4]
+        },
+        {
+          "pts_time": 52,
+          "checksum": "EE1FC510",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 52.5,
+          "checksum": "42BCDA80",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 53,
+          "checksum": "CD730E6A",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 53.5,
+          "checksum": "593D42CC",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 54,
+          "checksum": "8F4D4ECE",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 54.5,
+          "checksum": "A52AC6F6",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 55,
+          "checksum": "E390354A",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 55.5,
+          "checksum": "58DFBC69",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 56,
+          "checksum": "CB6F9AB6",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 56.5,
+          "checksum": "0DB286B3",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 57,
+          "checksum": "6E2A8CC8",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 57.5,
+          "checksum": "802ACFEA",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.4]
+        },
+        {
+          "pts_time": 58,
+          "checksum": "418F34FA",
+          "mean": [117, 126, 128],
+          "stdev": [94.6, 4.8, 3.5]
+        },
+        {
+          "pts_time": 58.5,
+          "checksum": "1664CC0B",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 59,
+          "checksum": "59E8DEAC",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 59.5,
+          "checksum": "8F3BA605",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 60,
+          "checksum": "BC263160",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        }
+      ],
+      "sample_interval_seconds": 0.5
+    }
+  },
+  "VID00124.AVI": {
+    "encoding-stats": {
+      "bitrate": "8989.5kbits",
+      "fps": 191,
+      "frames": 1799,
+      "total_size": 0
+    },
+    "frame-samples": {
+      "frames": [
+        {
+          "pts_time": 0,
+          "checksum": "02F69369",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.3]
+        },
+        {
+          "pts_time": 0.5,
+          "checksum": "CF9D4FD1",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 1,
+          "checksum": "2195A53B",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 1.5,
+          "checksum": "CE1B1919",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 2,
+          "checksum": "106E53B3",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 2.5,
+          "checksum": "3CBCB26E",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 3,
+          "checksum": "0EC4981A",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 3.5,
+          "checksum": "AC035072",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 4,
+          "checksum": "CA807493",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 4.5,
+          "checksum": "53B2C20C",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 5,
+          "checksum": "0889B1CC",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 5.5,
+          "checksum": "27DF60F7",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.8, 3.4]
+        },
+        {
+          "pts_time": 6,
+          "checksum": "81963E3D",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 6.5,
+          "checksum": "F5306A43",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 7,
+          "checksum": "7EDECBA6",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 7.5,
+          "checksum": "29CC1794",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 8,
+          "checksum": "8B85A517",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 8.5,
+          "checksum": "6755F736",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.4]
+        },
+        {
+          "pts_time": 9,
+          "checksum": "3F98502D",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 9.5,
+          "checksum": "9E6B0FBB",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 10,
+          "checksum": "132D8E06",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 10.5,
+          "checksum": "0A3C324A",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 11,
+          "checksum": "CCFCA7AD",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.8, 3.5]
+        },
+        {
+          "pts_time": 11.5,
+          "checksum": "FCC4E7DC",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 12,
+          "checksum": "AA80D185",
+          "mean": [117, 126, 128],
+          "stdev": [94.2, 4.7, 3.4]
+        },
+        {
+          "pts_time": 12.5,
+          "checksum": "F0CD34DF",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 13,
+          "checksum": "2F386565",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 13.5,
+          "checksum": "E885CA5E",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 14,
+          "checksum": "72A1792D",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 14.5,
+          "checksum": "F28C944B",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 15,
+          "checksum": "627ABB8F",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 15.5,
+          "checksum": "8BD0B5A7",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 16,
+          "checksum": "4B9B799F",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 16.5,
+          "checksum": "810EBEA9",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 17,
+          "checksum": "1E4291C0",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 17.5,
+          "checksum": "F012472A",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 18,
+          "checksum": "8B472F65",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 18.5,
+          "checksum": "501AADAC",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 19,
+          "checksum": "D76B3777",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 19.5,
+          "checksum": "A3F912FA",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 20,
+          "checksum": "311C5263",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 20.5,
+          "checksum": "0A2D6A11",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 21,
+          "checksum": "866AAB63",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 21.5,
+          "checksum": "80D2D063",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 22,
+          "checksum": "1AF27E3C",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 22.5,
+          "checksum": "08982B63",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 23,
+          "checksum": "1C8241C8",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 23.5,
+          "checksum": "DC38E05A",
+          "mean": [117, 126, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 24,
+          "checksum": "E6FDB9FD",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 24.5,
+          "checksum": "385935BA",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 25,
+          "checksum": "07C50582",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 25.5,
+          "checksum": "D219351C",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 26,
+          "checksum": "C9D2139A",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 26.5,
+          "checksum": "83B54A22",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 27,
+          "checksum": "CA55652F",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 27.5,
+          "checksum": "6850CD58",
+          "mean": [117, 126, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 28,
+          "checksum": "9EF8692C",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 28.5,
+          "checksum": "B52E4F25",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 29,
+          "checksum": "F807CC0F",
+          "mean": [117, 126, 128],
+          "stdev": [94.5, 4.7, 3.5]
+        },
+        {
+          "pts_time": 29.5,
+          "checksum": "AA68C94B",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 30,
+          "checksum": "18792644",
+          "mean": [116, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 30.5,
+          "checksum": "8047C5F0",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 31,
+          "checksum": "0117F438",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 31.5,
+          "checksum": "F204CD86",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 32,
+          "checksum": "CA7A3E29",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 32.5,
+          "checksum": "3BA7ACD9",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 33,
+          "checksum": "9A4D3FAC",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 33.5,
+          "checksum": "EE699AD1",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 34,
+          "checksum": "B4F8615D",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 34.5,
+          "checksum": "455B86F6",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 35,
+          "checksum": "669D3824",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 35.5,
+          "checksum": "27BDB0E0",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 36,
+          "checksum": "1FB62633",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 36.5,
+          "checksum": "E8F2E0A8",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 37,
+          "checksum": "3DD469B1",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 37.5,
+          "checksum": "13ABE47E",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 38,
+          "checksum": "B4D15642",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 38.5,
+          "checksum": "A6E5765B",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 39,
+          "checksum": "B641E987",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 39.5,
+          "checksum": "D1C5453B",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 40,
+          "checksum": "4C897C18",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 40.5,
+          "checksum": "2BA442BE",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 41,
+          "checksum": "22F5FA7F",
+          "mean": [117, 126, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 41.5,
+          "checksum": "D1052755",
+          "mean": [117, 126, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 42,
+          "checksum": "8419038B",
+          "mean": [117, 127, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 42.5,
+          "checksum": "8B809696",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 43,
+          "checksum": "8229BA95",
+          "mean": [117, 127, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 43.5,
+          "checksum": "A9AF1A82",
+          "mean": [117, 127, 128],
+          "stdev": [94.1, 4.7, 3.4]
+        },
+        {
+          "pts_time": 44,
+          "checksum": "65D84E82",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.6, 3.4]
+        },
+        {
+          "pts_time": 44.5,
+          "checksum": "28072245",
+          "mean": [117, 127, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 45,
+          "checksum": "2DC9EE9B",
+          "mean": [117, 127, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 45.5,
+          "checksum": "714C1C4C",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 46,
+          "checksum": "AE3AECA9",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 46.5,
+          "checksum": "33E459F8",
+          "mean": [117, 127, 128],
+          "stdev": [94.4, 4.7, 3.5]
+        },
+        {
+          "pts_time": 47,
+          "checksum": "8C882293",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 47.5,
+          "checksum": "3B4E4575",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 48,
+          "checksum": "9D2015B3",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 48.5,
+          "checksum": "53096905",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 49,
+          "checksum": "CFD256D4",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 49.5,
+          "checksum": "1D78409C",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 50,
+          "checksum": "D3FF96F4",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 50.5,
+          "checksum": "31386F84",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 51,
+          "checksum": "8FA246B9",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 51.5,
+          "checksum": "898451A6",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 52,
+          "checksum": "885C0042",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 52.5,
+          "checksum": "E422816D",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 53,
+          "checksum": "93DD1778",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 53.5,
+          "checksum": "112684E4",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.6, 3.4]
+        },
+        {
+          "pts_time": 54,
+          "checksum": "6F5F8B32",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.6, 3.4]
+        },
+        {
+          "pts_time": 54.5,
+          "checksum": "E6F21C90",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 55,
+          "checksum": "DA43676C",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 55.5,
+          "checksum": "A7F7AC2E",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 56,
+          "checksum": "667E2F31",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.6, 3.4]
+        },
+        {
+          "pts_time": 56.5,
+          "checksum": "D180B0CD",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 57,
+          "checksum": "7A4F4442",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 57.5,
+          "checksum": "BD5B82FE",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 58,
+          "checksum": "F934B636",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.7, 3.4]
+        },
+        {
+          "pts_time": 58.5,
+          "checksum": "72C6E8AD",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 59,
+          "checksum": "66966A8B",
+          "mean": [117, 127, 128],
+          "stdev": [94.3, 4.7, 3.5]
+        },
+        {
+          "pts_time": 59.5,
+          "checksum": "15EC2E90",
+          "mean": [117, 127, 128],
+          "stdev": [94, 4.6, 3.4]
+        }
+      ],
+      "sample_interval_seconds": 0.5
+    }
+  },
+  "VID00125.AVI": {
+    "encoding-stats": {
+      "bitrate": "9003.5kbits",
+      "fps": 189,
+      "frames": 1347,
+      "total_size": 0
+    },
+    "frame-samples": {
+      "frames": [
+        {
+          "pts_time": 0,
+          "checksum": "806781FA",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.6, 3.4]
+        },
+        {
+          "pts_time": 0.5,
+          "checksum": "671D5D96",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 1,
+          "checksum": "5A02D707",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 1.5,
+          "checksum": "B0027EBF",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.7, 3.4]
+        },
+        {
+          "pts_time": 2,
+          "checksum": "EDD063A0",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.7, 3.5]
+        },
+        {
+          "pts_time": 2.5,
+          "checksum": "19247334",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 3,
+          "checksum": "0B0E5A53",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 3.5,
+          "checksum": "66AC7CDB",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.7, 3.4]
+        },
+        {
+          "pts_time": 4,
+          "checksum": "3C61A6AB",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.7, 3.5]
+        },
+        {
+          "pts_time": 4.5,
+          "checksum": "E20EAC3B",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 5,
+          "checksum": "E922A4F5",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 5.5,
+          "checksum": "F6F06192",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.7, 3.5]
+        },
+        {
+          "pts_time": 6,
+          "checksum": "DB924924",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.6, 3.4]
+        },
+        {
+          "pts_time": 6.5,
+          "checksum": "85F3D24A",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 7,
+          "checksum": "70961DE0",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 7.5,
+          "checksum": "39B86591",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.7, 3.5]
+        },
+        {
+          "pts_time": 8,
+          "checksum": "39977A2F",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.7, 3.5]
+        },
+        {
+          "pts_time": 8.5,
+          "checksum": "118C2E78",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.6, 3.5]
+        },
+        {
+          "pts_time": 9,
+          "checksum": "7C93C300",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.6, 3.5]
+        },
+        {
+          "pts_time": 9.5,
+          "checksum": "AF6AB25B",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.6, 3.5]
+        },
+        {
+          "pts_time": 10,
+          "checksum": "5AB2AAE8",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.6, 3.4]
+        },
+        {
+          "pts_time": 10.5,
+          "checksum": "8113CAA8",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 11,
+          "checksum": "D0251620",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 11.5,
+          "checksum": "A678C96D",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.4]
+        },
+        {
+          "pts_time": 12,
+          "checksum": "3C97790A",
+          "mean": [117, 127, 128],
+          "stdev": [93.9, 4.7, 3.5]
+        },
+        {
+          "pts_time": 12.5,
+          "checksum": "E49ACD52",
+          "mean": [117, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 13,
+          "checksum": "BA9EE944",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.6]
+        },
+        {
+          "pts_time": 13.5,
+          "checksum": "AACCDD32",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.4]
+        },
+        {
+          "pts_time": 14,
+          "checksum": "43976B8F",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 14.5,
+          "checksum": "9D9FA13C",
+          "mean": [117, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 15,
+          "checksum": "378DBE81",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 15.5,
+          "checksum": "CFC05B9E",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 16,
+          "checksum": "2F8276ED",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 16.5,
+          "checksum": "41824E0C",
+          "mean": [117, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 17,
+          "checksum": "67CAED66",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 17.5,
+          "checksum": "19DE1D84",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 18,
+          "checksum": "8BFD23C1",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.6, 3.5]
+        },
+        {
+          "pts_time": 18.5,
+          "checksum": "D89D2708",
+          "mean": [117, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 19,
+          "checksum": "039ABD16",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 19.5,
+          "checksum": "8914BEC2",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 20,
+          "checksum": "E60F9FB0",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 20.5,
+          "checksum": "C72B6BE6",
+          "mean": [117, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 21,
+          "checksum": "E486AE71",
+          "mean": [117, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 21.5,
+          "checksum": "DE4A5CDD",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 22,
+          "checksum": "87630FFC",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 22.5,
+          "checksum": "75A7ACAE",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 23,
+          "checksum": "90848E58",
+          "mean": [117, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 23.5,
+          "checksum": "7BF42060",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.6, 3.5]
+        },
+        {
+          "pts_time": 24,
+          "checksum": "F0A52B2D",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 24.5,
+          "checksum": "0F3696DA",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 25,
+          "checksum": "6CD0EDB6",
+          "mean": [117, 127, 128],
+          "stdev": [94.2, 4.7, 3.5]
+        },
+        {
+          "pts_time": 25.5,
+          "checksum": "3F77AAC3",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.4]
+        },
+        {
+          "pts_time": 26,
+          "checksum": "5DB6E4FE",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 26.5,
+          "checksum": "3F2F2507",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 27,
+          "checksum": "92C8DC48",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 27.5,
+          "checksum": "04EB86C1",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 28,
+          "checksum": "D0ED1C67",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 28.5,
+          "checksum": "43AF4171",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 29,
+          "checksum": "27C8933C",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 29.5,
+          "checksum": "D79F93CD",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 30,
+          "checksum": "1111B7F8",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 30.5,
+          "checksum": "EA18471E",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.5]
+        },
+        {
+          "pts_time": 31,
+          "checksum": "C30B613D",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 31.5,
+          "checksum": "C28E2EFB",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 32,
+          "checksum": "73C37DD9",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 32.5,
+          "checksum": "176A2D4F",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 33,
+          "checksum": "30004888",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 33.5,
+          "checksum": "E7A0BB5F",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 34,
+          "checksum": "0E6941DC",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 34.5,
+          "checksum": "BC3EE96A",
+          "mean": [118, 127, 128],
+          "stdev": [94, 4.7, 3.5]
+        },
+        {
+          "pts_time": 35,
+          "checksum": "636C0FC2",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 35.5,
+          "checksum": "79252EAC",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 36,
+          "checksum": "D6696531",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 36.5,
+          "checksum": "5E6C0661",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 37,
+          "checksum": "6AA340B1",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 37.5,
+          "checksum": "9B4A9DB5",
+          "mean": [118, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 38,
+          "checksum": "DDA79D1D",
+          "mean": [117, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 38.5,
+          "checksum": "A06EFA10",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 39,
+          "checksum": "A7C5B6B6",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 39.5,
+          "checksum": "A81FEFB7",
+          "mean": [118, 127, 128],
+          "stdev": [93.7, 4.7, 3.5]
+        },
+        {
+          "pts_time": 40,
+          "checksum": "47D46FD2",
+          "mean": [118, 127, 128],
+          "stdev": [93.7, 4.7, 3.5]
+        },
+        {
+          "pts_time": 40.5,
+          "checksum": "F8191201",
+          "mean": [118, 127, 128],
+          "stdev": [94, 4.7, 3.6]
+        },
+        {
+          "pts_time": 41,
+          "checksum": "1FAA3D34",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 41.5,
+          "checksum": "243EDF17",
+          "mean": [118, 127, 128],
+          "stdev": [93.7, 4.7, 3.5]
+        },
+        {
+          "pts_time": 42,
+          "checksum": "7F13FE15",
+          "mean": [118, 127, 128],
+          "stdev": [93.8, 4.7, 3.5]
+        },
+        {
+          "pts_time": 42.5,
+          "checksum": "CC756160",
+          "mean": [118, 127, 128],
+          "stdev": [94, 4.7, 3.6]
+        },
+        {
+          "pts_time": 43,
+          "checksum": "02E70378",
+          "mean": [118, 127, 128],
+          "stdev": [94.1, 4.7, 3.6]
+        },
+        {
+          "pts_time": 43.5,
+          "checksum": "168ACADF",
+          "mean": [118, 127, 128],
+          "stdev": [93.7, 4.7, 3.5]
+        },
+        {
+          "pts_time": 44,
+          "checksum": "CFBBE5A6",
+          "mean": [118, 127, 128],
+          "stdev": [93.7, 4.7, 3.5]
+        },
+        {
+          "pts_time": 44.5,
+          "checksum": "0B3C9F24",
+          "mean": [118, 127, 128],
+          "stdev": [94, 4.7, 3.6]
+        }
+      ],
+      "sample_interval_seconds": 0.5
+    }
+  },
+  "VID00126.AVI": {
+    "encoding-stats": {
+      "bitrate": "12836.8kbits",
+      "fps": 156,
+      "frames": 1799,
+      "total_size": 0
+    },
+    "frame-samples": {
+      "frames": [
+        {
+          "pts_time": 0,
+          "checksum": "2D40A7DF",
+          "mean": [185, 127, 133],
+          "stdev": [63.4, 6.8, 7.9]
+        },
+        {
+          "pts_time": 0.5,
+          "checksum": "1F11C344",
+          "mean": [174, 127, 129],
+          "stdev": [63.1, 6.5, 7.8]
+        },
+        {
+          "pts_time": 1,
+          "checksum": "F5299D18",
+          "mean": [179, 128, 130],
+          "stdev": [62.8, 6.7, 7.7]
+        },
+        {
+          "pts_time": 1.5,
+          "checksum": "702985ED",
+          "mean": [179, 127, 130],
+          "stdev": [62.5, 6.6, 7.7]
+        },
+        {
+          "pts_time": 2,
+          "checksum": "D4EBB1A5",
+          "mean": [179, 127, 130],
+          "stdev": [62.8, 6.5, 7.6]
+        },
+        {
+          "pts_time": 2.5,
+          "checksum": "8AC013D9",
+          "mean": [180, 128, 130],
+          "stdev": [62.8, 6.7, 7.6]
+        },
+        {
+          "pts_time": 3,
+          "checksum": "CDD4C8C6",
+          "mean": [179, 128, 130],
+          "stdev": [63.3, 6.6, 7.6]
+        },
+        {
+          "pts_time": 3.5,
+          "checksum": "24E0CE13",
+          "mean": [179, 127, 130],
+          "stdev": [63.5, 6.6, 7.5]
+        },
+        {
+          "pts_time": 4,
+          "checksum": "1A5B9A13",
+          "mean": [179, 127, 130],
+          "stdev": [63.8, 6.6, 7.6]
+        },
+        {
+          "pts_time": 4.5,
+          "checksum": "4C7E61DC",
+          "mean": [180, 127, 130],
+          "stdev": [63.3, 6.8, 7.8]
+        },
+        {
+          "pts_time": 5,
+          "checksum": "D05F75C1",
+          "mean": [179, 127, 130],
+          "stdev": [63.9, 6.7, 7.8]
+        },
+        {
+          "pts_time": 5.5,
+          "checksum": "C16094D4",
+          "mean": [180, 127, 130],
+          "stdev": [63.1, 6.8, 7.8]
+        },
+        {
+          "pts_time": 6,
+          "checksum": "5AD07002",
+          "mean": [180, 127, 130],
+          "stdev": [62.7, 6.9, 8]
+        },
+        {
+          "pts_time": 6.5,
+          "checksum": "BE19AA08",
+          "mean": [180, 127, 130],
+          "stdev": [62.8, 6.9, 8]
+        },
+        {
+          "pts_time": 7,
+          "checksum": "67A5F8C4",
+          "mean": [180, 127, 130],
+          "stdev": [62.9, 6.9, 8]
+        },
+        {
+          "pts_time": 7.5,
+          "checksum": "5D5C376C",
+          "mean": [180, 127, 130],
+          "stdev": [62.9, 6.8, 7.9]
+        },
+        {
+          "pts_time": 8,
+          "checksum": "7791F0E0",
+          "mean": [180, 127, 130],
+          "stdev": [62.7, 6.8, 7.8]
+        },
+        {
+          "pts_time": 8.5,
+          "checksum": "633E9922",
+          "mean": [180, 127, 130],
+          "stdev": [62.7, 6.8, 7.8]
+        },
+        {
+          "pts_time": 9,
+          "checksum": "CAE5E08D",
+          "mean": [181, 127, 130],
+          "stdev": [62.7, 6.8, 7.8]
+        },
+        {
+          "pts_time": 9.5,
+          "checksum": "160EE34F",
+          "mean": [180, 127, 130],
+          "stdev": [62.9, 6.8, 7.8]
+        },
+        {
+          "pts_time": 10,
+          "checksum": "E141E36A",
+          "mean": [181, 127, 130],
+          "stdev": [62.8, 6.7, 7.8]
+        },
+        {
+          "pts_time": 10.5,
+          "checksum": "0A3CC37D",
+          "mean": [181, 127, 130],
+          "stdev": [63.4, 6.7, 7.7]
+        },
+        {
+          "pts_time": 11,
+          "checksum": "8A676522",
+          "mean": [181, 127, 130],
+          "stdev": [63.4, 6.8, 7.6]
+        },
+        {
+          "pts_time": 11.5,
+          "checksum": "D1C2CDC0",
+          "mean": [181, 127, 130],
+          "stdev": [63.7, 6.8, 7.6]
+        },
+        {
+          "pts_time": 12,
+          "checksum": "B1F2C1F5",
+          "mean": [182, 127, 130],
+          "stdev": [63.7, 6.8, 7.6]
+        },
+        {
+          "pts_time": 12.5,
+          "checksum": "37E43F2F",
+          "mean": [182, 127, 130],
+          "stdev": [63.5, 6.8, 7.6]
+        },
+        {
+          "pts_time": 13,
+          "checksum": "4A8287CB",
+          "mean": [182, 127, 130],
+          "stdev": [63.3, 6.9, 7.6]
+        },
+        {
+          "pts_time": 13.5,
+          "checksum": "089DE86B",
+          "mean": [183, 127, 130],
+          "stdev": [63.3, 6.9, 7.6]
+        },
+        {
+          "pts_time": 14,
+          "checksum": "5F75BF63",
+          "mean": [181, 127, 130],
+          "stdev": [63.2, 6.9, 7.7]
+        },
+        {
+          "pts_time": 14.5,
+          "checksum": "1EF977A4",
+          "mean": [181, 127, 130],
+          "stdev": [63.8, 6.8, 7.7]
+        },
+        {
+          "pts_time": 15,
+          "checksum": "FD1A0F3C",
+          "mean": [181, 127, 130],
+          "stdev": [64.1, 6.8, 7.7]
+        },
+        {
+          "pts_time": 15.5,
+          "checksum": "732BCE3F",
+          "mean": [181, 127, 130],
+          "stdev": [63.8, 6.8, 7.7]
+        },
+        {
+          "pts_time": 16,
+          "checksum": "A55320C4",
+          "mean": [181, 127, 130],
+          "stdev": [63.5, 6.9, 7.7]
+        },
+        {
+          "pts_time": 16.5,
+          "checksum": "A2FDB28C",
+          "mean": [181, 127, 130],
+          "stdev": [63.7, 6.9, 7.6]
+        },
+        {
+          "pts_time": 17,
+          "checksum": "D3951649",
+          "mean": [181, 127, 130],
+          "stdev": [63.6, 6.9, 7.7]
+        },
+        {
+          "pts_time": 17.5,
+          "checksum": "F7D99A83",
+          "mean": [181, 127, 130],
+          "stdev": [63.6, 6.8, 7.6]
+        },
+        {
+          "pts_time": 18,
+          "checksum": "DF2522ED",
+          "mean": [181, 127, 130],
+          "stdev": [63.7, 6.9, 7.7]
+        },
+        {
+          "pts_time": 18.5,
+          "checksum": "FA2A6BDF",
+          "mean": [180, 127, 130],
+          "stdev": [63.8, 6.9, 7.8]
+        },
+        {
+          "pts_time": 19,
+          "checksum": "A9A281DD",
+          "mean": [180, 127, 130],
+          "stdev": [64.2, 6.7, 7.7]
+        },
+        {
+          "pts_time": 19.5,
+          "checksum": "6B1F6CB7",
+          "mean": [179, 127, 130],
+          "stdev": [63.9, 6.8, 7.8]
+        },
+        {
+          "pts_time": 20,
+          "checksum": "5F301F32",
+          "mean": [180, 127, 130],
+          "stdev": [63.2, 6.8, 7.7]
+        },
+        {
+          "pts_time": 20.5,
+          "checksum": "8B637839",
+          "mean": [179, 127, 130],
+          "stdev": [63.1, 6.8, 7.7]
+        },
+        {
+          "pts_time": 21,
+          "checksum": "CF5ED5E3",
+          "mean": [179, 127, 130],
+          "stdev": [63.4, 6.7, 7.7]
+        },
+        {
+          "pts_time": 21.5,
+          "checksum": "4FDBBFFD",
+          "mean": [178, 127, 130],
+          "stdev": [63.2, 6.7, 7.7]
+        },
+        {
+          "pts_time": 22,
+          "checksum": "D0689329",
+          "mean": [178, 127, 130],
+          "stdev": [63.1, 6.7, 7.8]
+        },
+        {
+          "pts_time": 22.5,
+          "checksum": "D6BB0353",
+          "mean": [178, 127, 130],
+          "stdev": [63, 6.7, 7.8]
+        },
+        {
+          "pts_time": 23,
+          "checksum": "20ED3C4B",
+          "mean": [179, 127, 130],
+          "stdev": [63, 6.7, 7.7]
+        },
+        {
+          "pts_time": 23.5,
+          "checksum": "ED20C9B7",
+          "mean": [179, 127, 130],
+          "stdev": [63.2, 6.6, 7.5]
+        },
+        {
+          "pts_time": 24,
+          "checksum": "F10AF220",
+          "mean": [179, 127, 130],
+          "stdev": [63.1, 6.6, 7.6]
+        },
+        {
+          "pts_time": 24.5,
+          "checksum": "6829D3A8",
+          "mean": [179, 127, 130],
+          "stdev": [63.1, 6.7, 7.8]
+        },
+        {
+          "pts_time": 25,
+          "checksum": "0305627D",
+          "mean": [178, 128, 130],
+          "stdev": [63.6, 6.6, 7.7]
+        },
+        {
+          "pts_time": 25.5,
+          "checksum": "334AF925",
+          "mean": [176, 128, 129],
+          "stdev": [65.6, 6.4, 7.4]
+        },
+        {
+          "pts_time": 26,
+          "checksum": "0376F359",
+          "mean": [178, 128, 130],
+          "stdev": [64.4, 6.5, 7.5]
+        },
+        {
+          "pts_time": 26.5,
+          "checksum": "404606D5",
+          "mean": [177, 128, 130],
+          "stdev": [62.9, 6.5, 7.4]
+        },
+        {
+          "pts_time": 27,
+          "checksum": "B626D057",
+          "mean": [179, 128, 130],
+          "stdev": [63.4, 6.5, 7.5]
+        },
+        {
+          "pts_time": 27.5,
+          "checksum": "38ED70B9",
+          "mean": [179, 128, 130],
+          "stdev": [63.8, 6.6, 7.8]
+        },
+        {
+          "pts_time": 28,
+          "checksum": "E8E90C35",
+          "mean": [179, 127, 130],
+          "stdev": [63.2, 6.7, 7.9]
+        },
+        {
+          "pts_time": 28.5,
+          "checksum": "DB4CDE8D",
+          "mean": [179, 128, 130],
+          "stdev": [63.5, 6.7, 8]
+        },
+        {
+          "pts_time": 29,
+          "checksum": "6F957603",
+          "mean": [179, 128, 130],
+          "stdev": [63.3, 6.7, 8]
+        },
+        {
+          "pts_time": 29.5,
+          "checksum": "22DB2E89",
+          "mean": [178, 128, 129],
+          "stdev": [63.3, 6.5, 7.8]
+        },
+        {
+          "pts_time": 30,
+          "checksum": "444F9411",
+          "mean": [178, 128, 129],
+          "stdev": [63.3, 6.5, 7.8]
+        },
+        {
+          "pts_time": 30.5,
+          "checksum": "E8D22691",
+          "mean": [180, 128, 130],
+          "stdev": [63.6, 6.6, 7.7]
+        },
+        {
+          "pts_time": 31,
+          "checksum": "8D11B913",
+          "mean": [180, 128, 130],
+          "stdev": [63.5, 6.6, 7.8]
+        },
+        {
+          "pts_time": 31.5,
+          "checksum": "ED0A3D4B",
+          "mean": [179, 128, 129],
+          "stdev": [63.4, 6.6, 7.8]
+        },
+        {
+          "pts_time": 32,
+          "checksum": "504A20E5",
+          "mean": [179, 128, 129],
+          "stdev": [63.8, 6.6, 7.8]
+        },
+        {
+          "pts_time": 32.5,
+          "checksum": "8BF1D0E1",
+          "mean": [181, 127, 130],
+          "stdev": [61.1, 6.9, 8.3]
+        },
+        {
+          "pts_time": 33,
+          "checksum": "D6282B39",
+          "mean": [178, 128, 129],
+          "stdev": [63.9, 6.6, 7.8]
+        },
+        {
+          "pts_time": 33.5,
+          "checksum": "50AA0E1D",
+          "mean": [176, 128, 129],
+          "stdev": [64.6, 6.3, 7.5]
+        },
+        {
+          "pts_time": 34,
+          "checksum": "FA58391B",
+          "mean": [176, 128, 129],
+          "stdev": [64.6, 6.4, 7.5]
+        },
+        {
+          "pts_time": 34.5,
+          "checksum": "9AE27B5A",
+          "mean": [178, 128, 129],
+          "stdev": [64.7, 6.4, 7.5]
+        },
+        {
+          "pts_time": 35,
+          "checksum": "B50B25CF",
+          "mean": [180, 128, 129],
+          "stdev": [63.6, 6.6, 7.8]
+        },
+        {
+          "pts_time": 35.5,
+          "checksum": "06D38F4E",
+          "mean": [179, 128, 129],
+          "stdev": [63.5, 6.6, 7.8]
+        },
+        {
+          "pts_time": 36,
+          "checksum": "5315708C",
+          "mean": [179, 128, 129],
+          "stdev": [63.5, 6.6, 7.8]
+        },
+        {
+          "pts_time": 36.5,
+          "checksum": "030CE84C",
+          "mean": [179, 128, 129],
+          "stdev": [63.7, 6.6, 7.9]
+        },
+        {
+          "pts_time": 37,
+          "checksum": "05FE8B22",
+          "mean": [176, 128, 129],
+          "stdev": [65, 6.6, 7.8]
+        },
+        {
+          "pts_time": 37.5,
+          "checksum": "DBBDF200",
+          "mean": [172, 128, 131],
+          "stdev": [70.7, 6.9, 7.5]
+        },
+        {
+          "pts_time": 38,
+          "checksum": "5F2F4F6A",
+          "mean": [166, 128, 131],
+          "stdev": [69.9, 6.8, 7.2]
+        },
+        {
+          "pts_time": 38.5,
+          "checksum": "4AF00A99",
+          "mean": [168, 128, 131],
+          "stdev": [70.4, 6.9, 7.4]
+        },
+        {
+          "pts_time": 39,
+          "checksum": "E3A8165B",
+          "mean": [167, 128, 131],
+          "stdev": [70.2, 6.9, 7.2]
+        },
+        {
+          "pts_time": 39.5,
+          "checksum": "B75FACB4",
+          "mean": [164, 128, 130],
+          "stdev": [69.8, 6.9, 7.2]
+        },
+        {
+          "pts_time": 40,
+          "checksum": "6893A442",
+          "mean": [166, 128, 130],
+          "stdev": [70.1, 7.1, 7.2]
+        },
+        {
+          "pts_time": 40.5,
+          "checksum": "5AC3C0B4",
+          "mean": [183, 129, 130],
+          "stdev": [64.4, 6.8, 7.6]
+        },
+        {
+          "pts_time": 41,
+          "checksum": "86FE6D9D",
+          "mean": [174, 128, 130],
+          "stdev": [64.5, 6.4, 8]
+        },
+        {
+          "pts_time": 41.5,
+          "checksum": "95F833C1",
+          "mean": [177, 128, 130],
+          "stdev": [63.8, 6.6, 7.8]
+        },
+        {
+          "pts_time": 42,
+          "checksum": "31D8A2F3",
+          "mean": [178, 128, 130],
+          "stdev": [63.3, 6.7, 7.8]
+        },
+        {
+          "pts_time": 42.5,
+          "checksum": "339FB585",
+          "mean": [178, 128, 130],
+          "stdev": [63.5, 6.7, 7.8]
+        },
+        {
+          "pts_time": 43,
+          "checksum": "252FCC26",
+          "mean": [177, 128, 129],
+          "stdev": [64, 6.7, 7.8]
+        },
+        {
+          "pts_time": 43.5,
+          "checksum": "4B85A15D",
+          "mean": [178, 128, 130],
+          "stdev": [63.1, 6.7, 7.8]
+        },
+        {
+          "pts_time": 44,
+          "checksum": "BDC5313A",
+          "mean": [178, 128, 130],
+          "stdev": [63.3, 6.7, 7.8]
+        },
+        {
+          "pts_time": 44.5,
+          "checksum": "850CD180",
+          "mean": [179, 128, 130],
+          "stdev": [62.8, 6.7, 7.9]
+        },
+        {
+          "pts_time": 45,
+          "checksum": "76AB7BEF",
+          "mean": [178, 128, 129],
+          "stdev": [63.3, 6.6, 7.8]
+        },
+        {
+          "pts_time": 45.5,
+          "checksum": "F4C5FE71",
+          "mean": [176, 128, 129],
+          "stdev": [64.2, 6.4, 7.6]
+        },
+        {
+          "pts_time": 46,
+          "checksum": "4FE4DAFA",
+          "mean": [178, 128, 129],
+          "stdev": [63.1, 6.7, 7.9]
+        },
+        {
+          "pts_time": 46.5,
+          "checksum": "CF0833F5",
+          "mean": [179, 128, 130],
+          "stdev": [62.9, 6.7, 8]
+        },
+        {
+          "pts_time": 47,
+          "checksum": "4BB6970E",
+          "mean": [179, 128, 130],
+          "stdev": [62.7, 6.8, 8]
+        },
+        {
+          "pts_time": 47.5,
+          "checksum": "5281F303",
+          "mean": [179, 128, 130],
+          "stdev": [62.7, 6.7, 8]
+        },
+        {
+          "pts_time": 48,
+          "checksum": "2F37236A",
+          "mean": [179, 128, 130],
+          "stdev": [62.8, 6.7, 8]
+        },
+        {
+          "pts_time": 48.5,
+          "checksum": "7E866C5B",
+          "mean": [179, 128, 130],
+          "stdev": [62.8, 6.8, 8.2]
+        },
+        {
+          "pts_time": 49,
+          "checksum": "A24A3386",
+          "mean": [178, 128, 130],
+          "stdev": [63.4, 6.8, 8.1]
+        },
+        {
+          "pts_time": 49.5,
+          "checksum": "C5EDAD31",
+          "mean": [178, 128, 130],
+          "stdev": [63.1, 6.7, 8]
+        },
+        {
+          "pts_time": 50,
+          "checksum": "76025A82",
+          "mean": [178, 128, 130],
+          "stdev": [62.9, 6.7, 8]
+        },
+        {
+          "pts_time": 50.5,
+          "checksum": "85430FB7",
+          "mean": [178, 128, 130],
+          "stdev": [62.7, 6.7, 8.1]
+        },
+        {
+          "pts_time": 51,
+          "checksum": "447AD267",
+          "mean": [179, 128, 130],
+          "stdev": [62.7, 6.8, 8]
+        },
+        {
+          "pts_time": 51.5,
+          "checksum": "2A8CDA82",
+          "mean": [178, 128, 129],
+          "stdev": [62.7, 6.5, 7.8]
+        },
+        {
+          "pts_time": 52,
+          "checksum": "6516630B",
+          "mean": [177, 128, 129],
+          "stdev": [63.6, 6.4, 7.5]
+        },
+        {
+          "pts_time": 52.5,
+          "checksum": "3900DAE3",
+          "mean": [178, 128, 129],
+          "stdev": [62.7, 6.6, 7.9]
+        },
+        {
+          "pts_time": 53,
+          "checksum": "7094C8C8",
+          "mean": [179, 128, 129],
+          "stdev": [62.5, 6.7, 8]
+        },
+        {
+          "pts_time": 53.5,
+          "checksum": "E2AE21DA",
+          "mean": [178, 128, 130],
+          "stdev": [62.3, 6.7, 8]
+        },
+        {
+          "pts_time": 54,
+          "checksum": "4A9134C1",
+          "mean": [178, 128, 129],
+          "stdev": [62.4, 6.7, 8.1]
+        },
+        {
+          "pts_time": 54.5,
+          "checksum": "41638A21",
+          "mean": [178, 128, 130],
+          "stdev": [62.5, 6.7, 8.1]
+        },
+        {
+          "pts_time": 55,
+          "checksum": "9E77460B",
+          "mean": [179, 128, 129],
+          "stdev": [62.6, 6.7, 8.1]
+        },
+        {
+          "pts_time": 55.5,
+          "checksum": "71426016",
+          "mean": [179, 128, 129],
+          "stdev": [62.6, 6.7, 8]
+        },
+        {
+          "pts_time": 56,
+          "checksum": "E25E7056",
+          "mean": [180, 128, 129],
+          "stdev": [62.7, 6.4, 7.9]
+        },
+        {
+          "pts_time": 56.5,
+          "checksum": "AF85A989",
+          "mean": [181, 128, 129],
+          "stdev": [62.4, 5.9, 7.7]
+        },
+        {
+          "pts_time": 57,
+          "checksum": "88BBF729",
+          "mean": [178, 128, 129],
+          "stdev": [59.5, 6.7, 7.9]
+        },
+        {
+          "pts_time": 57.5,
+          "checksum": "B32B5C9B",
+          "mean": [184, 128, 129],
+          "stdev": [61.1, 5.1, 3.4]
+        },
+        {
+          "pts_time": 58,
+          "checksum": "FAE0380C",
+          "mean": [193, 129, 128],
+          "stdev": [51.4, 4.7, 4.3]
+        },
+        {
+          "pts_time": 58.5,
+          "checksum": "925D7F77",
+          "mean": [190, 128, 128],
+          "stdev": [51.3, 4.8, 4.8]
+        },
+        {
+          "pts_time": 59,
+          "checksum": "D7A61DAE",
+          "mean": [190, 128, 128],
+          "stdev": [51.3, 4.8, 4.8]
+        },
+        {
+          "pts_time": 59.5,
+          "checksum": "5D3CEF73",
+          "mean": [190, 128, 128],
+          "stdev": [51.3, 4.8, 4.8]
+        }
+      ],
+      "sample_interval_seconds": 0.5
+    }
+  },
+  "VID00127.AVI": {
+    "encoding-stats": {
+      "bitrate": "12369.9kbits",
+      "fps": 112,
+      "frames": 113,
+      "total_size": 0
+    },
+    "frame-samples": {
+      "frames": [
+        {
+          "pts_time": 0,
+          "checksum": "40374A54",
+          "mean": [190, 128, 128],
+          "stdev": [51.3, 4.8, 4.8]
+        },
+        {
+          "pts_time": 0.5,
+          "checksum": "7EFCBB27",
+          "mean": [190, 128, 128],
+          "stdev": [51.3, 4.8, 4.8]
+        },
+        {
+          "pts_time": 1,
+          "checksum": "C9D7F621",
+          "mean": [190, 128, 128],
+          "stdev": [51.3, 4.8, 4.8]
+        },
+        {
+          "pts_time": 1.5,
+          "checksum": "5991CC21",
+          "mean": [190, 128, 128],
+          "stdev": [51.3, 4.8, 4.8]
+        },
+        {
+          "pts_time": 2,
+          "checksum": "738F2CBB",
+          "mean": [190, 128, 128],
+          "stdev": [51.3, 4.8, 4.8]
+        },
+        {
+          "pts_time": 2.5,
+          "checksum": "3DBB3693",
+          "mean": [190, 128, 128],
+          "stdev": [51.3, 4.9, 4.8]
+        },
+        {
+          "pts_time": 3,
+          "checksum": "47D8651D",
+          "mean": [190, 128, 128],
+          "stdev": [51.4, 4.8, 4.9]
+        },
+        {
+          "pts_time": 3.5,
+          "checksum": "1EFD4C39",
+          "mean": [190, 128, 128],
+          "stdev": [51.4, 4.8, 4.8]
+        }
+      ],
+      "sample_interval_seconds": 0.5
+    }
+  },
+  "VID00128.AVI": {
+    "encoding-stats": {
+      "bitrate": "11194.9kbits",
+      "fps": 163,
+      "frames": 1181,
+      "total_size": 0
+    },
+    "frame-samples": {
+      "frames": [
+        {
+          "pts_time": 0,
+          "checksum": "B785A03B",
+          "mean": [159, 124, 131],
+          "stdev": [60.7, 6.1, 8.3]
+        },
+        {
+          "pts_time": 0.5,
+          "checksum": "AECB0CE7",
+          "mean": [178, 128, 131],
+          "stdev": [64.8, 5.6, 6.2]
+        },
+        {
+          "pts_time": 1,
+          "checksum": "AD7C11D6",
+          "mean": [180, 128, 131],
+          "stdev": [64.5, 5.9, 6.7]
+        },
+        {
+          "pts_time": 1.5,
+          "checksum": "8A29BDAD",
+          "mean": [182, 127, 131],
+          "stdev": [64.2, 6, 6.9]
+        },
+        {
+          "pts_time": 2,
+          "checksum": "4582E9F9",
+          "mean": [183, 128, 130],
+          "stdev": [64.6, 5.9, 6.7]
+        },
+        {
+          "pts_time": 2.5,
+          "checksum": "557B45D1",
+          "mean": [182, 127, 131],
+          "stdev": [64.7, 6.4, 7.5]
+        },
+        {
+          "pts_time": 3,
+          "checksum": "9B029EBE",
+          "mean": [184, 128, 130],
+          "stdev": [64.4, 6.1, 6.9]
+        },
+        {
+          "pts_time": 3.5,
+          "checksum": "A984BAE1",
+          "mean": [184, 128, 130],
+          "stdev": [63, 6.2, 6.6]
+        },
+        {
+          "pts_time": 4,
+          "checksum": "D2BC87C1",
+          "mean": [184, 128, 130],
+          "stdev": [61.9, 6.3, 7.3]
+        },
+        {
+          "pts_time": 4.5,
+          "checksum": "A871E984",
+          "mean": [182, 127, 130],
+          "stdev": [61, 6.5, 7.3]
+        },
+        {
+          "pts_time": 5,
+          "checksum": "51508FAE",
+          "mean": [179, 127, 130],
+          "stdev": [61.7, 6.4, 7.4]
+        },
+        {
+          "pts_time": 5.5,
+          "checksum": "48117048",
+          "mean": [180, 127, 131],
+          "stdev": [62.1, 6.6, 8]
+        },
+        {
+          "pts_time": 6,
+          "checksum": "C31A4788",
+          "mean": [175, 127, 131],
+          "stdev": [63.3, 6.7, 8.2]
+        },
+        {
+          "pts_time": 6.5,
+          "checksum": "0216FD75",
+          "mean": [171, 127, 131],
+          "stdev": [60.8, 6.8, 8]
+        },
+        {
+          "pts_time": 7,
+          "checksum": "E6C4E166",
+          "mean": [172, 127, 131],
+          "stdev": [62.4, 7, 8.2]
+        },
+        {
+          "pts_time": 7.5,
+          "checksum": "5ECE82C0",
+          "mean": [171, 127, 131],
+          "stdev": [64.7, 7.8, 8.5]
+        },
+        {
+          "pts_time": 8,
+          "checksum": "7F446F98",
+          "mean": [168, 127, 131],
+          "stdev": [63.3, 7.3, 8.1]
+        },
+        {
+          "pts_time": 8.5,
+          "checksum": "52D7FC92",
+          "mean": [173, 127, 132],
+          "stdev": [68.3, 8, 10.5]
+        },
+        {
+          "pts_time": 9,
+          "checksum": "DA351915",
+          "mean": [175, 127, 133],
+          "stdev": [66.7, 8.8, 11.9]
+        },
+        {
+          "pts_time": 9.5,
+          "checksum": "785EBD36",
+          "mean": [172, 127, 132],
+          "stdev": [66.9, 8.4, 10.9]
+        },
+        {
+          "pts_time": 10,
+          "checksum": "D4EB99EB",
+          "mean": [172, 127, 132],
+          "stdev": [66.6, 8.3, 10.6]
+        },
+        {
+          "pts_time": 10.5,
+          "checksum": "7917C4F1",
+          "mean": [173, 127, 132],
+          "stdev": [64.8, 8, 10.1]
+        },
+        {
+          "pts_time": 11,
+          "checksum": "866DA350",
+          "mean": [173, 127, 131],
+          "stdev": [63.8, 8.1, 8.8]
+        },
+        {
+          "pts_time": 11.5,
+          "checksum": "CD795297",
+          "mean": [178, 127, 131],
+          "stdev": [63.8, 8.4, 9.3]
+        },
+        {
+          "pts_time": 12,
+          "checksum": "CF435C4D",
+          "mean": [179, 127, 131],
+          "stdev": [65.6, 8.4, 9.6]
+        },
+        {
+          "pts_time": 12.5,
+          "checksum": "4325F836",
+          "mean": [178, 127, 131],
+          "stdev": [64, 8.6, 9.8]
+        },
+        {
+          "pts_time": 13,
+          "checksum": "0BDFF7EE",
+          "mean": [178, 127, 131],
+          "stdev": [61.8, 8.6, 9.3]
+        },
+        {
+          "pts_time": 13.5,
+          "checksum": "816BA267",
+          "mean": [175, 127, 132],
+          "stdev": [63.4, 8.4, 9.5]
+        },
+        {
+          "pts_time": 14,
+          "checksum": "77EF8930",
+          "mean": [175, 127, 131],
+          "stdev": [63.8, 8.4, 9.2]
+        },
+        {
+          "pts_time": 14.5,
+          "checksum": "62F69BC2",
+          "mean": [176, 128, 131],
+          "stdev": [63.9, 8.3, 8.9]
+        },
+        {
+          "pts_time": 15,
+          "checksum": "271A0A93",
+          "mean": [177, 127, 131],
+          "stdev": [62, 8.6, 9.1]
+        },
+        {
+          "pts_time": 15.5,
+          "checksum": "63B731BE",
+          "mean": [179, 127, 132],
+          "stdev": [61.2, 8.8, 10]
+        },
+        {
+          "pts_time": 16,
+          "checksum": "0898082D",
+          "mean": [179, 127, 131],
+          "stdev": [61.7, 8.5, 9.4]
+        },
+        {
+          "pts_time": 16.5,
+          "checksum": "8C91E31F",
+          "mean": [172, 127, 131],
+          "stdev": [67.5, 8, 8.6]
+        },
+        {
+          "pts_time": 17,
+          "checksum": "1755D920",
+          "mean": [172, 127, 131],
+          "stdev": [68.3, 7.8, 8.5]
+        },
+        {
+          "pts_time": 17.5,
+          "checksum": "22D993A6",
+          "mean": [172, 127, 131],
+          "stdev": [68.1, 7.9, 8.6]
+        },
+        {
+          "pts_time": 18,
+          "checksum": "DC76ABD9",
+          "mean": [172, 127, 132],
+          "stdev": [67.6, 8, 8.7]
+        },
+        {
+          "pts_time": 18.5,
+          "checksum": "71BD65C5",
+          "mean": [172, 127, 132],
+          "stdev": [67.1, 8.1, 8.8]
+        },
+        {
+          "pts_time": 19,
+          "checksum": "C35729EB",
+          "mean": [173, 127, 132],
+          "stdev": [65.6, 8.3, 9.2]
+        },
+        {
+          "pts_time": 19.5,
+          "checksum": "957BADA4",
+          "mean": [174, 127, 131],
+          "stdev": [65, 8.3, 9.2]
+        },
+        {
+          "pts_time": 20,
+          "checksum": "6B0DBF05",
+          "mean": [174, 127, 131],
+          "stdev": [64.6, 8.3, 9.1]
+        },
+        {
+          "pts_time": 20.5,
+          "checksum": "FA7DA87C",
+          "mean": [177, 127, 131],
+          "stdev": [64.6, 8.4, 9.2]
+        },
+        {
+          "pts_time": 21,
+          "checksum": "B565B1E3",
+          "mean": [178, 128, 131],
+          "stdev": [65, 8.3, 9.2]
+        },
+        {
+          "pts_time": 21.5,
+          "checksum": "609689AF",
+          "mean": [181, 127, 131],
+          "stdev": [64.8, 8.3, 9.3]
+        },
+        {
+          "pts_time": 22,
+          "checksum": "3A6237EC",
+          "mean": [181, 127, 131],
+          "stdev": [64.7, 8, 9]
+        },
+        {
+          "pts_time": 22.5,
+          "checksum": "D99D2AA2",
+          "mean": [175, 128, 130],
+          "stdev": [65, 7.7, 8.1]
+        },
+        {
+          "pts_time": 23,
+          "checksum": "386FADC1",
+          "mean": [175, 128, 130],
+          "stdev": [64.1, 7.3, 7.3]
+        },
+        {
+          "pts_time": 23.5,
+          "checksum": "43F6C0D5",
+          "mean": [178, 128, 130],
+          "stdev": [67.2, 7.7, 8.6]
+        },
+        {
+          "pts_time": 24,
+          "checksum": "C0808D53",
+          "mean": [174, 128, 130],
+          "stdev": [71.8, 7.2, 7.9]
+        },
+        {
+          "pts_time": 24.5,
+          "checksum": "7474FE7C",
+          "mean": [170, 128, 130],
+          "stdev": [70.9, 7.3, 7.6]
+        },
+        {
+          "pts_time": 25,
+          "checksum": "3B7A5BC3",
+          "mean": [170, 128, 130],
+          "stdev": [71, 7.2, 7.7]
+        },
+        {
+          "pts_time": 25.5,
+          "checksum": "C1F1E27C",
+          "mean": [175, 128, 130],
+          "stdev": [68.6, 7.8, 9]
+        },
+        {
+          "pts_time": 26,
+          "checksum": "9F85DE9F",
+          "mean": [175, 128, 130],
+          "stdev": [68.4, 7.8, 9]
+        },
+        {
+          "pts_time": 26.5,
+          "checksum": "EE641C5C",
+          "mean": [175, 128, 130],
+          "stdev": [68.3, 7.8, 8.9]
+        },
+        {
+          "pts_time": 27,
+          "checksum": "03108DD1",
+          "mean": [173, 128, 130],
+          "stdev": [68.7, 7.7, 8.7]
+        },
+        {
+          "pts_time": 27.5,
+          "checksum": "F66FF24A",
+          "mean": [174, 128, 130],
+          "stdev": [67.8, 7.5, 8.6]
+        },
+        {
+          "pts_time": 28,
+          "checksum": "070C7BD9",
+          "mean": [174, 128, 130],
+          "stdev": [67.9, 7.4, 8.6]
+        },
+        {
+          "pts_time": 28.5,
+          "checksum": "1782B49D",
+          "mean": [174, 128, 130],
+          "stdev": [67.4, 7.4, 8.5]
+        },
+        {
+          "pts_time": 29,
+          "checksum": "B8A2BC66",
+          "mean": [174, 128, 130],
+          "stdev": [67.1, 7.5, 8.5]
+        },
+        {
+          "pts_time": 29.5,
+          "checksum": "3A088DB5",
+          "mean": [173, 128, 130],
+          "stdev": [67, 7.5, 8.7]
+        },
+        {
+          "pts_time": 30,
+          "checksum": "0594785D",
+          "mean": [172, 128, 130],
+          "stdev": [65.6, 7.3, 8.1]
+        },
+        {
+          "pts_time": 30.5,
+          "checksum": "CE586F2C",
+          "mean": [175, 128, 131],
+          "stdev": [67.1, 7.6, 8.4]
+        },
+        {
+          "pts_time": 31,
+          "checksum": "5E904397",
+          "mean": [172, 127, 132],
+          "stdev": [70.6, 7.8, 9.1]
+        },
+        {
+          "pts_time": 31.5,
+          "checksum": "D6124CE9",
+          "mean": [174, 127, 131],
+          "stdev": [66.5, 7.5, 8.8]
+        },
+        {
+          "pts_time": 32,
+          "checksum": "B2091584",
+          "mean": [174, 127, 131],
+          "stdev": [66.3, 7.4, 8.8]
+        },
+        {
+          "pts_time": 32.5,
+          "checksum": "30BD54AD",
+          "mean": [176, 128, 131],
+          "stdev": [65.2, 7.3, 8.6]
+        },
+        {
+          "pts_time": 33,
+          "checksum": "9C731D39",
+          "mean": [178, 128, 131],
+          "stdev": [65.1, 7.3, 8.9]
+        },
+        {
+          "pts_time": 33.5,
+          "checksum": "DB8D6AE1",
+          "mean": [175, 127, 131],
+          "stdev": [68.1, 7.4, 9.2]
+        },
+        {
+          "pts_time": 34,
+          "checksum": "4ABBC8D7",
+          "mean": [179, 129, 128],
+          "stdev": [64.8, 4.7, 2.9]
+        },
+        {
+          "pts_time": 34.5,
+          "checksum": "01CB3DDD",
+          "mean": [185, 127, 127],
+          "stdev": [50.9, 4.2, 4.2]
+        },
+        {
+          "pts_time": 35,
+          "checksum": "C39E121F",
+          "mean": [186, 127, 128],
+          "stdev": [50.8, 4.1, 4.1]
+        },
+        {
+          "pts_time": 35.5,
+          "checksum": "E7E74EEC",
+          "mean": [188, 127, 128],
+          "stdev": [50.8, 4.1, 3.8]
+        },
+        {
+          "pts_time": 36,
+          "checksum": "5F2F522A",
+          "mean": [190, 128, 129],
+          "stdev": [55.8, 3.8, 3.6]
+        },
+        {
+          "pts_time": 36.5,
+          "checksum": "2C02F38E",
+          "mean": [189, 128, 129],
+          "stdev": [55.9, 3.9, 3.5]
+        },
+        {
+          "pts_time": 37,
+          "checksum": "A704216D",
+          "mean": [189, 128, 129],
+          "stdev": [55.5, 3.9, 3.6]
+        },
+        {
+          "pts_time": 37.5,
+          "checksum": "95C95E5A",
+          "mean": [190, 128, 129],
+          "stdev": [55.1, 3.8, 3.6]
+        },
+        {
+          "pts_time": 38,
+          "checksum": "9DD51E75",
+          "mean": [190, 128, 129],
+          "stdev": [54.9, 3.8, 3.7]
+        },
+        {
+          "pts_time": 38.5,
+          "checksum": "3A846CA2",
+          "mean": [189, 128, 129],
+          "stdev": [55.2, 3.9, 3.7]
+        },
+        {
+          "pts_time": 39,
+          "checksum": "148DAEBE",
+          "mean": [188, 128, 129],
+          "stdev": [55.6, 3.9, 3.7]
+        }
+      ],
+      "sample_interval_seconds": 0.5
+    }
+  },
+  "VID00129.AVI": {
+    "encoding-stats": {
+      "bitrate": "11021.6kbits",
+      "fps": 162,
+      "frames": 1804,
+      "total_size": 0
+    },
+    "frame-samples": {
+      "frames": [
+        {
+          "pts_time": 0,
+          "checksum": "5B7A3CFD",
+          "mean": [154, 126, 131],
+          "stdev": [67.9, 6, 8.1]
+        },
+        {
+          "pts_time": 0.5,
+          "checksum": "3639C943",
+          "mean": [170, 127, 130],
+          "stdev": [70.1, 6.3, 7.2]
+        },
+        {
+          "pts_time": 1,
+          "checksum": "89D6F631",
+          "mean": [172, 127, 130],
+          "stdev": [68.4, 6.7, 7.7]
+        },
+        {
+          "pts_time": 1.5,
+          "checksum": "A707CADA",
+          "mean": [170, 127, 130],
+          "stdev": [69.4, 6.4, 7.4]
+        },
+        {
+          "pts_time": 2,
+          "checksum": "4A1E0D4E",
+          "mean": [168, 127, 130],
+          "stdev": [69.7, 6.6, 7.7]
+        },
+        {
+          "pts_time": 2.5,
+          "checksum": "21FA5ED6",
+          "mean": [172, 127, 130],
+          "stdev": [69.6, 6.4, 7.5]
+        },
+        {
+          "pts_time": 3,
+          "checksum": "466DBEDF",
+          "mean": [172, 128, 130],
+          "stdev": [70.5, 6.3, 7.3]
+        },
+        {
+          "pts_time": 3.5,
+          "checksum": "C4153799",
+          "mean": [172, 127, 130],
+          "stdev": [69.6, 6.4, 7.4]
+        },
+        {
+          "pts_time": 4,
+          "checksum": "F4F26383",
+          "mean": [171, 128, 130],
+          "stdev": [71.1, 6, 7.1]
+        },
+        {
+          "pts_time": 4.5,
+          "checksum": "27DD659C",
+          "mean": [168, 128, 129],
+          "stdev": [72.8, 5.7, 6.5]
+        },
+        {
+          "pts_time": 5,
+          "checksum": "BC216436",
+          "mean": [169, 128, 129],
+          "stdev": [72, 5.7, 6.3]
+        },
+        {
+          "pts_time": 5.5,
+          "checksum": "483665E1",
+          "mean": [170, 128, 129],
+          "stdev": [71.5, 5.9, 6.7]
+        },
+        {
+          "pts_time": 6,
+          "checksum": "750FF168",
+          "mean": [169, 128, 129],
+          "stdev": [71.8, 5.9, 6.8]
+        },
+        {
+          "pts_time": 6.5,
+          "checksum": "2374B209",
+          "mean": [167, 128, 129],
+          "stdev": [72.5, 5.7, 6.3]
+        },
+        {
+          "pts_time": 7,
+          "checksum": "52E8F221",
+          "mean": [166, 128, 129],
+          "stdev": [73, 5.7, 6.4]
+        },
+        {
+          "pts_time": 7.5,
+          "checksum": "A4AC7F09",
+          "mean": [165, 128, 129],
+          "stdev": [73.1, 5.8, 6.7]
+        },
+        {
+          "pts_time": 8,
+          "checksum": "E036117C",
+          "mean": [166, 128, 130],
+          "stdev": [72.3, 6, 7]
+        },
+        {
+          "pts_time": 8.5,
+          "checksum": "7247B76A",
+          "mean": [167, 128, 130],
+          "stdev": [71.6, 6.1, 7]
+        },
+        {
+          "pts_time": 9,
+          "checksum": "CB3B77D0",
+          "mean": [169, 127, 130],
+          "stdev": [69.8, 6.6, 7.5]
+        },
+        {
+          "pts_time": 9.5,
+          "checksum": "27BF292A",
+          "mean": [170, 127, 130],
+          "stdev": [69.5, 6.6, 7.5]
+        },
+        {
+          "pts_time": 10,
+          "checksum": "A5CD45C9",
+          "mean": [169, 127, 130],
+          "stdev": [69.9, 6.3, 7.2]
+        },
+        {
+          "pts_time": 10.5,
+          "checksum": "80D26C97",
+          "mean": [168, 128, 130],
+          "stdev": [72, 6, 6.9]
+        },
+        {
+          "pts_time": 11,
+          "checksum": "173A5DC3",
+          "mean": [168, 128, 130],
+          "stdev": [72, 6.1, 7]
+        },
+        {
+          "pts_time": 11.5,
+          "checksum": "FAB6B123",
+          "mean": [167, 128, 130],
+          "stdev": [72.6, 5.8, 6.6]
+        },
+        {
+          "pts_time": 12,
+          "checksum": "444C36E9",
+          "mean": [166, 128, 129],
+          "stdev": [73.2, 5.5, 6.1]
+        },
+        {
+          "pts_time": 12.5,
+          "checksum": "22F5599E",
+          "mean": [166, 128, 129],
+          "stdev": [73.1, 5.5, 6.1]
+        },
+        {
+          "pts_time": 13,
+          "checksum": "D8EE0918",
+          "mean": [167, 128, 129],
+          "stdev": [72.7, 5.6, 6.2]
+        },
+        {
+          "pts_time": 13.5,
+          "checksum": "68766404",
+          "mean": [167, 128, 129],
+          "stdev": [72.3, 5.8, 6.5]
+        },
+        {
+          "pts_time": 14,
+          "checksum": "37855D42",
+          "mean": [167, 128, 130],
+          "stdev": [72.3, 5.9, 6.9]
+        },
+        {
+          "pts_time": 14.5,
+          "checksum": "E3265505",
+          "mean": [168, 128, 130],
+          "stdev": [71.1, 6.2, 7.2]
+        },
+        {
+          "pts_time": 15,
+          "checksum": "EA697109",
+          "mean": [170, 127, 130],
+          "stdev": [69.8, 6.3, 7.4]
+        },
+        {
+          "pts_time": 15.5,
+          "checksum": "4C95D705",
+          "mean": [170, 127, 130],
+          "stdev": [69.9, 6.5, 7.6]
+        },
+        {
+          "pts_time": 16,
+          "checksum": "FD0DF65F",
+          "mean": [167, 127, 130],
+          "stdev": [73, 6.2, 6.9]
+        },
+        {
+          "pts_time": 16.5,
+          "checksum": "BECA0E75",
+          "mean": [167, 127, 130],
+          "stdev": [73.2, 6.2, 6.5]
+        },
+        {
+          "pts_time": 17,
+          "checksum": "277D74C5",
+          "mean": [167, 128, 130],
+          "stdev": [73.1, 6.1, 6.2]
+        },
+        {
+          "pts_time": 17.5,
+          "checksum": "E12D2F9B",
+          "mean": [168, 128, 130],
+          "stdev": [72.6, 6, 5.8]
+        },
+        {
+          "pts_time": 18,
+          "checksum": "A20EF8AB",
+          "mean": [168, 128, 130],
+          "stdev": [72.4, 6, 5.7]
+        },
+        {
+          "pts_time": 18.5,
+          "checksum": "CF74C11D",
+          "mean": [171, 128, 130],
+          "stdev": [71.7, 6.1, 6.5]
+        },
+        {
+          "pts_time": 19,
+          "checksum": "479F88A9",
+          "mean": [173, 127, 130],
+          "stdev": [70.3, 6.3, 7.1]
+        },
+        {
+          "pts_time": 19.5,
+          "checksum": "D7592CAD",
+          "mean": [174, 128, 130],
+          "stdev": [69.9, 6, 6.6]
+        },
+        {
+          "pts_time": 20,
+          "checksum": "6D8BC9C4",
+          "mean": [173, 128, 129],
+          "stdev": [68.8, 6, 6.6]
+        },
+        {
+          "pts_time": 20.5,
+          "checksum": "638ACA94",
+          "mean": [172, 128, 129],
+          "stdev": [68.5, 5.9, 6.4]
+        },
+        {
+          "pts_time": 21,
+          "checksum": "5178A870",
+          "mean": [170, 129, 129],
+          "stdev": [68.7, 5.8, 6.3]
+        },
+        {
+          "pts_time": 21.5,
+          "checksum": "616931F4",
+          "mean": [165, 128, 130],
+          "stdev": [71.9, 6.1, 7]
+        },
+        {
+          "pts_time": 22,
+          "checksum": "A67A3CF9",
+          "mean": [169, 128, 130],
+          "stdev": [72.3, 6.1, 6.9]
+        },
+        {
+          "pts_time": 22.5,
+          "checksum": "B4A054F6",
+          "mean": [173, 128, 130],
+          "stdev": [70.9, 6.2, 7]
+        },
+        {
+          "pts_time": 23,
+          "checksum": "BE2BCDF1",
+          "mean": [171, 127, 130],
+          "stdev": [72.6, 6.1, 6.8]
+        },
+        {
+          "pts_time": 23.5,
+          "checksum": "33B1E3FE",
+          "mean": [171, 128, 130],
+          "stdev": [72.6, 6.1, 6.7]
+        },
+        {
+          "pts_time": 24,
+          "checksum": "54381126",
+          "mean": [171, 128, 130],
+          "stdev": [72.6, 6.1, 6.7]
+        },
+        {
+          "pts_time": 24.5,
+          "checksum": "43169F6C",
+          "mean": [171, 128, 130],
+          "stdev": [72.8, 6.1, 6.7]
+        },
+        {
+          "pts_time": 25,
+          "checksum": "4D900FF3",
+          "mean": [170, 128, 130],
+          "stdev": [73.5, 6, 6.7]
+        },
+        {
+          "pts_time": 25.5,
+          "checksum": "FE59541A",
+          "mean": [174, 127, 130],
+          "stdev": [71.6, 6.6, 7.3]
+        },
+        {
+          "pts_time": 26,
+          "checksum": "108E6D69",
+          "mean": [172, 127, 130],
+          "stdev": [71.7, 6.5, 7.3]
+        },
+        {
+          "pts_time": 26.5,
+          "checksum": "31211178",
+          "mean": [173, 127, 130],
+          "stdev": [71.1, 6.6, 7.3]
+        },
+        {
+          "pts_time": 27,
+          "checksum": "205198F5",
+          "mean": [174, 128, 130],
+          "stdev": [71.6, 6.3, 7.2]
+        },
+        {
+          "pts_time": 27.5,
+          "checksum": "E82F2F45",
+          "mean": [172, 128, 129],
+          "stdev": [72.5, 6, 7]
+        },
+        {
+          "pts_time": 28,
+          "checksum": "D69288E2",
+          "mean": [171, 128, 129],
+          "stdev": [73.1, 6, 7]
+        },
+        {
+          "pts_time": 28.5,
+          "checksum": "9BA4EC57",
+          "mean": [174, 128, 129],
+          "stdev": [73, 5.9, 6.9]
+        },
+        {
+          "pts_time": 29,
+          "checksum": "EE3EA8FF",
+          "mean": [168, 128, 129],
+          "stdev": [73, 5.9, 7]
+        },
+        {
+          "pts_time": 29.5,
+          "checksum": "9524E693",
+          "mean": [167, 128, 130],
+          "stdev": [72.3, 6.1, 7.1]
+        },
+        {
+          "pts_time": 30,
+          "checksum": "DF511B39",
+          "mean": [170, 127, 130],
+          "stdev": [71.6, 6.2, 7]
+        },
+        {
+          "pts_time": 30.5,
+          "checksum": "A8EEBE5C",
+          "mean": [178, 128, 129],
+          "stdev": [64.1, 5.5, 5.7]
+        },
+        {
+          "pts_time": 31,
+          "checksum": "AEB122D7",
+          "mean": [182, 129, 128],
+          "stdev": [61.6, 5.1, 4.9]
+        },
+        {
+          "pts_time": 31.5,
+          "checksum": "80139458",
+          "mean": [184, 128, 128],
+          "stdev": [62.2, 4.9, 4.4]
+        },
+        {
+          "pts_time": 32,
+          "checksum": "53ADB1EE",
+          "mean": [184, 128, 128],
+          "stdev": [63, 4.6, 4.1]
+        },
+        {
+          "pts_time": 32.5,
+          "checksum": "0E0C3835",
+          "mean": [186, 128, 128],
+          "stdev": [61.7, 4.5, 3.8]
+        },
+        {
+          "pts_time": 33,
+          "checksum": "D7FE0E9C",
+          "mean": [186, 128, 128],
+          "stdev": [62.7, 4.1, 3.6]
+        },
+        {
+          "pts_time": 33.5,
+          "checksum": "FAA430F0",
+          "mean": [186, 128, 128],
+          "stdev": [63.7, 4.1, 3.6]
+        },
+        {
+          "pts_time": 34,
+          "checksum": "53EEE3BF",
+          "mean": [188, 128, 128],
+          "stdev": [62.3, 4, 3.6]
+        },
+        {
+          "pts_time": 34.5,
+          "checksum": "5C1DA505",
+          "mean": [190, 128, 128],
+          "stdev": [58.9, 3.9, 3.4]
+        },
+        {
+          "pts_time": 35,
+          "checksum": "DEA9FDA7",
+          "mean": [189, 128, 128],
+          "stdev": [53.4, 4.1, 4.1]
+        },
+        {
+          "pts_time": 35.5,
+          "checksum": "2CD2E4F9",
+          "mean": [189, 128, 129],
+          "stdev": [53.4, 4.2, 4.1]
+        },
+        {
+          "pts_time": 36,
+          "checksum": "7BBAE69D",
+          "mean": [189, 128, 129],
+          "stdev": [53.3, 4.2, 4.1]
+        },
+        {
+          "pts_time": 36.5,
+          "checksum": "B3384BD2",
+          "mean": [189, 128, 128],
+          "stdev": [53.5, 4.1, 4.1]
+        },
+        {
+          "pts_time": 37,
+          "checksum": "5C7E396C",
+          "mean": [188, 128, 128],
+          "stdev": [53.8, 4.1, 4.1]
+        },
+        {
+          "pts_time": 37.5,
+          "checksum": "BD91F3AB",
+          "mean": [188, 128, 129],
+          "stdev": [54, 4.2, 4.1]
+        },
+        {
+          "pts_time": 38,
+          "checksum": "A7E7A53D",
+          "mean": [189, 128, 129],
+          "stdev": [53.6, 4.2, 4.1]
+        },
+        {
+          "pts_time": 38.5,
+          "checksum": "3FDEA4B3",
+          "mean": [189, 128, 129],
+          "stdev": [53.3, 4.1, 4.1]
+        },
+        {
+          "pts_time": 39,
+          "checksum": "B5025E70",
+          "mean": [190, 128, 129],
+          "stdev": [53.2, 4.1, 4.1]
+        },
+        {
+          "pts_time": 39.5,
+          "checksum": "C4E09368",
+          "mean": [190, 128, 129],
+          "stdev": [53.1, 4.2, 4.1]
+        },
+        {
+          "pts_time": 40,
+          "checksum": "DBF9C48F",
+          "mean": [190, 128, 129],
+          "stdev": [53.1, 4.2, 4]
+        },
+        {
+          "pts_time": 40.5,
+          "checksum": "652D86B9",
+          "mean": [191, 128, 129],
+          "stdev": [53, 4.1, 4]
+        },
+        {
+          "pts_time": 41,
+          "checksum": "909897AC",
+          "mean": [191, 128, 129],
+          "stdev": [53, 4.1, 4]
+        },
+        {
+          "pts_time": 41.5,
+          "checksum": "DA8B08E2",
+          "mean": [191, 128, 129],
+          "stdev": [53, 4.2, 4]
+        },
+        {
+          "pts_time": 42,
+          "checksum": "D34F734D",
+          "mean": [191, 128, 129],
+          "stdev": [53, 4.1, 4]
+        },
+        {
+          "pts_time": 42.5,
+          "checksum": "FD4C1ABA",
+          "mean": [191, 128, 129],
+          "stdev": [53, 4.1, 4]
+        },
+        {
+          "pts_time": 43,
+          "checksum": "071742E6",
+          "mean": [191, 128, 129],
+          "stdev": [53, 4.1, 4]
+        },
+        {
+          "pts_time": 43.5,
+          "checksum": "8C1B40EB",
+          "mean": [191, 128, 129],
+          "stdev": [53, 4.2, 4]
+        },
+        {
+          "pts_time": 44,
+          "checksum": "5E296B45",
+          "mean": [191, 128, 129],
+          "stdev": [53, 4.1, 4]
+        },
+        {
+          "pts_time": 44.5,
+          "checksum": "540D0E59",
+          "mean": [191, 128, 129],
+          "stdev": [53, 4.1, 4]
+        },
+        {
+          "pts_time": 45,
+          "checksum": "CCA236FB",
+          "mean": [191, 128, 129],
+          "stdev": [53, 4.1, 3.9]
+        },
+        {
+          "pts_time": 45.5,
+          "checksum": "3CDA8903",
+          "mean": [192, 128, 129],
+          "stdev": [53, 4.1, 3.9]
+        },
+        {
+          "pts_time": 46,
+          "checksum": "90B7C162",
+          "mean": [192, 128, 129],
+          "stdev": [53, 4.2, 3.9]
+        },
+        {
+          "pts_time": 46.5,
+          "checksum": "8784BB3D",
+          "mean": [192, 128, 129],
+          "stdev": [53, 4.1, 3.9]
+        },
+        {
+          "pts_time": 47,
+          "checksum": "D850D787",
+          "mean": [193, 128, 129],
+          "stdev": [53, 4.1, 3.8]
+        },
+        {
+          "pts_time": 47.5,
+          "checksum": "4484E8FC",
+          "mean": [193, 128, 129],
+          "stdev": [53.1, 4.1, 3.8]
+        },
+        {
+          "pts_time": 48,
+          "checksum": "97C6B398",
+          "mean": [193, 128, 129],
+          "stdev": [53, 4.1, 3.8]
+        },
+        {
+          "pts_time": 48.5,
+          "checksum": "01A612D4",
+          "mean": [193, 128, 129],
+          "stdev": [53, 4.1, 3.8]
+        },
+        {
+          "pts_time": 49,
+          "checksum": "4490879E",
+          "mean": [192, 128, 129],
+          "stdev": [53, 4.1, 3.9]
+        },
+        {
+          "pts_time": 49.5,
+          "checksum": "BAFBA720",
+          "mean": [193, 128, 129],
+          "stdev": [53.1, 4.1, 3.8]
+        },
+        {
+          "pts_time": 50,
+          "checksum": "96946297",
+          "mean": [193, 128, 129],
+          "stdev": [53.2, 4.1, 3.7]
+        },
+        {
+          "pts_time": 50.5,
+          "checksum": "95FCCE3E",
+          "mean": [193, 128, 129],
+          "stdev": [53.4, 4, 3.8]
+        },
+        {
+          "pts_time": 51,
+          "checksum": "0BDC1046",
+          "mean": [193, 128, 129],
+          "stdev": [53.6, 4, 3.8]
+        },
+        {
+          "pts_time": 51.5,
+          "checksum": "CF7EB9F2",
+          "mean": [192, 128, 129],
+          "stdev": [53.7, 4.1, 3.7]
+        },
+        {
+          "pts_time": 52,
+          "checksum": "CE38FAC1",
+          "mean": [192, 128, 129],
+          "stdev": [53.5, 4.1, 3.8]
+        },
+        {
+          "pts_time": 52.5,
+          "checksum": "4A10E5B1",
+          "mean": [191, 128, 129],
+          "stdev": [53.8, 4, 3.9]
+        },
+        {
+          "pts_time": 53,
+          "checksum": "5CD770E6",
+          "mean": [191, 128, 129],
+          "stdev": [54.1, 4, 3.9]
+        },
+        {
+          "pts_time": 53.5,
+          "checksum": "41FDE0E0",
+          "mean": [191, 128, 129],
+          "stdev": [53.9, 4.1, 3.8]
+        },
+        {
+          "pts_time": 54,
+          "checksum": "13DC8C3F",
+          "mean": [192, 128, 129],
+          "stdev": [53.8, 4.1, 3.7]
+        },
+        {
+          "pts_time": 54.5,
+          "checksum": "D2D1A644",
+          "mean": [193, 128, 129],
+          "stdev": [54, 3.9, 3.7]
+        },
+        {
+          "pts_time": 55,
+          "checksum": "86E65BE3",
+          "mean": [193, 128, 129],
+          "stdev": [53.6, 4.1, 3.8]
+        },
+        {
+          "pts_time": 55.5,
+          "checksum": "419DB662",
+          "mean": [193, 128, 129],
+          "stdev": [53.5, 4.1, 3.7]
+        },
+        {
+          "pts_time": 56,
+          "checksum": "159AF54B",
+          "mean": [191, 128, 129],
+          "stdev": [54.8, 3.9, 3.7]
+        },
+        {
+          "pts_time": 56.5,
+          "checksum": "E3E1EC2C",
+          "mean": [187, 127, 130],
+          "stdev": [58.7, 3.8, 4]
+        },
+        {
+          "pts_time": 57,
+          "checksum": "2EDA0777",
+          "mean": [183, 127, 129],
+          "stdev": [62.1, 3.6, 4.2]
+        },
+        {
+          "pts_time": 57.5,
+          "checksum": "BB64BC5D",
+          "mean": [181, 127, 129],
+          "stdev": [62.2, 3.9, 4.5]
+        },
+        {
+          "pts_time": 58,
+          "checksum": "1DDFB74C",
+          "mean": [183, 128, 129],
+          "stdev": [60.9, 4.1, 4.5]
+        },
+        {
+          "pts_time": 58.5,
+          "checksum": "3E3671A2",
+          "mean": [182, 128, 129],
+          "stdev": [60.5, 4.4, 4.7]
+        },
+        {
+          "pts_time": 59,
+          "checksum": "DFA3955D",
+          "mean": [179, 128, 129],
+          "stdev": [62.3, 4.6, 5.2]
+        },
+        {
+          "pts_time": 59.5,
+          "checksum": "46952678",
+          "mean": [176, 128, 130],
+          "stdev": [66.6, 5, 5.7]
+        },
+        {
+          "pts_time": 60,
+          "checksum": "5EC6DED8",
+          "mean": [175, 128, 130],
+          "stdev": [67.9, 5.4, 6.3]
+        }
+      ],
+      "sample_interval_seconds": 0.5
+    }
+  },
+  "VID00130.AVI": {
+    "encoding-stats": {
+      "bitrate": "11426.0kbits",
+      "fps": 141,
+      "frames": 392,
+      "total_size": 0
+    },
+    "frame-samples": {
+      "frames": [
+        {
+          "pts_time": 0,
+          "checksum": "8E876789",
+          "mean": [172, 128, 130],
+          "stdev": [69.3, 5.6, 6.8]
+        },
+        {
+          "pts_time": 0.5,
+          "checksum": "E60E5B1B",
+          "mean": [162, 127, 130],
+          "stdev": [72.9, 6, 7.1]
+        },
+        {
+          "pts_time": 1,
+          "checksum": "739906E8",
+          "mean": [171, 128, 130],
+          "stdev": [70.9, 6.3, 7.4]
+        },
+        {
+          "pts_time": 1.5,
+          "checksum": "5773B726",
+          "mean": [171, 128, 130],
+          "stdev": [71.7, 6.1, 7.4]
+        },
+        {
+          "pts_time": 2,
+          "checksum": "B320FEB7",
+          "mean": [170, 128, 130],
+          "stdev": [73, 5.9, 6.8]
+        },
+        {
+          "pts_time": 2.5,
+          "checksum": "B11878C7",
+          "mean": [169, 128, 130],
+          "stdev": [74.1, 5.9, 6.7]
+        },
+        {
+          "pts_time": 3,
+          "checksum": "E3DAA01E",
+          "mean": [170, 128, 130],
+          "stdev": [74, 5.9, 6.8]
+        },
+        {
+          "pts_time": 3.5,
+          "checksum": "D9A1BA9C",
+          "mean": [170, 128, 130],
+          "stdev": [74, 5.9, 6.7]
+        },
+        {
+          "pts_time": 4,
+          "checksum": "54CB0144",
+          "mean": [170, 128, 130],
+          "stdev": [74.1, 5.9, 6.7]
+        },
+        {
+          "pts_time": 4.5,
+          "checksum": "A014E1CC",
+          "mean": [168, 128, 130],
+          "stdev": [74, 5.9, 6.8]
+        },
+        {
+          "pts_time": 5,
+          "checksum": "C637FD48",
+          "mean": [169, 128, 130],
+          "stdev": [73.4, 6.2, 7.1]
+        },
+        {
+          "pts_time": 5.5,
+          "checksum": "E288E4CB",
+          "mean": [167, 128, 130],
+          "stdev": [73.5, 6.1, 7.2]
+        },
+        {
+          "pts_time": 6,
+          "checksum": "6CF51BE6",
+          "mean": [166, 127, 130],
+          "stdev": [72.6, 6.3, 7.2]
+        },
+        {
+          "pts_time": 6.5,
+          "checksum": "1FDBA000",
+          "mean": [168, 127, 130],
+          "stdev": [72.5, 6.3, 7.3]
+        },
+        {
+          "pts_time": 7,
+          "checksum": "97AFEB99",
+          "mean": [168, 128, 130],
+          "stdev": [73.2, 6.1, 7.1]
+        },
+        {
+          "pts_time": 7.5,
+          "checksum": "1FA28EF6",
+          "mean": [168, 128, 130],
+          "stdev": [73, 6.1, 7.1]
+        },
+        {
+          "pts_time": 8,
+          "checksum": "705C0273",
+          "mean": [170, 128, 130],
+          "stdev": [73.5, 5.8, 6.7]
+        },
+        {
+          "pts_time": 8.5,
+          "checksum": "5A3D1FFA",
+          "mean": [171, 128, 130],
+          "stdev": [74.6, 5.9, 6.9]
+        },
+        {
+          "pts_time": 9,
+          "checksum": "1D8E00D0",
+          "mean": [168, 127, 130],
+          "stdev": [73.6, 6.4, 7.7]
+        },
+        {
+          "pts_time": 9.5,
+          "checksum": "E1709B3E",
+          "mean": [162, 127, 131],
+          "stdev": [73.2, 6.9, 8.3]
+        },
+        {
+          "pts_time": 10,
+          "checksum": "802FCCBE",
+          "mean": [153, 126, 132],
+          "stdev": [78.4, 7.9, 10.3]
+        },
+        {
+          "pts_time": 10.5,
+          "checksum": "92590240",
+          "mean": [140, 125, 133],
+          "stdev": [77.4, 8.1, 10.1]
+        },
+        {
+          "pts_time": 11,
+          "checksum": "971DE353",
+          "mean": [198, 128, 128],
+          "stdev": [77.6, 3.6, 2.6]
+        },
+        {
+          "pts_time": 11.5,
+          "checksum": "447D09B9",
+          "mean": [166, 126, 128],
+          "stdev": [60.1, 5, 5.6]
+        },
+        {
+          "pts_time": 12,
+          "checksum": "6369B540",
+          "mean": [188, 127, 129],
+          "stdev": [62.4, 4.2, 3.3]
+        },
+        {
+          "pts_time": 12.5,
+          "checksum": "E0C14347",
+          "mean": [187, 127, 129],
+          "stdev": [62.8, 4.2, 3.3]
+        },
+        {
+          "pts_time": 13,
+          "checksum": "57ABBF2D",
+          "mean": [186, 127, 129],
+          "stdev": [63.4, 4.2, 3.3]
+        }
+      ],
+      "sample_interval_seconds": 0.5
+    }
+  }
+}
