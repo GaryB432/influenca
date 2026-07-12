@@ -5,12 +5,24 @@ description: Use when the user asks to create a new command.
 
 # Add an arbitrary command: `promote`
 
+Before starting on a command, add and export a stub module for the command business process in `@influenca/core`. In this arbitrary case of `promote`, this would suffice:
+
+```ts
+export async function promoteProcesss(
+  name: string,
+  level = "senior",
+): Promise<string> {
+  return `${name} is now promoted to ${level}.`;
+}
+```
+
 ## 1. Create the command implementation
 
 Create `packages/cli/src/commands/promote-command.ts`:
 
 ```ts
 import { type CliCommand, type ParsedCommandArgs } from "./command-contract.js";
+import { promoteProcess } from "@influenca/core";
 
 export type PromoteCommandOptions = {
   level: string;
@@ -26,7 +38,7 @@ export class PromoteCommand implements CliCommand<PromoteCommandOptions> {
       throw new Error("Name is required.");
     }
 
-    return `${name} is now promoted to ${input.options.level}.`;
+    return promoteProcess(name, input.options.level);
   }
 }
 ```
