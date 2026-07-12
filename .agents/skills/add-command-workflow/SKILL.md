@@ -54,6 +54,7 @@ Update `packages/cli/src/main.ts`:
 Example wiring:
 
 ```ts
+import { text } from "@clack/prompts";
 import { PromoteCommand } from "./commands/promote-command.js";
 
 const promoteCommand = new PromoteCommand();
@@ -79,11 +80,27 @@ async function runPromote(
   const interactive = options.interactive ?? true;
   const level = options.level ?? "senior";
 
-  if (!interactive && !name) {
-    throw new Error("Name is required when --no-interactive is set.");
+  // Resolve Name: CLI -> Env -> Prompt
+  let resolvedName = name ?? process.env.INFLUENCA_PROMOTEE;
+
+  if (!resolvedName && interactive) {
+    const promptResult = await text({
+      message: "Who are we promoting?",
+      placeholder: "Enter name...",
+    });
+
+    if (promptResult.isCancel) {
+      console.log("Promotion cancelled.");
+      process.exit(0);
+    }
+    resolvedName = promptResult;
   }
 
-  const resolvedName = name ?? "teammate";
+  if (!resolvedName) {
+    throw new Error(
+      "Name is required (provide via arg, env, or interactive mode).",
+    );
+  }
 
   const message = await promoteCommand.execute({
     args: [resolvedName],
