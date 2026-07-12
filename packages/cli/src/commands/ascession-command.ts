@@ -45,7 +45,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
     mkdirSync(output, { recursive: true });
 
     const manifest: Manifest = {};
-    const manifestPath = buildManifestFilePath(output, "nope");
+    const manifestPath = buildManifestFilePath(output);
 
     for (const file of files) {
       const inputPath = join(resolvedInputDir, file);
@@ -55,7 +55,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
 
       console.log(`Converting ${file} -> ${outputFileName}...`);
 
-      manifest[file] = await new Promise((resolve) => {
+      manifest[outputFileName] = await new Promise((resolve) => {
         const stats: VideoEntry = {
           "encoding-stats": {
             bitrate: "N/A",
