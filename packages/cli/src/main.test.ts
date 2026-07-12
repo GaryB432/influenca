@@ -3,64 +3,51 @@ import { mock, test } from "node:test";
 
 import { main } from "./main.js";
 
-test("prints help for unknown command shape", async () => {
+test("prints help for unknown command", async () => {
   let output = "";
   const writeMock = mock.method(process.stdout, "write", (chunk: string) => {
     output += chunk;
     return true;
   });
 
-  await main(["node", "bin.js", "Alice", "America/Chicago"]);
+  await main(["node", "bin.js", "unknown"]);
 
   assert.match(output, /Usage:/);
-  assert.match(output, /greet \[name\]/);
+  assert.match(output, /ascession/);
+  assert.match(output, /analyze/);
 
   writeMock.mock.restore();
   mock.reset();
 });
 
-test("matches greet command with positional name", async () => {
-  let stderr = "";
-  const stderrMock = mock.method(process.stderr, "write", (chunk: string) => {
-    stderr += chunk;
-    return true;
-  });
-
-  await main([
-    "node",
-    "bin.js",
-    "greet",
-    "bob",
-    "--interactive",
-    "no",
-    "--offset=-6",
-  ]);
-
-  assert.doesNotMatch(stderr, /Usage:/);
-
-  stderrMock.mock.restore();
-  mock.reset();
-});
-
-test("prints greet command help", async () => {
+test("prints ascession command help", async () => {
   let output = "";
   const writeMock = mock.method(process.stdout, "write", (chunk: string) => {
     output += chunk;
     return true;
   });
 
-  await main(["node", "bin.js", "greet", "--help"]);
+  await main(["node", "bin.js", "ascession", "--help"]);
 
-  assert.match(output, /greet \[name\]/);
-  assert.match(output, /--offset <hours>/);
-  assert.match(output, /--interactive <mode>/);
+  assert.match(output, /ascession \[inputDir\]/);
+  assert.match(output, /--output <path>/);
+  assert.match(output, /--dry-run/);
 
   writeMock.mock.restore();
   mock.reset();
 });
 
-test("greet requires --offset in strict non-interactive mode", async () => {
-  await assert.rejects(async () => {
-    await main(["node", "bin.js", "greet", "bob", "--interactive", "no"]);
-  }, /Name and --offset are required/i);
+test("prints analyze command help", async () => {
+  let output = "";
+  const writeMock = mock.method(process.stdout, "write", (chunk: string) => {
+    output += chunk;
+    return true;
+  });
+
+  await main(["node", "bin.js", "analyze", "--help"]);
+
+  assert.match(output, /analyze \[inputDir\]/);
+
+  writeMock.mock.restore();
+  mock.reset();
 });
