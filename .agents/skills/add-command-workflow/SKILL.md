@@ -87,8 +87,7 @@ async function runPromote(
 From the repo root:
 
 ```bash
-pnpm --filter @influenca/cli run build
-pnpm --filter @influenca/cli run test
+pnpm --filter @influenca/cli... run build
 ```
 
 ## 4. Try it
