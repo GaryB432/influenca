@@ -1,6 +1,9 @@
-import { calculateActivityScore, type Manifest } from "@influenca/core";
+import {
+  buildManifestFilePath,
+  calculateActivityScore,
+  type Manifest,
+} from "@influenca/core";
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
 
 import {
   type CliCommand,
@@ -20,7 +23,7 @@ export class AnalyzeCommand implements CliCommand<AnalyzeOptions> {
       throw new Error("Input directory is required.");
     }
 
-    const manifestPath = join(inputDir, "influenca.json");
+    const manifestPath = buildManifestFilePath(inputDir);
     const data = readFileSync(manifestPath, "utf-8");
     const manifest: Manifest = JSON.parse(data);
 

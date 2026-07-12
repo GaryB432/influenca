@@ -1,6 +1,6 @@
 import type { Manifest, VideoEntry } from "@influenca/core";
 
-import { analyzeMotion } from "@influenca/core";
+import { analyzeMotion, buildManifestFilePath } from "@influenca/core";
 import { spawn } from "node:child_process";
 import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -45,8 +45,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
     mkdirSync(output, { recursive: true });
 
     const manifest: Manifest = {};
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const manifestPath = join(output, `videos-${timestamp}.json`);
+    const manifestPath = buildManifestFilePath(output);
 
     for (const file of files) {
       const inputPath = join(resolvedInputDir, file);
@@ -56,7 +55,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
 
       console.log(`Converting ${file} -> ${outputFileName}...`);
 
-      manifest[file] = await new Promise((resolve) => {
+      manifest[outputFileName] = await new Promise((resolve) => {
         const stats: VideoEntry = {
           "encoding-stats": {
             bitrate: "N/A",
