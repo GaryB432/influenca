@@ -2,16 +2,6 @@ import type { FrameStats } from "@influenca/core";
 
 import { spawn } from "child_process";
 
-export function add(a: number, b: number): number {
-  return a + b;
-}
-export function greet(name: string): string {
-  return `motion says: hello to ${name}`;
-}
-export const meaning: { life: number } = {
-  life: 42,
-};
-
 export function analyzeMotion(inputPath: string): Promise<{
   frames: FrameStats[];
 }> {

@@ -1,4 +1,5 @@
-export * from "./ffmpeg/motion.js";
+export * from "./motion.js";
+export * from "./names.js";
 
 export type EncodingStats = {
   bitrate: string;
