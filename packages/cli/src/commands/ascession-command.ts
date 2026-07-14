@@ -3,12 +3,13 @@ import type { Manifest, VideoEntry } from "@influenca/core";
 import { analyzeMotion, buildManifestFilePath } from "@influenca/core";
 import { spawn } from "node:child_process";
 import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { format, join, parse } from "node:path";
 
 import {
   type CliCommand,
   type ParsedCommandArgs,
 } from "../command-contract.js";
+import type { ChildProcessWithoutNullStreams } from "child_process";
 
 export type AscessionOptions = {
   output: string;
@@ -33,27 +34,32 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
       ? inputDir.replace("~", process.env.HOME || "")
       : inputDir;
 
-    const files = readdirSync(resolvedInputDir).filter((f) =>
-      f.toLowerCase().endsWith(".avi"),
-    );
+    // const files = readdirSync(resolvedInputDir).filter((f) =>
+    //   f.toLowerCase().endsWith(".avi"),
+    // );
 
-    if (files.length === 0) {
-      return `No AVI files found in ${resolvedInputDir}`;
-    }
+    // if (files.length === 0) {
+    //   return `No AVI files found in ${resolvedInputDir}`;
+    // }
 
     // Create output directory if it doesn't exist
     mkdirSync(output, { recursive: true });
 
+    const mediaExtenstions = [".avi", ".mp4"];
+
     const manifest: Manifest = {};
     const manifestPath = buildManifestFilePath(output);
 
-    for (const file of files) {
-      const inputPath = join(resolvedInputDir, file);
-      const outputFileName =
-        file.replace(/\.[^.]+$/, "").toLowerCase() + ".mp4";
-      const outputPath = join(output, outputFileName);
+    const workload = readdirSync(resolvedInputDir)
+      .map((f) => parse(f))
+      .filter((f) => mediaExtenstions.includes(f.ext.toLowerCase()));
 
-      console.log(`Converting ${file} -> ${outputFileName}...`);
+    for (const w of workload) {
+      const inputPath = join(resolvedInputDir, w.base);
+      const outputFileName = format({ ext: ".mp4", name: w.name });
+      const outputPath = join(output, outputFileName);
+      console.log(JSON.stringify({ inputPath, outputPath }));
+      console.log(`Converting ${w.base} -> ${outputFileName}...`);
 
       manifest[outputFileName] = await new Promise((resolve) => {
         const stats: VideoEntry = {
@@ -65,46 +71,13 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
           },
         };
 
-        // Use a high quality, fast preset: libx264, fast preset, crf 23 (standard quality)
-        const ffmpeg = spawn("ffmpeg", [
-          "-i",
-          inputPath,
-          "-c:v",
-          "libx264",
-          "-preset",
-          "fast",
-          "-crf",
-          "23",
-          "-c:a",
-          "aac",
-          "-b:a",
-          "128k",
-          outputPath,
-          "-y",
-        ]);
+        const ffmpeg = spawn(
+          "ffmpeg",
+          buildFFmpegOptions(inputPath, outputPath),
+        );
 
         // Parse stderr where ffmpeg writes its progress
-        ffmpeg.stderr.on("data", (data) => {
-          const output = data.toString();
-
-          // Parse frame=X pattern
-          const frameMatch = output.match(/frame=\s*(\d+)/);
-          if (frameMatch) {
-            stats["encoding-stats"].frames = parseInt(frameMatch[1]);
-          }
-
-          // Parse fps=X pattern
-          const fpsMatch = output.match(/fps=\s*(\d+\.?\d*)/);
-          if (fpsMatch) {
-            stats["encoding-stats"].fps = parseFloat(fpsMatch[1]);
-          }
-
-          // Parse bitrate pattern
-          const bitrateMatch = output.match(/bitrate=\s*(\d+\.?\d*[a-zA-Z]+)/);
-          if (bitrateMatch) {
-            stats["encoding-stats"].bitrate = bitrateMatch[1];
-          }
-        });
+        parseFfmpegStats(ffmpeg, stats);
 
         ffmpeg.on("close", async (code) => {
           if (code === 0) {
@@ -131,6 +104,56 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
 
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 
-    return `Processed ${files.length} files. Manifest saved to ${manifestPath}`;
+    return `Processed ${workload.length} files. Manifest saved to ${manifestPath}`;
   }
+}
+
+function parseFfmpegStats(
+  ffmpeg: ChildProcessWithoutNullStreams,
+  stats: VideoEntry,
+) {
+  ffmpeg.stderr.on("data", (data) => {
+    const output = data.toString();
+
+    // Parse frame=X pattern
+    const frameMatch = output.match(/frame=\s*(\d+)/);
+    if (frameMatch) {
+      stats["encoding-stats"].frames = parseInt(frameMatch[1]);
+    }
+
+    // Parse fps=X pattern
+    const fpsMatch = output.match(/fps=\s*(\d+\.?\d*)/);
+    if (fpsMatch) {
+      stats["encoding-stats"].fps = parseFloat(fpsMatch[1]);
+    }
+
+    // Parse bitrate pattern
+    const bitrateMatch = output.match(/bitrate=\s*(\d+\.?\d*[a-zA-Z]+)/);
+    if (bitrateMatch) {
+      stats["encoding-stats"].bitrate = bitrateMatch[1];
+    }
+  });
+}
+
+// Use a high quality, fast preset: libx264, fast preset, crf 23 (standard quality)
+function buildFFmpegOptions(
+  inputPath: string,
+  outputPath: string,
+): readonly string[] | undefined {
+  return [
+    "-i",
+    inputPath,
+    "-c:v",
+    "libx264",
+    "-preset",
+    "fast",
+    "-crf",
+    "23",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "128k",
+    outputPath,
+    "-y",
+  ];
 }
