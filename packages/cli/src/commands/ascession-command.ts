@@ -34,14 +34,6 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
       ? inputDir.replace("~", process.env.HOME || "")
       : inputDir;
 
-    // const files = readdirSync(resolvedInputDir).filter((f) =>
-    //   f.toLowerCase().endsWith(".avi"),
-    // );
-
-    // if (files.length === 0) {
-    //   return `No AVI files found in ${resolvedInputDir}`;
-    // }
-
     // Create output directory if it doesn't exist
     mkdirSync(output, { recursive: true });
 
