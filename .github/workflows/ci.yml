@@ -36,7 +36,7 @@ jobs:
           cache: "pnpm"
 
       - name: Run Lint
-        run: pnpx eslint .
+        run: pnpm run lint
 
       - name: Run Build/Test
         run: pnpm test --run
