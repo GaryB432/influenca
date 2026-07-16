@@ -6,12 +6,18 @@
     "influenca": "./dist/bin.mjs"
   },
   "scripts": {
-    "build": "tsdown src/bin.ts",
-    "test": "echo \"no tests yet\""
+    "build": "tsdown src/bin.ts src/main.test.ts src/workflows/accession.test.ts",
+    "test": "pnpm run build && pnpm run test:dist",
+    "test:dist": "node --test dist/main.test.mjs dist/workflows/accession.test.mjs"
   },
   "dependencies": {
     "@clack/prompts": "catalog:",
     "@influenca/core": "workspace:^",
-    "cac": "catalog:"
+    "cac": "catalog:",
+    "fluent-ffmpeg": "catalog:",
+    "openai": "catalog:"
+  },
+  "devDependencies": {
+    "@types/fluent-ffmpeg": "catalog:"
   }
 }
