@@ -14,17 +14,17 @@ export type AscessionOptions = {
   output: string;
 };
 
-type AccessionDependencies = {
+type ProgressDependencies = {
   analyzeMotion: typeof analyzeMotion;
   error: (...data: unknown[]) => void;
   log: (...data: unknown[]) => void;
   mkdirSync: (path: string, options: { recursive: true }) => void;
   readdirSync: (path: string) => string[];
-  spawn: (command: string, args: string[]) => AccessionProcess;
+  spawn: (command: string, args: string[]) => ProgressProcess;
   writeFileSync: (path: string, data: string) => void;
 };
 
-type AccessionProcess = {
+type ProgressProcess = {
   on(event: "close", listener: (code: null | number) => void): void;
   on(event: "error", listener: (error: Error) => void): void;
   stderr: {
@@ -32,7 +32,7 @@ type AccessionProcess = {
   };
 };
 
-const defaultDependencies: AccessionDependencies = {
+const defaultDependencies: ProgressDependencies = {
   analyzeMotion,
   error: console.error,
   log: console.log,
@@ -43,9 +43,9 @@ const defaultDependencies: AccessionDependencies = {
 };
 
 export class AscessionCommand implements CliCommand<AscessionOptions> {
-  private readonly dependencies: AccessionDependencies;
+  private readonly dependencies: ProgressDependencies;
 
-  public constructor(dependencies: AccessionDependencies = defaultDependencies) {
+  public constructor(dependencies: ProgressDependencies = defaultDependencies) {
     this.dependencies = dependencies;
   }
 
@@ -87,7 +87,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
       const outputFileName =
         file.replace(/\.[^.]+$/, "").toLowerCase() + ".mp4";
       const outputPath = join(output, outputFileName);
-      const progress = formatAccessionProgress(index, files.length);
+      const progress = formatProgressMeter(index, files.length);
 
       this.dependencies.log(
         `${progress} Converting ${file} -> ${outputFileName}...`,
@@ -181,7 +181,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
   }
 }
 
-export function formatAccessionProgress(
+export function formatProgressMeter(
   currentFileIndex: number,
   totalFiles: number,
 ): string {
