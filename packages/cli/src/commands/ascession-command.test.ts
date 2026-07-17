@@ -3,7 +3,7 @@ import { EventEmitter } from "node:events";
 import { test } from "node:test";
 
 import {
-  AscessionCommand,
+  AccessionCommand,
   formatProgressMeter,
 } from "./ascession-command.ts";
 
@@ -22,7 +22,7 @@ test("logs a 1-based progress meter before each AVI is processed", async () => {
   const logLines: string[] = [];
   const spawnCalls: string[][] = [];
 
-  const command = new AscessionCommand({
+  const command = new AccessionCommand({
     analyzeMotion: async () => ({ frames: [] }),
     error: (...data) => {
       throw new Error(data.join(" "));

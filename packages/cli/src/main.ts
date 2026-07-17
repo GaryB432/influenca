@@ -2,10 +2,10 @@ import { cancel, intro, isCancel, outro, text } from "@clack/prompts";
 import { cac } from "cac";
 
 import { AnalyzeCommand } from "./commands/analyze-command.js";
-import { AscessionCommand } from "./commands/ascession-command.js";
+import { AccessionCommand } from "./commands/ascession-command.js";
 import { setupEnvironment } from "./environment.js";
 
-const ascessionCommand = new AscessionCommand();
+const ascessionCommand = new AccessionCommand();
 const analyzeCommand = new AnalyzeCommand();
 
 type AscessionOptions = {

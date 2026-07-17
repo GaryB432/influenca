@@ -14,7 +14,7 @@ export type AscessionOptions = {
   output: string;
 };
 
-type AscessionCommandDependencies = {
+type AccessionCommandDependencies = {
   analyzeMotion: typeof analyzeMotion;
   error: (...data: unknown[]) => void;
   log: (...data: unknown[]) => void;
@@ -32,7 +32,7 @@ type SpawnedProcess = {
   };
 };
 
-const defaultAscessionCommandDependencies: AscessionCommandDependencies = {
+const defaultAccessionCommandDependencies: AccessionCommandDependencies = {
   analyzeMotion,
   error: console.error,
   log: console.log,
@@ -42,12 +42,12 @@ const defaultAscessionCommandDependencies: AscessionCommandDependencies = {
   writeFileSync,
 };
 
-export class AscessionCommand implements CliCommand<AscessionOptions> {
-  private readonly dependencies: AscessionCommandDependencies;
+export class AccessionCommand implements CliCommand<AscessionOptions> {
+  private readonly dependencies: AccessionCommandDependencies;
 
   public constructor(
-    dependencies: AscessionCommandDependencies =
-      defaultAscessionCommandDependencies,
+    dependencies: AccessionCommandDependencies =
+      defaultAccessionCommandDependencies,
   ) {
     this.dependencies = dependencies;
   }
