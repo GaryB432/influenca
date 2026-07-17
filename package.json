@@ -17,7 +17,10 @@
     "format": "pnpm dlx prettier -wl .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "tsc -b --pretty"
+    "typecheck": "tsc -b --pretty",
+    "test": "pnpm --filter @influenca/cli... run test",
+    "release:pack": "node ./scripts/pack-release.mjs",
+    "release:verify-binaries": "node ./scripts/verify-platform-binaries.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

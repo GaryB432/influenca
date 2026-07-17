@@ -1,0 +1,9 @@
+{
+  "name": "@influenca/installer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "postinstall": "node ./scripts/postinstall.mjs"
+  }
+}
