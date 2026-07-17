@@ -14,7 +14,41 @@ export type AscessionOptions = {
   output: string;
 };
 
+type AscessionDependencies = {
+  analyzeMotion: typeof analyzeMotion;
+  error: (...data: unknown[]) => void;
+  log: (...data: unknown[]) => void;
+  mkdirSync: (path: string, options: { recursive: true }) => void;
+  readdirSync: (path: string) => string[];
+  spawn: (command: string, args: string[]) => AscessionProcess;
+  writeFileSync: (path: string, data: string) => void;
+};
+
+type AscessionProcess = {
+  on(event: "close", listener: (code: null | number) => void): void;
+  on(event: "error", listener: (error: Error) => void): void;
+  stderr: {
+    on(event: "data", listener: (data: Buffer | string) => void): void;
+  };
+};
+
+const defaultDependencies: AscessionDependencies = {
+  analyzeMotion,
+  error: console.error,
+  log: console.log,
+  mkdirSync,
+  readdirSync,
+  spawn,
+  writeFileSync,
+};
+
 export class AscessionCommand implements CliCommand<AscessionOptions> {
+  private readonly dependencies: AscessionDependencies;
+
+  public constructor(dependencies: AscessionDependencies = defaultDependencies) {
+    this.dependencies = dependencies;
+  }
+
   public async execute(
     input: ParsedCommandArgs<AscessionOptions>,
   ): Promise<string> {
@@ -33,7 +67,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
       ? inputDir.replace("~", process.env.HOME || "")
       : inputDir;
 
-    const files = readdirSync(resolvedInputDir).filter((f) =>
+    const files = this.dependencies.readdirSync(resolvedInputDir).filter((f) =>
       f.toLowerCase().endsWith(".avi"),
     );
 
@@ -42,19 +76,22 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
     }
 
     // Create output directory if it doesn't exist
-    mkdirSync(output, { recursive: true });
+    this.dependencies.mkdirSync(output, { recursive: true });
 
     const manifest: Manifest = {};
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const manifestPath = join(output, `videos-${timestamp}.json`);
 
-    for (const file of files) {
+    for (const [index, file] of files.entries()) {
       const inputPath = join(resolvedInputDir, file);
       const outputFileName =
         file.replace(/\.[^.]+$/, "").toLowerCase() + ".mp4";
       const outputPath = join(output, outputFileName);
+      const progress = formatAscessionProgress(index, files.length);
 
-      console.log(`Converting ${file} -> ${outputFileName}...`);
+      this.dependencies.log(
+        `${progress} Converting ${file} -> ${outputFileName}...`,
+      );
 
       manifest[file] = await new Promise((resolve) => {
         const stats: VideoEntry = {
@@ -67,7 +104,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
         };
 
         // Use a high quality, fast preset: libx264, fast preset, crf 23 (standard quality)
-        const ffmpeg = spawn("ffmpeg", [
+        const ffmpeg = this.dependencies.spawn("ffmpeg", [
           "-i",
           inputPath,
           "-c:v",
@@ -109,29 +146,44 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
 
         ffmpeg.on("close", async (code) => {
           if (code === 0) {
-            console.log(`  ✓ Converted successfully`);
+            this.dependencies.log(`${progress} ✓ Converted successfully`);
             // Capture raw frame data after conversion
-            console.log(`  📊 Sampling frames...`);
-            const motion = await analyzeMotion(outputPath);
+            this.dependencies.log(`${progress} 📊 Sampling frames...`);
+            const motion = await this.dependencies.analyzeMotion(outputPath);
             stats["frame-samples"] = {
               frames: motion.frames,
               sample_interval_seconds: 0.5,
             };
           } else {
-            console.error(`  ✗ Conversion failed with code ${code}`);
+            this.dependencies.error(
+              `${progress} ✗ Conversion failed with code ${code}`,
+            );
           }
           resolve(stats);
         });
 
         ffmpeg.on("error", (error) => {
-          console.error(`  ✗ Failed to spawn ffmpeg:`, error);
+          this.dependencies.error(
+            `${progress} ✗ Failed to spawn ffmpeg:`,
+            error,
+          );
           resolve(stats);
         });
       });
     }
 
-    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+    this.dependencies.writeFileSync(
+      manifestPath,
+      JSON.stringify(manifest, null, 2),
+    );
 
     return `Processed ${files.length} files. Manifest saved to ${manifestPath}`;
   }
+}
+
+export function formatAscessionProgress(
+  currentFileIndex: number,
+  totalFiles: number,
+): string {
+  return `[${currentFileIndex + 1}/${totalFiles}]`;
 }
