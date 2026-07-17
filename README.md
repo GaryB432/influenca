@@ -54,3 +54,14 @@ pnpm run test
 ```bash
 pnpm run build
 ```
+
+## Windows adapter
+
+The Windows platform adapter lives at `/home/runner/work/influenca/influenca/apps/influenca-win`.
+
+Run the initial milestone directly with the .NET SDK:
+
+```bash
+cd /home/runner/work/influenca/influenca/apps/influenca-win
+dotnet run
+```
