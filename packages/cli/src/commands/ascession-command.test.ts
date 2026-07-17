@@ -11,12 +11,12 @@ class FakeProgressProcess extends EventEmitter {
   public readonly stderr = new EventEmitter();
 }
 
-test("formats accession progress with a 1-based current file index", () => {
+test("formats the progress meter with a 1-based current file index", () => {
   assert.equal(formatProgressMeter(0, 3), "[1/3]");
   assert.equal(formatProgressMeter(2, 3), "[3/3]");
 });
 
-test("logs 1-based accession progress before each AVI is processed", async () => {
+test("logs a 1-based progress meter before each AVI is processed", async () => {
   process.env.HOME = "/tmp/home";
 
   const logLines: string[] = [];

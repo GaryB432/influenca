@@ -85,12 +85,12 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const manifestPath = join(output, `videos-${timestamp}.json`);
 
-    for (const [index, file] of files.entries()) {
+    for (const [fileIndex, file] of files.entries()) {
       const inputPath = join(resolvedInputDir, file);
       const outputFileName =
         file.replace(/\.[^.]+$/, "").toLowerCase() + ".mp4";
       const outputPath = join(output, outputFileName);
-      const progress = formatProgressMeter(index, files.length);
+      const progress = formatProgressMeter(fileIndex, files.length);
 
       this.dependencies.log(
         `${progress} Converting ${file} -> ${outputFileName}...`,
