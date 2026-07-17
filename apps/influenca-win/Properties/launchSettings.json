@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "influenca-win": {
+      "commandName": "Project",
+      "dotnetRunMessages": true
+    }
+  }
+}
