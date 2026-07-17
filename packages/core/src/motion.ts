@@ -2,16 +2,6 @@ import type { FrameStats } from "@influenca/core";
 
 import { spawn } from "child_process";
 
-export function add(a: number, b: number): number {
-  return a + b;
-}
-export function greet(name: string): string {
-  return `motion says: hello to ${name}`;
-}
-export const meaning: { life: number } = {
-  life: 42,
-};
-
 export function analyzeMotion(inputPath: string): Promise<{
   frames: FrameStats[];
 }> {
@@ -93,4 +83,20 @@ export function analyzeMotion(inputPath: string): Promise<{
       });
     });
   });
+}
+
+export function calculateActivityScore(
+  frames: FrameStats[],
+  globalMaxStdev: number,
+): number {
+  if (frames.length === 0) return 0;
+
+  const uniqueChecksums = new Set(frames.map((f) => f.checksum));
+  const motionRatio = uniqueChecksums.size / frames.length;
+
+  const avgStdevY =
+    frames.reduce((sum, f) => sum + (f.stdev?.[0] ?? 0), 0) / frames.length;
+  const detailRatio = globalMaxStdev > 0 ? avgStdevY / globalMaxStdev : 0;
+
+  return motionRatio * detailRatio;
 }
