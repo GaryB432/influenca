@@ -14,17 +14,17 @@ export type AscessionOptions = {
   output: string;
 };
 
-type ProgressDependencies = {
+type AscessionCommandDependencies = {
   analyzeMotion: typeof analyzeMotion;
   error: (...data: unknown[]) => void;
   log: (...data: unknown[]) => void;
   mkdirSync: (path: string, options: { recursive: true }) => void;
   readdirSync: (path: string) => string[];
-  spawn: (command: string, args: string[]) => ProgressProcess;
+  spawn: (command: string, args: string[]) => SpawnedProcess;
   writeFileSync: (path: string, data: string) => void;
 };
 
-type ProgressProcess = {
+type SpawnedProcess = {
   on(event: "close", listener: (code: null | number) => void): void;
   on(event: "error", listener: (error: Error) => void): void;
   stderr: {
@@ -32,7 +32,7 @@ type ProgressProcess = {
   };
 };
 
-const defaultDependencies: ProgressDependencies = {
+const defaultAscessionCommandDependencies: AscessionCommandDependencies = {
   analyzeMotion,
   error: console.error,
   log: console.log,
@@ -43,9 +43,12 @@ const defaultDependencies: ProgressDependencies = {
 };
 
 export class AscessionCommand implements CliCommand<AscessionOptions> {
-  private readonly dependencies: ProgressDependencies;
+  private readonly dependencies: AscessionCommandDependencies;
 
-  public constructor(dependencies: ProgressDependencies = defaultDependencies) {
+  public constructor(
+    dependencies: AscessionCommandDependencies =
+      defaultAscessionCommandDependencies,
+  ) {
     this.dependencies = dependencies;
   }
 
