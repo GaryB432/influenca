@@ -31,7 +31,7 @@ sudo umount /mnt/f
 
 ls "$HOME/.local/state/influenca/$TIMESTAMP/videos/"
 
-echo "✅ node $HOME/repos/influenca/packages/cli/dist/bin.mjs ascession $HOME/.local/state/influenca/$TIMESTAMP/videos/ --output ./$TIMESTAMP/videos"
+echo "✅ node $HOME/repos/influenca/packages/cli/dist/bin.mjs accession $HOME/.local/state/influenca/$TIMESTAMP/videos/ --outDir ./$TIMESTAMP/videos"
 
 ```
 
