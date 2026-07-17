@@ -1,0 +1,26 @@
+name: Release Windows Adapter
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - win-v*
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/influenca-win
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore
+      - run: dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
+      - name: Copy binary artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ../../artifacts/win-x64 | Out-Null
+          Copy-Item ./bin/Release/net8.0/win-x64/publish/influenca-win.exe ../../artifacts/win-x64/influenca-win.exe -Force
