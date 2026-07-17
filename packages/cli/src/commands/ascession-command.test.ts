@@ -4,16 +4,16 @@ import { test } from "node:test";
 
 import {
   AscessionCommand,
-  formatAscessionProgress,
+  formatAccessionProgress,
 } from "./ascession-command.ts";
 
-class FakeAscessionProcess extends EventEmitter {
+class FakeAccessionProcess extends EventEmitter {
   public readonly stderr = new EventEmitter();
 }
 
 test("formats accession progress with a 1-based current file index", () => {
-  assert.equal(formatAscessionProgress(0, 3), "[1/3]");
-  assert.equal(formatAscessionProgress(2, 3), "[3/3]");
+  assert.equal(formatAccessionProgress(0, 3), "[1/3]");
+  assert.equal(formatAccessionProgress(2, 3), "[3/3]");
 });
 
 test("logs 1-based accession progress before each AVI is processed", async () => {
@@ -34,7 +34,7 @@ test("logs 1-based accession progress before each AVI is processed", async () =>
     readdirSync: () => ["FIRST.AVI", "notes.txt", "second.avi"],
     spawn: (_command, args) => {
       spawnCalls.push(args);
-      const process = new FakeAscessionProcess();
+      const process = new FakeAccessionProcess();
       queueMicrotask(() => {
         process.stderr.emit(
           "data",

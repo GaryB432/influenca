@@ -14,17 +14,17 @@ export type AscessionOptions = {
   output: string;
 };
 
-type AscessionDependencies = {
+type AccessionDependencies = {
   analyzeMotion: typeof analyzeMotion;
   error: (...data: unknown[]) => void;
   log: (...data: unknown[]) => void;
   mkdirSync: (path: string, options: { recursive: true }) => void;
   readdirSync: (path: string) => string[];
-  spawn: (command: string, args: string[]) => AscessionProcess;
+  spawn: (command: string, args: string[]) => AccessionProcess;
   writeFileSync: (path: string, data: string) => void;
 };
 
-type AscessionProcess = {
+type AccessionProcess = {
   on(event: "close", listener: (code: null | number) => void): void;
   on(event: "error", listener: (error: Error) => void): void;
   stderr: {
@@ -32,7 +32,7 @@ type AscessionProcess = {
   };
 };
 
-const defaultDependencies: AscessionDependencies = {
+const defaultDependencies: AccessionDependencies = {
   analyzeMotion,
   error: console.error,
   log: console.log,
@@ -43,9 +43,9 @@ const defaultDependencies: AscessionDependencies = {
 };
 
 export class AscessionCommand implements CliCommand<AscessionOptions> {
-  private readonly dependencies: AscessionDependencies;
+  private readonly dependencies: AccessionDependencies;
 
-  public constructor(dependencies: AscessionDependencies = defaultDependencies) {
+  public constructor(dependencies: AccessionDependencies = defaultDependencies) {
     this.dependencies = dependencies;
   }
 
@@ -87,7 +87,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
       const outputFileName =
         file.replace(/\.[^.]+$/, "").toLowerCase() + ".mp4";
       const outputPath = join(output, outputFileName);
-      const progress = formatAscessionProgress(index, files.length);
+      const progress = formatAccessionProgress(index, files.length);
 
       this.dependencies.log(
         `${progress} Converting ${file} -> ${outputFileName}...`,
@@ -181,7 +181,7 @@ export class AscessionCommand implements CliCommand<AscessionOptions> {
   }
 }
 
-export function formatAscessionProgress(
+export function formatAccessionProgress(
   currentFileIndex: number,
   totalFiles: number,
 ): string {
