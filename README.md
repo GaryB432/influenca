@@ -31,7 +31,14 @@ sudo umount /mnt/f
 
 ls "$HOME/.local/state/influenca/$TIMESTAMP/videos/"
 
-echo "✅ node $HOME/repos/influenca/packages/cli/dist/bin.mjs accession $HOME/.local/state/influenca/$TIMESTAMP/videos/ --outDir ./$TIMESTAMP/videos"
+echo "✅ node $HOME/repos/influenca/packages/cli/dist/bin.mjs accession $HOME/.local/state/influenca/$TIMESTAMP/videos/"
+
+printf "%s %s %s\n" \
+  "$(tput setaf 208)Hello" \
+  "$(tput setaf 81)Beautiful" \
+  "$(tput setaf 121)World$(tput sgr0)"
+
+printf "that does it"
 
 ```
 

@@ -1,10 +1,11 @@
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 500 120"
+  viewBox="0 0 500 500"
   width="100%"
   height="100%"
 >
   <!-- Definitions for reused gradients and visual properties -->
+
   <defs>
     <linearGradient id="gridStream" x1="0%" y1="100%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#ff3366" />
@@ -50,6 +51,43 @@
     <mask id="glimmerMask">
       <use href="#monogram-array" fill="white" />
     </mask>
+
+    <!-- Define the master reusable shape template (Root at 0,0) -->
+    <g id="finder-pattern">
+      <rect
+        x="0"
+        y="0"
+        width="70"
+        height="70"
+        fill="#000000"
+        shape-rendering="crispEdges"
+      />
+      <rect
+        x="10"
+        y="10"
+        width="50"
+        height="50"
+        fill="#ffffff"
+        shape-rendering="crispEdges"
+      />
+      <rect
+        x="20"
+        y="20"
+        width="30"
+        height="30"
+        fill="#000000"
+        shape-rendering="crispEdges"
+      />
+    </g>
+
+    <!-- Define a single master dark pip block to avoid repeating rendering attributes -->
+    <rect
+      id="pip"
+      width="10"
+      height="10"
+      fill="#090a15"
+      shape-rendering="crispEdges"
+    />
   </defs>
 
   <!-- Background Canvas -->
@@ -200,5 +238,21 @@
       stroke-width="1.5"
     />
     <rect x="435" y="80" width="35" height="2" fill="#ff3366" opacity="0.6" />
+  </g>
+
+  <g id="master-qr-container" transform="translate(135, 235)">
+    <!-- Master Background Bounds Plate -->
+    <rect id="qr" width="230" height="230" fill="#ffffff" opacity="1" />
+
+    <!-- Instantiate the corner finder patterns instantly via reference -->
+    <use href="#finder-pattern" x="10" y="10" />
+    <use href="#finder-pattern" x="150" y="10" />
+    <use href="#finder-pattern" x="10" y="150" />
+
+    <!-- Instantiate the data payload layout referencing the blueprint pip -->
+    <use href="#pip" x="90" y="30" />
+    <use href="#pip" x="100" y="60" />
+    <use href="#pip" x="130" y="130" />
+    <use href="#pip" x="110" y="190" />
   </g>
 </svg>
