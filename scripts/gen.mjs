@@ -1,14 +1,22 @@
 /**
  * gen.mjs
  *
- * Render PNG frames from brand-500x120.svg using Chromium headless --screenshot,
- * then encode to AVI via FFmpeg (mediaforge wrapper).
+ * Render PNG frames from brand-500x500.svg using Chromium headless --screenshot,
+ * then downsample to 24×24 and encode to AVI via FFmpeg (mediaforge wrapper).
  *
- * Strategy: for each frame i, write a tiny HTML page that:
- *   1. Embeds the SVG
- *   2. On DOMContentLoaded, pauses SMIL animations and seeks to time t = i/N * duration
- * Then run `chromium-browser --screenshot` on that file.
- * Finally, stitch frames into an AVI.
+ * Pipeline:
+ *   [ brand-500x500.svg ]
+ *        │
+ *        ▼  Chromium headless (500×500 — high-quality SVG rasterisation)
+ *   [ frame_NNNN.png  ×24 ]
+ *        │
+ *        ▼  FFmpeg  scale=24:24  →  msmpeg4v3
+ *   [ fixtures/micro-specimen.avi ]   ≈ 4 KB
+ *
+ * At 24×24 each frame is 576 pixels.  A single MPEG macroblock covers nearly the
+ * full canvas, so motion vectors describe the entire pulsing monogram in one or
+ * two entries per frame.  When stretched in any video player the bilinear/bicubic
+ * upscale turns the micro-grid into a smooth, glowing pixel-art ballet.
  *
  * Usage (from repo root):
  *   node scripts/gen.mjs
@@ -21,18 +29,29 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync, unlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawnSync, execFileSync } from 'node:child_process';
+
+// Ensure FFMPEG_PATH is set so mediaforge can find the binary even when
+// /usr/bin is not on the inherited PATH (e.g. some CI / sandbox envs).
+if (!process.env['FFMPEG_PATH']) {
+  try {
+    process.env['FFMPEG_PATH'] = execFileSync('which', ['ffmpeg'], { encoding: 'utf8' }).trim();
+  } catch {
+    process.env['FFMPEG_PATH'] = '/usr/bin/ffmpeg';
+  }
+}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const SVG_PATH   = resolve('assets/brand-500x500.svg');
 const FRAMES_DIR = resolve('/tmp/gen-avi-square/frames');
-const OUTPUT_AVI = resolve('fixtures/brand-500x500.avi');
+const OUTPUT_AVI = resolve('fixtures/micro-specimen.avi');
 
 const FRAME_COUNT   = 24;   // how many frames to sample
 const ANIM_DURATION = 4.0;  // seconds — full cycle of the SVG shimmer animation
-const WIDTH         = 500;
-const HEIGHT        = 500;  // square — scales cleanly to 24×24 avatar
+const WIDTH         = 500;  // capture at high res for quality downsampling
+const HEIGHT        = 500;
+const OUT_SIZE      = 24;   // final output dimensions: 24×24 avatar-friendly
 const FPS           = 8;    // 24 frames @ 8 fps = 3s clip
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
@@ -110,21 +129,22 @@ console.log(`\nAll ${FRAME_COUNT} frames captured. Encoding AVI with FFmpeg via 
 // the repo root (not from inside scripts/).
 //
 // Equivalent raw ffmpeg command:
-//   ffmpeg -y -framerate 8 -i /tmp/gen-avi/frames/frame_%04d.png \
-//          -vcodec msmpeg4v3 -q:v 8 assets/brand-500x120.avi
+//   ffmpeg -y -framerate 8 -i /tmp/gen-avi-square/frames/frame_%04d.png \
+//          -vf scale=24:24 -vcodec msmpeg4v3 -q:v 4 fixtures/micro-specimen.avi
 //
 // Codec notes:
 //   msmpeg4v3  (MP43)  — Microsoft MPEG-4 v3, native AVI codec, wide compat
-//   q:v 8              — quality scale 1–31 (lower = better); 8 is fine at
-//                        this resolution and keeps the file tiny
+//   scale=24:24        — downsample 500×500 → 24×24; Lanczos by default in ffmpeg
+//   q:v 4              — quality scale 1–31 (lower = better); tighter at 24px
 
 const { ffmpeg } = await import('mediaforge');
 
 await ffmpeg()
   .input(join(FRAMES_DIR, 'frame_%04d.png'), { frameRate: FPS })
   .output(OUTPUT_AVI)
+  .videoFilter(`scale=${OUT_SIZE}:${OUT_SIZE}`)
   .videoCodec('msmpeg4v3')
-  .addOutputOption('-q:v', '8')
+  .addOutputOption('-q:v', '4')
   .overwrite()
   .run();
 
@@ -132,4 +152,5 @@ const size = statSync(OUTPUT_AVI).size;
 console.log(`\n✅  ${OUTPUT_AVI}`);
 console.log(`   Size   : ${(size / 1024).toFixed(1)} KB`);
 console.log(`   Frames : ${FRAME_COUNT} @ ${FPS} fps = ${(FRAME_COUNT / FPS).toFixed(1)}s`);
+console.log(`   Canvas : ${OUT_SIZE}×${OUT_SIZE} px  (downsampled from ${WIDTH}×${HEIGHT} source)`);
 console.log(`   Codec  : MS-MPEG4 v3 (MP43) in AVI container`);
