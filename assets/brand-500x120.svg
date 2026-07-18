@@ -21,28 +21,6 @@
     <mask id="glimmerMask">
       <use href="#monogram-array" fill="white" />
     </mask>
-    <style type="text/css">
-      @keyframes heartbeat {
-        0% {
-          transform: scale(1);
-        }
-        14% {
-          transform: scale(1.08);
-        }
-        28% {
-          transform: scale(1);
-        }
-        42% {
-          transform: scale(1.12);
-        }
-        70% {
-          transform: scale(1);
-        }
-      }
-      .pulse-element {
-        animation: heartbeat 1.8s infinite ease-in-out;
-      }
-    </style>
   </defs>
 
   <!-- Background Canvas -->
@@ -50,7 +28,17 @@
 
   <!-- Kinetic Grid Monogram Icon (Abstract 'I' Array) -->
   <g id="monogram-array" transform="translate(52, 72.5)">
-    <g class="pulse-element">
+    <g>
+      <animateTransform
+        attributeName="transform"
+        type="scale"
+        values="1; 1.08; 1; 1.12; 1; 1"
+        keyTimes="0; 0.14; 0.28; 0.42; 0.70; 1"
+        dur="1.8s"
+        repeatCount="indefinite"
+        calcMode="spline"
+        keySplines="0.42 0 0.58 1; 0.42 0 0.58 1; 0.42 0 0.58 1; 0.42 0 0.58 1; 0.42 0 0.58 1"
+      />
       <g transform="translate(-27, -52.5)">
         <!-- Column 1: Outbound Velocity -->
         <rect
