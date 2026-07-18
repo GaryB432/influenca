@@ -27,38 +27,47 @@
  *   - pnpm install  (for mediaforge)
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync, unlinkSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { spawnSync, execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from "node:child_process";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { join, resolve } from "node:path";
 
 // Ensure FFMPEG_PATH is set so mediaforge can find the binary even when
 // /usr/bin is not on the inherited PATH (e.g. some CI / sandbox envs).
-if (!process.env['FFMPEG_PATH']) {
+if (!process.env["FFMPEG_PATH"]) {
   try {
-    process.env['FFMPEG_PATH'] = execFileSync('which', ['ffmpeg'], { encoding: 'utf8' }).trim();
+    process.env["FFMPEG_PATH"] = execFileSync("which", ["ffmpeg"], {
+      encoding: "utf8",
+    }).trim();
   } catch {
-    process.env['FFMPEG_PATH'] = '/usr/bin/ffmpeg';
+    process.env["FFMPEG_PATH"] = "/usr/bin/ffmpeg";
   }
 }
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const SVG_PATH   = resolve('assets/brand-500x500.svg');
-const FRAMES_DIR = resolve('/tmp/gen-avi-square/frames');
-const OUTPUT_AVI = resolve('fixtures/micro-specimen.avi');
+const SVG_PATH = resolve("assets/brand-500x500.svg");
+const FRAMES_DIR = resolve("/tmp/gen-avi-square/frames");
+const OUTPUT_AVI = resolve("fixtures/micro-specimen.avi");
 
-const FRAME_COUNT   = 24;   // how many frames to sample
-const ANIM_DURATION = 4.0;  // seconds — full cycle of the SVG shimmer animation
-const WIDTH         = 500;  // capture at high res for quality downsampling
-const HEIGHT        = 500;
-const OUT_SIZE      = 24;   // final output dimensions: 24×24 avatar-friendly
-const FPS           = 8;    // 24 frames @ 8 fps = 3s clip
+const FRAME_COUNT = 24; // how many frames to sample
+const ANIM_DURATION = 4.0; // seconds — full cycle of the SVG shimmer animation
+const WIDTH = 500; // capture at high res for quality downsampling
+const HEIGHT = 500;
+const OUT_SIZE = 24; // final output dimensions: 24×24 avatar-friendly
+const FPS = 8; // 24 frames @ 8 fps = 3s clip
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
 
 if (!existsSync(FRAMES_DIR)) mkdirSync(FRAMES_DIR, { recursive: true });
 
-const svgContent = readFileSync(SVG_PATH, 'utf8');
+const svgContent = readFileSync(SVG_PATH, "utf8");
 
 // ── Frame capture ─────────────────────────────────────────────────────────────
 
@@ -67,7 +76,7 @@ console.log(`Capturing ${FRAME_COUNT} frames via Chromium headless...`);
 for (let i = 0; i < FRAME_COUNT; i++) {
   // Time offset within the animation cycle for this frame
   const t = (i / FRAME_COUNT) * ANIM_DURATION;
-  const framePath = join(FRAMES_DIR, `frame_${String(i).padStart(4, '0')}.png`);
+  const framePath = join(FRAMES_DIR, `frame_${String(i).padStart(4, "0")}.png`);
 
   // Build a minimal HTML page that freezes the SVG at time t
   const html = `<!DOCTYPE html>
@@ -97,30 +106,41 @@ ${svgContent}
   writeFileSync(htmlPath, html);
 
   // Launch Chromium in headless mode, take a screenshot, exit
-  const result = spawnSync('chromium-browser', [
-    '--headless=new',
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-gpu',
-    '--disable-software-rasterizer',
-    `--window-size=${WIDTH},${HEIGHT}`,
-    `--screenshot=${framePath}`,
-    `file://${htmlPath}`
-  ], { timeout: 20000, stdio: 'pipe' });
+  const result = spawnSync(
+    "chromium-browser",
+    [
+      "--headless=new",
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-gpu",
+      "--disable-software-rasterizer",
+      `--window-size=${WIDTH},${HEIGHT}`,
+      `--screenshot=${framePath}`,
+      `file://${htmlPath}`,
+    ],
+    { stdio: "pipe", timeout: 20000 },
+  );
 
   if (result.status !== 0) {
-    console.error(`Frame ${i} failed:`, result.stderr?.toString().slice(0, 300));
+    console.error(
+      `Frame ${i} failed:`,
+      result.stderr?.toString().slice(0, 300),
+    );
     process.exit(1);
   }
 
   unlinkSync(htmlPath);
 
   if (i % 4 === 0 || i === FRAME_COUNT - 1) {
-    process.stdout.write(`  frame ${i + 1}/${FRAME_COUNT}  (t=${t.toFixed(2)}s)\n`);
+    process.stdout.write(
+      `  frame ${i + 1}/${FRAME_COUNT}  (t=${t.toFixed(2)}s)\n`,
+    );
   }
 }
 
-console.log(`\nAll ${FRAME_COUNT} frames captured. Encoding AVI with FFmpeg via mediaforge...`);
+console.log(
+  `\nAll ${FRAME_COUNT} frames captured. Encoding AVI with FFmpeg via mediaforge...`,
+);
 
 // ── Encode ────────────────────────────────────────────────────────────────────
 //
@@ -137,20 +157,24 @@ console.log(`\nAll ${FRAME_COUNT} frames captured. Encoding AVI with FFmpeg via 
 //   scale=24:24        — downsample 500×500 → 24×24; Lanczos by default in ffmpeg
 //   q:v 4              — quality scale 1–31 (lower = better); tighter at 24px
 
-const { ffmpeg } = await import('mediaforge');
+const { ffmpeg } = await import("mediaforge");
 
 await ffmpeg()
-  .input(join(FRAMES_DIR, 'frame_%04d.png'), { frameRate: FPS })
+  .input(join(FRAMES_DIR, "frame_%04d.png"), { frameRate: FPS })
   .output(OUTPUT_AVI)
   .videoFilter(`scale=${OUT_SIZE}:${OUT_SIZE}`)
-  .videoCodec('msmpeg4v3')
-  .addOutputOption('-q:v', '4')
+  .videoCodec("msmpeg4v3")
+  .addOutputOption("-q:v", "4")
   .overwrite()
   .run();
 
 const size = statSync(OUTPUT_AVI).size;
 console.log(`\n✅  ${OUTPUT_AVI}`);
 console.log(`   Size   : ${(size / 1024).toFixed(1)} KB`);
-console.log(`   Frames : ${FRAME_COUNT} @ ${FPS} fps = ${(FRAME_COUNT / FPS).toFixed(1)}s`);
-console.log(`   Canvas : ${OUT_SIZE}×${OUT_SIZE} px  (downsampled from ${WIDTH}×${HEIGHT} source)`);
+console.log(
+  `   Frames : ${FRAME_COUNT} @ ${FPS} fps = ${(FRAME_COUNT / FPS).toFixed(1)}s`,
+);
+console.log(
+  `   Canvas : ${OUT_SIZE}×${OUT_SIZE} px  (downsampled from ${WIDTH}×${HEIGHT} source)`,
+);
 console.log(`   Codec  : MS-MPEG4 v3 (MP43) in AVI container`);
