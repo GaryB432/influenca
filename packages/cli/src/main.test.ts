@@ -1,4 +1,7 @@
 import assert from "node:assert";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { mock, test } from "node:test";
 
 import { main } from "./main.js";
@@ -154,5 +157,59 @@ test("accession appends timestamp to outDir by default", async () => {
   } finally {
     nowMock.mock.restore();
     logMock.mock.restore();
+  }
+});
+
+test("prints analyze command help", async () => {
+  let output = "";
+  const writeMock = mock.method(process.stdout, "write", (chunk: string) => {
+    output += chunk;
+    return true;
+  });
+
+  try {
+    await main(["node", "bin.js", "analyze", "--help"]);
+
+    assert.match(output, /analyze \[inDir\]/);
+    assert.match(output, /--minimal/);
+  } finally {
+    writeMock.mock.restore();
+  }
+});
+
+test("analyze requires inDir", async () => {
+  await assert.rejects(async () => {
+    await main(["node", "bin.js", "analyze"]);
+  }, /inDir is required\. Provide \[inDir\]\./i);
+});
+
+test("analyze minimal summarizes video count from manifest", async () => {
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "influenca-analyze-"));
+  const manifestPath = path.join(tmpRoot, ".influenca.json");
+
+  fs.writeFileSync(
+    manifestPath,
+    JSON.stringify(
+      {
+        "one.mp4": { stats: { duration_seconds: 5, frames: 120 } },
+        "two.mp4": { stats: { duration_seconds: 9, frames: 240 } },
+      },
+      null,
+      2,
+    ),
+  );
+
+  let output = "";
+  const writeMock = mock.method(process.stdout, "write", (chunk: string) => {
+    output += chunk;
+    return true;
+  });
+
+  try {
+    await main(["node", "bin.js", "analyze", tmpRoot]);
+    assert.match(output, /Analyze minimal: 2 video\(s\) listed/);
+  } finally {
+    writeMock.mock.restore();
+    fs.rmSync(tmpRoot, { force: true, recursive: true });
   }
 });

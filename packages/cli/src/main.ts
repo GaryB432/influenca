@@ -1,12 +1,14 @@
-import { cancel, isCancel, spinner, text } from "@clack/prompts";
+import { cancel, isCancel, outro, spinner, text } from "@clack/prompts";
 import { cac } from "cac";
 import path from "node:path";
 
 import { AccessionCommand } from "./commands/accession-command.js";
+import { AnalyzeCommand } from "./commands/analyze-command.js";
 import { setupEnvironment } from "./environment.js";
 import { type GreetWorkflowOptions, runGreet } from "./workflows/greet.js";
 
 const accessionCommand = new AccessionCommand();
+const analyzeCommand = new AnalyzeCommand();
 
 type AccessionOptions = {
   dryRun?: boolean;
@@ -16,6 +18,10 @@ type AccessionOptions = {
   transcribe?: boolean;
   verbose?: boolean;
 } & CommonInteractiveOptions;
+
+type AnalyzeOptions = {
+  minimal?: boolean;
+};
 
 type CommonInteractiveOptions = {
   interactive?: boolean;
@@ -60,6 +66,15 @@ export async function main(rawArguments: string[]): Promise<void> {
     )
     .action(async (inDir: string | undefined, options: AccessionOptions) => {
       await runAccession(inDir, options);
+    });
+
+  cli
+    .command("analyze [inDir]", "Summarize .influenca.json in a directory")
+    .option("--minimal", "Print only video-count summary", { default: true })
+    .example("analyze ./tmp/processed")
+    .example("analyze ./tmp/processed --no-minimal")
+    .action(async (inDir: string | undefined, options: AnalyzeOptions) => {
+      await runAnalyze(inDir, options);
     });
 
   const parsedArgs = cli.parse(rawArguments, { run: false });
@@ -252,6 +267,24 @@ async function runAccession(
     }
     throw error;
   }
+}
+
+async function runAnalyze(
+  inDir: string | undefined,
+  options: AnalyzeOptions,
+): Promise<void> {
+  if (!inDir) {
+    throwValidationError("inDir is required. Provide [inDir].");
+  }
+
+  const message = await analyzeCommand.execute({
+    args: [inDir],
+    options: {
+      minimal: options.minimal ?? true,
+    },
+  });
+
+  outro(message);
 }
 
 function throwValidationError(message: string): never {
