@@ -27,7 +27,7 @@ import { spawnSync } from 'node:child_process';
 
 const SVG_PATH   = resolve('assets/brand-500x500.svg');
 const FRAMES_DIR = resolve('/tmp/gen-avi-square/frames');
-const OUTPUT_AVI = resolve('assets/brand-500x500.avi');
+const OUTPUT_AVI = resolve('fixtures/brand-500x500.avi');
 
 const FRAME_COUNT   = 24;   // how many frames to sample
 const ANIM_DURATION = 4.0;  // seconds — full cycle of the SVG shimmer animation
@@ -120,12 +120,12 @@ console.log(`\nAll ${FRAME_COUNT} frames captured. Encoding AVI with FFmpeg via 
 
 const { ffmpeg } = await import('mediaforge');
 
-await ffmpeg(join(FRAMES_DIR, 'frame_%04d.png'))
-  .addInputOption('-framerate', String(FPS))
+await ffmpeg()
+  .input(join(FRAMES_DIR, 'frame_%04d.png'), { frameRate: FPS })
   .output(OUTPUT_AVI)
   .videoCodec('msmpeg4v3')
   .addOutputOption('-q:v', '8')
-  .addOutputOption('-y')
+  .overwrite()
   .run();
 
 const size = statSync(OUTPUT_AVI).size;
