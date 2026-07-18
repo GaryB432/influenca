@@ -38,5 +38,23 @@ function formatAnalyzeSummary(
     return `Analyze minimal: ${result.videoCount} video(s) listed in ${result.manifestPath}.`;
   }
 
-  return `Analyze stats: videos=${result.videoCount}, with-stats=${result.withStatsCount}, total-frames=${result.totalFrames}, total-duration-seconds=${result.totalDurationSeconds.toFixed(2)} (${result.manifestPath})`;
+  const missingStatsCount = result.videoCount - result.withStatsCount;
+  const averageDurationSeconds =
+    result.withStatsCount > 0
+      ? result.totalDurationSeconds / result.withStatsCount
+      : 0;
+  const averageFrames =
+    result.withStatsCount > 0 ? result.totalFrames / result.withStatsCount : 0;
+
+  return [
+    "Analyze stats",
+    `- manifest: ${result.manifestPath}`,
+    `- videos: ${result.videoCount}`,
+    `- with stats: ${result.withStatsCount}`,
+    `- missing stats: ${missingStatsCount}`,
+    `- total duration (s): ${result.totalDurationSeconds.toFixed(2)}`,
+    `- total frames: ${result.totalFrames}`,
+    `- avg duration per video (s): ${averageDurationSeconds.toFixed(2)}`,
+    `- avg frames per video: ${averageFrames.toFixed(2)}`,
+  ].join("\n");
 }

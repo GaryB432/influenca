@@ -213,3 +213,43 @@ test("analyze minimal summarizes video count from manifest", async () => {
     fs.rmSync(tmpRoot, { force: true, recursive: true });
   }
 });
+
+test("analyze --no-minimal prints expanded stats", async () => {
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "influenca-analyze-"));
+  const manifestPath = path.join(tmpRoot, ".influenca.json");
+
+  fs.writeFileSync(
+    manifestPath,
+    JSON.stringify(
+      {
+        "one.mp4": { stats: { duration_seconds: 4, frames: 100 } },
+        "two.mp4": { stats: { duration_seconds: 6, frames: 200 } },
+        "three.mp4": {},
+      },
+      null,
+      2,
+    ),
+  );
+
+  let output = "";
+  const writeMock = mock.method(process.stdout, "write", (chunk: string) => {
+    output += chunk;
+    return true;
+  });
+
+  try {
+    await main(["node", "bin.js", "analyze", tmpRoot, "--no-minimal"]);
+
+    assert.match(output, /Analyze stats/);
+    assert.match(output, /- videos: 3/);
+    assert.match(output, /- with stats: 2/);
+    assert.match(output, /- missing stats: 1/);
+    assert.match(output, /- total duration \(s\): 10\.00/);
+    assert.match(output, /- total frames: 300/);
+    assert.match(output, /- avg duration per video \(s\): 5\.00/);
+    assert.match(output, /- avg frames per video: 150\.00/);
+  } finally {
+    writeMock.mock.restore();
+    fs.rmSync(tmpRoot, { force: true, recursive: true });
+  }
+});
