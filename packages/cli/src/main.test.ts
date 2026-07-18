@@ -16,7 +16,6 @@ test("prints help for unknown command shape", async () => {
   assert.match(output, /greet \[name\]/);
 
   writeMock.mock.restore();
-  mock.reset();
 });
 
 test("matches greet command with positional name", async () => {
@@ -31,15 +30,13 @@ test("matches greet command with positional name", async () => {
     "bin.js",
     "greet",
     "bob",
-    "--interactive",
-    "no",
+    "--no-interactive",
     "--offset=-6",
   ]);
 
   assert.doesNotMatch(stderr, /Usage:/);
 
   stderrMock.mock.restore();
-  mock.reset();
 });
 
 test("prints greet command help", async () => {
@@ -53,14 +50,109 @@ test("prints greet command help", async () => {
 
   assert.match(output, /greet \[name\]/);
   assert.match(output, /--offset <hours>/);
-  assert.match(output, /--interactive <mode>/);
+  assert.match(output, /--no-interactive/);
 
   writeMock.mock.restore();
-  mock.reset();
 });
 
-test("greet requires --offset in strict non-interactive mode", async () => {
+test("greet supports --no-interactive boolean flag", async () => {
+  await assert.doesNotReject(async () => {
+    await main(["node", "bin.js", "greet", "bob", "--no-interactive"]);
+  });
+});
+
+test("prints accession command help", async () => {
+  let output = "";
+  const writeMock = mock.method(process.stdout, "write", (chunk: string) => {
+    output += chunk;
+    return true;
+  });
+
+  try {
+    await main(["node", "bin.js", "accession", "--help"]);
+
+    assert.match(output, /accession \[inDir\]/);
+    assert.match(output, /--out-dir <path>/);
+    assert.match(output, /--timestamp/);
+    assert.match(output, /--dry-run/);
+    assert.match(output, /--open-ai-key <key>/);
+    assert.match(output, /--transcribe/);
+    assert.match(output, /--interactive/);
+  } finally {
+    writeMock.mock.restore();
+  }
+});
+
+test("accession requires inDir", async () => {
   await assert.rejects(async () => {
-    await main(["node", "bin.js", "greet", "bob", "--interactive", "no"]);
-  }, /Name and --offset are required/i);
+    await main([
+      "node",
+      "bin.js",
+      "accession",
+      "--no-interactive",
+      "--dry-run",
+    ]);
+  }, /inDir is required in --no-interactive mode\. Provide \[inDir\]\./i);
+});
+
+test("accession resolves outDir from INFLUENCA_DIR in non-interactive mode", async () => {
+  const originalOutDir = process.env.INFLUENCA_DIR;
+  process.env.INFLUENCA_DIR = "tmp/from-env";
+
+  let output = "";
+  const logMock = mock.method(console, "log", (...args: unknown[]) => {
+    output += `${args.map(String).join(" ")}\n`;
+  });
+
+  try {
+    await assert.doesNotReject(async () => {
+      await main([
+        "node",
+        "bin.js",
+        "accession",
+        "../../fixtures",
+        "--no-interactive",
+        "--dry-run",
+        "--no-timestamp",
+      ]);
+    });
+
+    assert.match(output, /in tmp\/from-env\./);
+  } finally {
+    logMock.mock.restore();
+    if (typeof originalOutDir === "undefined") {
+      delete process.env.INFLUENCA_DIR;
+    } else {
+      process.env.INFLUENCA_DIR = originalOutDir;
+    }
+  }
+});
+
+test("accession appends timestamp to outDir by default", async () => {
+  const nowMock = mock.method(Date, "now", () => {
+    return Date.parse("2026-07-15T17:03:16.735Z");
+  });
+
+  let output = "";
+  const logMock = mock.method(console, "log", (...args: unknown[]) => {
+    output += `${args.map(String).join(" ")}\n`;
+  });
+
+  try {
+    await main([
+      "node",
+      "bin.js",
+      "accession",
+      "../../fixtures",
+      "--dry-run",
+      "--out-dir",
+      "tmp/demo",
+      "--no-interactive",
+    ]);
+
+    assert.match(output, /in tmp\/demo\/2026-07-15T17:03:16\.735Z\./);
+  } finally {
+    nowMock.mock.restore();
+    logMock.mock.restore();
+  }
 });

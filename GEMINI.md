@@ -11,7 +11,7 @@ The `influenca` CLI is designed to be helpful and frictionless. It should guide 
 To prevent "missing argument" errors, commands should define arguments as optional (`[arg]`) and resolve them in the following order:
 
 1.  **Explicit CLI Argument**: Provided via the command line.
-2.  **Environment Variable**: Fall back to relevant environment variables (e.g., `INFLUENCA_MEDIA` for manifest directories).
+2.  **Environment Variable**: Fall back to relevant environment variables for manifest directories.
 3.  **Interactive Prompt**: Use `@clack/prompts` to request the missing value from the user.
 
 ### User Experience (UX)
@@ -38,12 +38,5 @@ To prevent "missing argument" errors, commands should define arguments as option
 ## 📦 Workspace Structure
 
 - `packages/cli`: The entry point and command orchestration.
-- `packages/core`: Core business logic, time utilities, and shared types.
+- `packages/core`: Core business logic, utilities, and shared types.
 - `fixtures/`: Sample data (e.g., `influenca.json`) used for development and testing.
-
-## 📝 Data Manifests
-
-The `influenca.json` file is the source of truth for processed media. It contains:
-
-- **Encoding Stats**: Bitrate, FPS, and total frame count.
-- **Frame Samples**: Periodically sampled frame data (checksums, mean, and stdev) for motion and quality analysis.

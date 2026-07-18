@@ -31,7 +31,14 @@ sudo umount /mnt/f
 
 ls "$HOME/.local/state/influenca/$TIMESTAMP/videos/"
 
-echo "✅ node $HOME/repos/influenca/packages/cli/dist/bin.mjs ascession $HOME/.local/state/influenca/$TIMESTAMP/videos/ --output ./$TIMESTAMP/videos"
+echo "✅ node $HOME/repos/influenca/packages/cli/dist/bin.mjs accession $HOME/.local/state/influenca/$TIMESTAMP/videos/"
+
+printf "%s %s %s\n" \
+  "$(tput setaf 208)Hello" \
+  "$(tput setaf 81)Beautiful" \
+  "$(tput setaf 121)World$(tput sgr0)"
+
+printf "that does it"
 
 ```
 
@@ -54,3 +61,39 @@ pnpm run test
 ```bash
 pnpm run build
 ```
+
+## Speech-to-Text Transcription
+
+Transcription is implemented in the current pipeline, but it only runs when the input has an audio stream and `OPENAI_API_KEY` is set. The workflow uses `fluent-ffmpeg` for media handling and OpenAI's Whisper API for transcription.
+
+### Workflow
+
+```mermaid
+flowchart TD
+    A["Input video"]
+    B["Normalize"]
+    C["Probe"]
+    D{"Can transcribe?"}
+    E["Extract audio"]
+    F["Transcribe"]
+    G["Skip transcription"]
+    H["Write manifest"]
+
+    A --> B
+    B -->|"ffmpeg"| C
+    C -->|"ffprobe"| D
+    D -->|Yes| E
+    D -->|No| G
+    E -->|"ffmpeg"| F
+    F -->|"Whisper API"| H
+    G --> H
+```
+
+### Tools In Use
+
+- `ffmpeg` via `fluent-ffmpeg` for transcoding and audio extraction
+- `ffprobe` via `fluent-ffmpeg` for duration, frame count, and stream detection
+- OpenAI Whisper API for transcription
+- `fs` and `path` for local file and manifest handling
+
+The manifest is written to `tmp/processed_videos/<timestamp>/.influenca.json` after each run.

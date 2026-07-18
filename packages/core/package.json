@@ -10,7 +10,8 @@
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts --dts"
+    "build": "tsdown src/index.ts",
+    "test": "echo \"no tests yet\""
   },
   "dependencies": {}
 }

@@ -3,98 +3,132 @@ name: add-command-workflow
 description: Use when the user asks to create a new command.
 ---
 
-# Add an arbitrary command: `promote`
+# Add a new CLI command (generic workflow)
 
-## 1. Create the command implementation
+Use this whenever a user asks for a new command (for example `analyze`, `accession`, `promote`).
 
-Create `packages/cli/src/commands/promote-command.ts`:
+## 0. Gather the command contract first
+
+Before editing code, confirm and restate:
+
+1. Command name and positional args.
+2. Option names, types, defaults, and aliases.
+3. Whether a workflow already exists.
+4. Expected output (console message, file writes, JSON, etc.).
+5. Validation rules and error messages.
+
+If anything is missing, ask concise follow-up questions.
+
+## 1. Implement the command class
+
+Create `packages/cli/src/commands/<command-name>-command.ts`.
+
+Always import command contracts from `../command-contract.js` (not `./command-contract.js`).
+
+Template:
 
 ```ts
-import { type CliCommand, type ParsedCommandArgs } from "./command-contract.js";
+import {
+  type CliCommand,
+  type ParsedCommandArgs,
+} from "../command-contract.js";
 
-export type PromoteCommandOptions = {
-  level: string;
+export type CommandOptions = {
+  // define typed options here
 };
 
-export class PromoteCommand implements CliCommand<PromoteCommandOptions> {
+export class CommandNameCommand implements CliCommand<CommandOptions> {
   public async execute(
-    input: ParsedCommandArgs<PromoteCommandOptions>,
+    input: ParsedCommandArgs<CommandOptions>,
   ): Promise<string> {
-    const [name] = input.args;
-
-    if (!name) {
-      throw new Error("Name is required.");
+    const [requiredArg] = input.args;
+    if (!requiredArg) {
+      throw new Error("requiredArg is required.");
     }
 
-    return `${name} is now promoted to ${input.options.level}.`;
+    // Run command logic or call a workflow module.
+    return "Command completed.";
   }
 }
 ```
 
-## 2. Register the command in the CLI entry
+## 2. Decide workflow strategy
+
+Pick one path:
+
+1. Existing workflow path.
+   Use an existing module and call it from the command class.
+
+2. No pre-existing workflow path (common for new commands like `analyze`).
+   Create a new module such as `packages/cli/src/<command-name>-workflow.ts` with:
+
+- typed input options
+- pure helper functions where possible
+- a single orchestrator function exported for reuse and testing
+
+Keep side effects (filesystem, network, subprocesses) inside small isolated functions.
+
+## 3. Register the command in CLI entry
 
 Update `packages/cli/src/main.ts`:
 
-1. Add the import and instance near the other commands.
-2. Add a `promote [name]` command definition.
-3. Add a small runner function that calls `promoteCommand.execute(...)`.
+1. Import and instantiate the command near other command instances.
+2. Add `.command(...)` with positional args.
+3. Add `.option(...)` entries that match the requested flags.
+4. Add a runner function (for example `runAnalyze`) that:
 
-Example wiring:
+- normalizes defaults
+- performs lightweight validation
+- calls `command.execute(...)`
+- prints result via `outro(...)` or `console.log(...)` consistently with existing style
 
-```ts
-import { PromoteCommand } from "./commands/promote-command.js";
+Notes:
 
-const promoteCommand = new PromoteCommand();
+1. `--help` is handled by `cac` automatically via existing top-level help wiring.
+2. Boolean flags should default explicitly in runner code (`?? false`) if behavior matters.
+3. For secret-like values (for example API keys), prefer option value first, then env fallback.
 
-type PromoteOptions = {
-  level?: string;
-  interactive?: boolean;
-};
+## 4. Add focused tests
 
-cli
-  .command("promote [name]", "Promote someone")
-  .option("--level <level>", "Promotion level", { default: "senior" })
-  .option("--interactive", "Prompt for values", { default: true })
-  .option("--no-interactive", "Disable prompts")
-  .action(async (name: string | undefined, options: PromoteOptions) => {
-    await runPromote(name, options);
-  });
+Update `packages/cli/src/main.test.ts`:
 
-async function runPromote(
-  name: string | undefined,
-  options: PromoteOptions,
-): Promise<void> {
-  const interactive = options.interactive ?? true;
-  const level = options.level ?? "senior";
+1. Command help test.
+   Assert command name and critical options are shown.
 
-  if (!interactive && !name) {
-    throw new Error("Name is required when --no-interactive is set.");
-  }
+2. Required argument validation test.
+   For required positional args, `cac` may throw before custom code runs, so assert the parser error text if needed.
 
-  const resolvedName = name ?? "teammate";
+3. One behavior test for command-specific logic.
+   Prefer pure helper tests when possible to avoid I/O/network.
 
-  const message = await promoteCommand.execute({
-    args: [resolvedName],
-    options: { level },
-  });
+## 5. Build and test
 
-  console.log(message);
-}
-```
-
-## 3. Build and test
-
-From the repo root:
+From repo root:
 
 ```bash
 pnpm --filter @influenca/cli run build
 pnpm --filter @influenca/cli run test
 ```
 
-## 4. Try it
+If failures occur, fix root cause and rerun both commands.
 
-After build, run:
+## 6. Smoke test the command
+
+Use a minimal safe invocation (often dry-run if available):
 
 ```bash
-node packages/cli/dist/bin.mjs promote alice --no-interactive --level staff
+node packages/cli/dist/bin.mjs <command-name> ...args
 ```
+
+Confirm output is understandable and validation errors are actionable.
+
+## 7. Definition of done
+
+Only finish when all are true:
+
+1. New command file exists with typed options.
+2. `main.ts` command registration and runner are wired.
+3. Tests added or updated for help and required args.
+4. CLI build passes.
+5. CLI tests pass.
+6. Smoke test command runs successfully.

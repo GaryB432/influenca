@@ -50,7 +50,7 @@ export default tseslint.config(
           paths: [
             {
               message:
-                "Command files must stay UI-agnostic; use @clack/prompts in packages/cli/src/bin.ts.",
+                "Command files must stay UI-agnostic; use @clack/prompts in packages/cli/src/main.ts.",
               name: "@clack/prompts",
             },
           ],
