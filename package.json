@@ -14,23 +14,28 @@
   },
   "scripts": {
     "build": "pnpm --filter @influenca/cli... run build",
+    "test": "pnpm --filter @influenca/cli run test",
     "format": "pnpm dlx prettier -wl .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -b --pretty"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@eslint/json": "^2.0.1",
-    "@eslint/markdown": "^8.0.3",
+    "@eslint/js": "catalog:",
+    "@eslint/json": "catalog:",
+    "@eslint/markdown": "catalog:",
     "@types/node": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-import": "catalog:",
     "eslint-plugin-perfectionist": "^5.10.0",
-    "globals": "^17.7.0",
-    "tsdown": "latest",
+    "globals": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "^8.63.0"
+    "typescript-eslint": "catalog:"
+  },
+  "dependencies": {
+    "@lumen-labs-dev/whisper-node": "^0.4.1",
+    "mediaforge": "^0.3.0"
   }
 }
