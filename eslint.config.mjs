@@ -16,6 +16,20 @@ export default tseslint.config(
       perfectionist.configs["recommended-alphabetical"],
     ],
     files: ["**/*.{js,mjs,ts}"],
+    rules: {
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["../../*"],
+              message:
+                "Relative imports are prohibited to prevent coupling. Use your defined workspace aliases instead.",
+            },
+          ],
+        },
+      ],
+    },
   },
 
   {

@@ -1,6 +1,5 @@
 import { color } from "@influenca/core";
 
-import { supportsModernColors } from "../../../core/src/color.js";
 import {
   type CliCommand,
   type ParsedCommandArgs,
@@ -22,7 +21,7 @@ type AnalyzeSummaryTone = {
   path: (value: string) => string;
 };
 
-const { ansiBold, ansiReset, color256 } = color;
+const { ansiBold, ansiReset, color256, supportsModernColors } = color;
 
 export class AnalyzeCommand implements CliCommand<AnalyzeCommandOptions> {
   public async execute(
