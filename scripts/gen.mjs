@@ -25,14 +25,14 @@ import { spawnSync } from 'node:child_process';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const SVG_PATH   = resolve('assets/brand-500x120.svg');
-const FRAMES_DIR = resolve('/tmp/gen-avi/frames');
-const OUTPUT_AVI = resolve('assets/brand-500x120.avi');
+const SVG_PATH   = resolve('assets/brand-500x500.svg');
+const FRAMES_DIR = resolve('/tmp/gen-avi-square/frames');
+const OUTPUT_AVI = resolve('assets/brand-500x500.avi');
 
 const FRAME_COUNT   = 24;   // how many frames to sample
 const ANIM_DURATION = 4.0;  // seconds — full cycle of the SVG shimmer animation
 const WIDTH         = 500;
-const HEIGHT        = 120;
+const HEIGHT        = 500;  // square — scales cleanly to 24×24 avatar
 const FPS           = 8;    // 24 frames @ 8 fps = 3s clip
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
@@ -57,7 +57,7 @@ for (let i = 0; i < FRAME_COUNT; i++) {
 <style>
   * { margin: 0; padding: 0; }
   body { width: ${WIDTH}px; height: ${HEIGHT}px; overflow: hidden; background: #090a15; }
-  svg { display: block; }
+  svg { display: block; width: ${WIDTH}px; height: ${HEIGHT}px; }
 </style>
 </head>
 <body>
@@ -74,7 +74,7 @@ ${svgContent}
 </body>
 </html>`;
 
-  const htmlPath = `/tmp/gen-avi/frame_${i}.html`;
+  const htmlPath = `/tmp/gen-avi-square/frame_${i}.html`;
   writeFileSync(htmlPath, html);
 
   // Launch Chromium in headless mode, take a screenshot, exit
