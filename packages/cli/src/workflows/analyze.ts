@@ -1,3 +1,5 @@
+// import { VideoEntry } from "@influenca/core";
+import { parseManifest } from "@influenca/core";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -12,15 +14,6 @@ export type AnalyzeWorkflowResult = {
   totalFrames: number;
   videoCount: number;
   withStatsCount: number;
-};
-
-type Manifest = Record<string, ManifestEntry>;
-
-type ManifestEntry = {
-  stats?: {
-    duration_seconds?: number;
-    frames?: number;
-  };
 };
 
 export async function runAnalyzeWorkflow(
@@ -47,8 +40,8 @@ export async function runAnalyzeWorkflow(
     }
 
     withStatsCount += 1;
-    totalDurationSeconds += toNumber(stats.duration_seconds);
-    totalFrames += Math.trunc(toNumber(stats.frames));
+    totalDurationSeconds += stats.duration_seconds ?? 0;
+    totalFrames += Math.trunc(stats.frames ?? 0);
   }
 
   return {
@@ -58,54 +51,4 @@ export async function runAnalyzeWorkflow(
     videoCount: entries.length,
     withStatsCount,
   };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function parseManifest(rawManifest: string): Manifest {
-  const parsed: unknown = JSON.parse(rawManifest);
-  if (!isRecord(parsed)) {
-    throw new Error(".influenca.json must be a JSON object.");
-  }
-
-  const manifest: Manifest = {};
-  for (const [key, value] of Object.entries(parsed)) {
-    if (!isRecord(value)) {
-      manifest[key] = {};
-      continue;
-    }
-
-    const statsValue = value.stats;
-    if (!isRecord(statsValue)) {
-      manifest[key] = {};
-      continue;
-    }
-
-    manifest[key] = {
-      stats: {
-        duration_seconds: toNumberOrUndefined(statsValue.duration_seconds),
-        frames: toNumberOrUndefined(statsValue.frames),
-      },
-    };
-  }
-
-  return manifest;
-}
-
-function toNumber(value: unknown): number {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  return 0;
-}
-
-function toNumberOrUndefined(value: unknown): number | undefined {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  return undefined;
 }

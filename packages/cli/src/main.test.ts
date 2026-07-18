@@ -207,7 +207,9 @@ test("analyze minimal summarizes video count from manifest", async () => {
 
   try {
     await main(["node", "bin.js", "analyze", tmpRoot]);
-    assert.match(output, /Analyze minimal: 2 video\(s\) listed/);
+    assert.match(output, /Analyze minimal/);
+    assert.match(output, /videos:\s+2/);
+    assert.match(output, /manifest:\s+.*\.influenca\.json/);
   } finally {
     writeMock.mock.restore();
     fs.rmSync(tmpRoot, { force: true, recursive: true });
@@ -223,8 +225,8 @@ test("analyze --no-minimal prints expanded stats", async () => {
     JSON.stringify(
       {
         "one.mp4": { stats: { duration_seconds: 4, frames: 100 } },
-        "two.mp4": { stats: { duration_seconds: 6, frames: 200 } },
         "three.mp4": {},
+        "two.mp4": { stats: { duration_seconds: 6, frames: 200 } },
       },
       null,
       2,
@@ -241,13 +243,13 @@ test("analyze --no-minimal prints expanded stats", async () => {
     await main(["node", "bin.js", "analyze", tmpRoot, "--no-minimal"]);
 
     assert.match(output, /Analyze stats/);
-    assert.match(output, /- videos: 3/);
-    assert.match(output, /- with stats: 2/);
-    assert.match(output, /- missing stats: 1/);
-    assert.match(output, /- total duration \(s\): 10\.00/);
-    assert.match(output, /- total frames: 300/);
-    assert.match(output, /- avg duration per video \(s\): 5\.00/);
-    assert.match(output, /- avg frames per video: 150\.00/);
+    assert.match(output, /videos\s+:\s+3/);
+    assert.match(output, /with stats\s+:\s+2/);
+    assert.match(output, /missing stats\s+:\s+1/);
+    assert.match(output, /total duration \(s\)\s+:\s+10\.00/);
+    assert.match(output, /total frames\s+:\s+300/);
+    assert.match(output, /avg duration per video \(s\):\s+5\.00/);
+    assert.match(output, /avg frames per video\s+:\s+150\.00/);
   } finally {
     writeMock.mock.restore();
     fs.rmSync(tmpRoot, { force: true, recursive: true });
