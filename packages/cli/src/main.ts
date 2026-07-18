@@ -1,48 +1,65 @@
-import { cancel, intro, isCancel, outro, text } from "@clack/prompts";
+import { cancel, isCancel, spinner, text } from "@clack/prompts";
 import { cac } from "cac";
+import path from "node:path";
 
-import { AnalyzeCommand } from "./commands/analyze-command.js";
-import { AscessionCommand } from "./commands/ascession-command.js";
+import { AccessionCommand } from "./commands/accession-command.js";
 import { setupEnvironment } from "./environment.js";
+import { type GreetWorkflowOptions, runGreet } from "./workflows/greet.js";
 
-const ascessionCommand = new AscessionCommand();
-const analyzeCommand = new AnalyzeCommand();
+const accessionCommand = new AccessionCommand();
 
-type AscessionOptions = {
-  output: string;
+type AccessionOptions = {
+  dryRun?: boolean;
+  openAiKey?: string;
+  outDir?: string;
+  timestamp?: boolean;
+  transcribe?: boolean;
+  verbose?: boolean;
 } & CommonInteractiveOptions;
 
 type CommonInteractiveOptions = {
-  dryRun?: boolean;
-  interactive?: string;
+  interactive?: boolean;
 };
 
-setupEnvironment();
+type GreetOptions = {
+  offset?: number | string;
+} & GreetWorkflowOptions;
 
 export async function main(rawArguments: string[]): Promise<void> {
-  intro("📸 Influenca");
+  setupEnvironment();
 
-  const cli = cac("my-cli");
+  const cli = cac("influenca");
 
   cli
-    .command(
-      "ascession [inputDir]",
-      "Convert AVI videos to MP4 and catalog them",
+    .command("greet [name]", "Greet someone")
+    .option(
+      "-o, --offset <hours>",
+      "UTC offset hours (use --offset=-6 for negatives)",
     )
-    .option("-d, --dry-run", "Do not write to disk")
-    .option("-o, --output <path>", "Output directory for MP4s and manifest")
-    .example(
-      "ascession ~/alpo/videos_raw --output /cloud-storage/influenca/videos",
-    )
-    .action(async (inputDir: string | undefined, options: AscessionOptions) => {
-      await runAscession(inputDir, options);
+    .option("--interactive", "Show interactive prompts")
+    .example("greet bob --no-interactive --offset=-6")
+    .example("greet alice --offset=-6")
+    .action(async (name: string | undefined, options: GreetOptions) => {
+      await runGreet(name, options);
     });
 
   cli
-    .command("analyze [inputDir]", "Analyze a manifest directory")
-    .example("analyze ./fixtures/vidz")
-    .action(async (inputDir: string | undefined) => {
-      await runAnalyze(inputDir);
+    .command("accession [inDir]", "Process media inputs and emit a manifest")
+    .option("--out-dir <path>", "Output directory")
+    .option("--timestamp", "Append timestamp to --out-dir", { default: true })
+    .option("--verbose", "Log each processing step")
+    .option("--dry-run", "Preview matching files without writing output")
+    .option("--open-ai-key <key>", "Override OPENAI_API_KEY for transcription")
+    .option("--transcribe", "Enable transcription", { default: true })
+    .option("--interactive", "Show interactive prompts", {
+      default: true,
+    })
+    .example("accession ./camera/drop --dry-run")
+    .example(
+      "accession ./camera/drop --out-dir ./tmp/demo --transcribe --no-timestamp",
+    )
+    .action(async (inDir: string | undefined, options: AccessionOptions) => {
+      await runAccession(inDir, options);
     });
 
   const parsedArgs = cli.parse(rawArguments, { run: false });
@@ -55,106 +72,197 @@ export async function main(rawArguments: string[]): Promise<void> {
 
   if (cli.matchedCommand) {
     await cli.runMatchedCommand();
-    outro("Done! 🎉");
   } else {
     cli.outputHelp();
   }
 }
 
-async function runAnalyze(inputDir: string | undefined): Promise<void> {
-  let currentDir = inputDir ?? process.env.INFLUENCA_MEDIA;
-
-  while (true) {
-    if (currentDir) {
-      try {
-        const result = await analyzeCommand.execute({
-          args: [currentDir],
-          options: {},
-        });
-        console.log(result);
-        return;
-      } catch (error) {
-        // If it's a file not found or JSON parse error, we continue the loop to prompt again
-        if (
-          error instanceof Error &&
-          (error.message.includes("ENOENT") ||
-            error.message.includes("Unexpected token"))
-        ) {
-          // continue to prompt
-        } else {
-          throw error;
-        }
-      }
-    }
-
-    const response = await text({
-      defaultValue: "",
-      message: "Please enter the path to the manifest directory",
-      placeholder: "./media",
-    });
-
-    if (isCancel(response)) {
-      cancel("Analysis cancelled.");
-      return;
-    }
-
-    currentDir = response;
-  }
+function isoTimestampNow(): string {
+  return new Date(Date.now()).toISOString();
 }
 
-async function runAscession(
-  inputDir: string | undefined,
-  options: AscessionOptions,
-): Promise<void> {
-  let currentInputDir = inputDir;
-  let currentOutputDir = options.output ?? process.env.INFLUENCA_MEDIA;
+async function resolveAccessionInDir(options: {
+  inDir: string | undefined;
+  interactive: boolean;
+}): Promise<null | string> {
+  const candidate = options.inDir;
 
-  if (!currentInputDir) {
-    const response = await text({
-      message: "Please enter the input directory containing AVI files",
-      placeholder: "./videos_raw",
-      validate(value) {
-        if (!value || value.trim().length === 0) {
-          return "Enter AVI directory";
-        }
-      },
-    });
-
-    if (isCancel(response)) {
-      cancel("Ascession cancelled.");
-      return;
-    }
-    currentInputDir = response;
+  if (candidate) {
+    return candidate;
   }
 
-  if (!currentOutputDir) {
-    const response = await text({
-      message: "Please enter the output directory for MP4s and manifest",
-      placeholder: "./videos",
-      validate(value) {
-        if (!value || value.trim().length === 0) {
-          return "Enter MP4 directory";
-        }
-      },
-    });
+  if (!options.interactive) {
+    return null;
+  }
 
-    if (isCancel(response)) {
-      cancel("Ascession cancelled.");
+  const response = await text({
+    ...withDefaultValue(candidate),
+    message: "Input directory to process",
+    placeholder: "./camera/drop",
+    validate(value) {
+      if (!value) {
+        return "Input directory is required.";
+      }
       return;
-    }
-    currentOutputDir = response;
+    },
+  });
+
+  if (isCancel(response)) {
+    cancel("Accession cancelled.");
+    return null;
+  }
+
+  return response;
+}
+
+async function resolveAccessionOutDir(options: {
+  interactive: boolean;
+  outDir: string | undefined;
+}): Promise<null | string | undefined> {
+  const envOutDir = process.env.INFLUENCA_DIR;
+  const candidate = options.outDir ?? envOutDir;
+
+  if (candidate) {
+    return candidate;
+  }
+
+  if (!options.interactive) {
+    return null;
+  }
+
+  const response = await text({
+    ...withDefaultValue(candidate),
+    message: "Output directory",
+    placeholder: "./cloud/influenca",
+    validate(value) {
+      if (!value) {
+        return "Output directory is required.";
+      }
+      return;
+    },
+  });
+
+  if (isCancel(response)) {
+    cancel("Accession cancelled.");
+    return null;
+  }
+
+  return response;
+}
+
+function resolveFinalOutDir(
+  outDir: string | undefined,
+  timestamp: boolean | undefined,
+): string | undefined {
+  if (!outDir) {
+    return undefined;
+  }
+
+  if (timestamp === false) {
+    return outDir;
+  }
+
+  return path.join(outDir, isoTimestampNow());
+}
+
+async function runAccession(
+  inDir: string | undefined,
+  options: AccessionOptions,
+): Promise<void> {
+  const showProgress = !options.verbose;
+  let progress: null | ReturnType<typeof spinner> = null;
+  let matchedFiles = 0;
+
+  const interactive = options.interactive !== false;
+
+  const resolvedInDir = await resolveAccessionInDir({
+    inDir,
+    interactive,
+  });
+  if (!resolvedInDir) {
+    throwValidationError(
+      "inDir is required in --no-interactive mode. Provide [inDir].",
+    );
+  }
+
+  const resolvedOutDir = await resolveAccessionOutDir({
+    interactive,
+    outDir: options.outDir,
+  });
+  if (resolvedOutDir === null) {
+    throwValidationError(
+      "outDir is required in --no-interactive mode. Provide --out-dir or INFLUENCA_DIR.",
+    );
+  }
+
+  const finalOutDir = resolveFinalOutDir(resolvedOutDir, options.timestamp);
+
+  if (showProgress) {
+    progress = spinner();
+    progress.start("Scanning media files...");
   }
 
   try {
-    const result = await ascessionCommand.execute({
-      args: [currentInputDir],
-      options: { ...options, output: currentOutputDir },
-    });
-    console.log(result);
-  } catch (error) {
-    console.error(
-      "Error:",
-      error instanceof Error ? error.message : String(error),
+    const commandExecutionOptions = {
+      args: [resolvedInDir],
+      options: {
+        dryRun: options.dryRun ?? false,
+        ...(options.openAiKey ? { openAiKey: options.openAiKey } : {}),
+        ...(finalOutDir ? { outDir: finalOutDir } : {}),
+        transcribe: options.transcribe ?? false,
+        verbose: options.verbose ?? false,
+      },
+    };
+    const message = await accessionCommand.execute(
+      commandExecutionOptions,
+      showProgress
+        ? {
+            onProgress(progressUpdate) {
+              matchedFiles = progressUpdate.totalFiles;
+              if (!progress) {
+                return;
+              }
+
+              if (progressUpdate.totalFiles === 0) {
+                progress.message("No media files matched.");
+                return;
+              }
+
+              const current = progressUpdate.currentFile ?? "...";
+              progress.message(
+                `[${progressUpdate.completedFiles}/${progressUpdate.totalFiles}] ${current}`,
+              );
+            },
+          }
+        : undefined,
     );
+
+    if (progress) {
+      if (matchedFiles === 0) {
+        progress.stop("No media files found.");
+      } else {
+        progress.stop(`Done: ${matchedFiles} media file(s).`);
+      }
+    }
+
+    console.log(message, "should prolly be outtro");
+  } catch (error) {
+    if (progress) {
+      progress.stop("Accession failed.");
+    }
+    throw error;
   }
+}
+
+function throwValidationError(message: string): never {
+  throw new Error(message);
+}
+
+function withDefaultValue(value: string | undefined): {
+  defaultValue?: string;
+} {
+  if (typeof value === "string") {
+    return { defaultValue: value };
+  }
+  return {};
 }
