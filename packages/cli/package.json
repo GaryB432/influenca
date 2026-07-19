@@ -6,9 +6,9 @@
     "influenca": "./dist/bin.mjs"
   },
   "scripts": {
-    "build": "tsdown src/bin.ts src/main.test.ts src/workflows/accession.test.ts",
+    "build": "tsdown src/bin.ts src/main.test.ts src/workflows/**.test.ts",
     "test": "pnpm run build && pnpm run test:dist",
-    "test:dist": "node --test dist/main.test.mjs dist/workflows/accession.test.mjs"
+    "test:dist": "node --test dist/main.test.mjs dist/workflows/**.test.mjs"
   },
   "dependencies": {
     "@clack/prompts": "catalog:",
