@@ -1,4 +1,3 @@
-// import { VideoEntry } from "@influenca/core";
 import { parseManifest } from "@influenca/core";
 import fs from "node:fs";
 import path from "node:path";

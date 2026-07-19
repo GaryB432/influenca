@@ -10,6 +10,14 @@ export const meaning: { life: number } = {
   life: 42,
 };
 
+type SummaryTone = {
+  accent: (value: string) => string;
+  heading: (value: string) => string;
+  label: (value: string) => string;
+  number: (value: string) => string;
+  path: (value: string) => string;
+};
+
 export function ansiBold(): string {
   return "\u001b[1m";
 }
@@ -41,3 +49,11 @@ export function supportsModernColors(): boolean {
     /256color|truecolor|24bit/i.test(term) || /truecolor|24bit/i.test(colorTerm)
   );
 }
+
+export const summaryTone: SummaryTone = {
+  accent: (value) => color256(147, value),
+  heading: (value) => `${ansiBold()}${color256(177, value)}${ansiReset()}`,
+  label: (value) => color256(81, value),
+  number: (value) => color256(221, value),
+  path: (value) => color256(121, value),
+};

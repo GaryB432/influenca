@@ -13,15 +13,7 @@ export type AnalyzeCommandOptions = {
   minimal: boolean;
 };
 
-type AnalyzeSummaryTone = {
-  accent: (value: string) => string;
-  heading: (value: string) => string;
-  label: (value: string) => string;
-  number: (value: string) => string;
-  path: (value: string) => string;
-};
-
-const { ansiBold, ansiReset, color256, supportsModernColors } = color;
+// const { summaryTone } = color;
 
 export class AnalyzeCommand implements CliCommand<AnalyzeCommandOptions> {
   public async execute(
@@ -42,31 +34,31 @@ export class AnalyzeCommand implements CliCommand<AnalyzeCommandOptions> {
   }
 }
 
-function createAnalyzeSummaryTone(): AnalyzeSummaryTone {
-  if (!supportsModernColors()) {
-    return {
-      accent: identity,
-      heading: identity,
-      label: identity,
-      number: identity,
-      path: identity,
-    };
-  }
+// function createAnalyzeSummaryTone(): AnalyzeSummaryTone {
+//   if (!supportsModernColors()) {
+//     return {
+//       accent: identity,
+//       heading: identity,
+//       label: identity,
+//       number: identity,
+//       path: identity,
+//     };
+//   }
 
-  return {
-    accent: (value) => color256(147, value),
-    heading: (value) => `${ansiBold()}${color256(177, value)}${ansiReset()}`,
-    label: (value) => color256(81, value),
-    number: (value) => color256(221, value),
-    path: (value) => color256(121, value),
-  };
-}
+//   return {
+//     accent: (value) => color256(147, value),
+//     heading: (value) => `${ansiBold()}${color256(177, value)}${ansiReset()}`,
+//     label: (value) => color256(81, value),
+//     number: (value) => color256(221, value),
+//     path: (value) => color256(121, value),
+//   };
+// }
 
 function formatAnalyzeSummary(
   result: AnalyzeWorkflowResult,
   minimal: boolean,
 ): string {
-  const tone = createAnalyzeSummaryTone();
+  const tone = { ...color.summaryTone };
 
   if (minimal) {
     return [
@@ -111,8 +103,4 @@ function formatAnalyzeSummary(
     tone.accent("-----------------------------"),
     ...prettyRows,
   ].join("\n");
-}
-
-function identity(value: string): string {
-  return value;
 }
