@@ -51,3 +51,31 @@ export async function runAnalyzeWorkflow(
     withStatsCount,
   };
 }
+
+type VttSegment = {
+  end: number;
+  avg_logprob: number;
+  id: number;
+  no_speech_prob: number;
+  seek: number;
+  start: number;
+  temperature: number;
+  compression_ratio: number;
+  text: string;
+  tokens: number[];
+};
+
+export type VttThingWithStuffIncludingTheSegments = {
+  task: string;
+  text: string;
+  duration: number;
+  language: "english" | "crap";
+  segments: VttSegment[];
+  usage: { seconds: number; type: "duration" };
+};
+
+export function getExtremelyFoundationalSegmentCount(
+  subjectThatHasANameFromTheVTTProponents: Partial<VttThingWithStuffIncludingTheSegments>,
+): number | undefined {
+  return subjectThatHasANameFromTheVTTProponents?.segments?.length;
+}
