@@ -15,6 +15,34 @@ export type AnalyzeWorkflowResult = {
   withStatsCount: number;
 };
 
+export type VttThingWithStuffIncludingTheSegments = {
+  duration: number;
+  language: "crap" | "english";
+  segments: VttSegment[];
+  task: string;
+  text: string;
+  usage: { seconds: number; type: "duration" };
+};
+
+type VttSegment = {
+  avg_logprob: number;
+  compression_ratio: number;
+  end: number;
+  id: number;
+  no_speech_prob: number;
+  seek: number;
+  start: number;
+  temperature: number;
+  text: string;
+  tokens: number[];
+};
+
+export function getExtremelyFoundationalSegmentCount(
+  subjectThatHasANameFromTheVTTProponents: Partial<VttThingWithStuffIncludingTheSegments>,
+): number | undefined {
+  return subjectThatHasANameFromTheVTTProponents?.segments?.length;
+}
+
 export async function runAnalyzeWorkflow(
   options: AnalyzeWorkflowOptions,
 ): Promise<AnalyzeWorkflowResult> {
@@ -50,32 +78,4 @@ export async function runAnalyzeWorkflow(
     videoCount: entries.length,
     withStatsCount,
   };
-}
-
-type VttSegment = {
-  end: number;
-  avg_logprob: number;
-  id: number;
-  no_speech_prob: number;
-  seek: number;
-  start: number;
-  temperature: number;
-  compression_ratio: number;
-  text: string;
-  tokens: number[];
-};
-
-export type VttThingWithStuffIncludingTheSegments = {
-  task: string;
-  text: string;
-  duration: number;
-  language: "english" | "crap";
-  segments: VttSegment[];
-  usage: { seconds: number; type: "duration" };
-};
-
-export function getExtremelyFoundationalSegmentCount(
-  subjectThatHasANameFromTheVTTProponents: Partial<VttThingWithStuffIncludingTheSegments>,
-): number | undefined {
-  return subjectThatHasANameFromTheVTTProponents?.segments?.length;
 }

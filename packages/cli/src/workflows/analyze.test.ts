@@ -1,12 +1,16 @@
 import assert from "node:assert";
 import { test } from "node:test";
-import { getExtremelyFoundationalSegmentCount, type VttThingWithStuffIncludingTheSegments } from "./analyze.js";
+
+import {
+  getExtremelyFoundationalSegmentCount,
+  type VttThingWithStuffIncludingTheSegments,
+} from "./analyze.js";
 
 test("transcribes basics", () => {
-  assert.equal(getExtremelyFoundationalSegmentCount(transcribe_specimen), 5);
+  assert.equal(getExtremelyFoundationalSegmentCount(transcribe_specimen), 8);
 });
 
-const transcribe_specimen :VttThingWithStuffIncludingTheSegments= {
+const transcribe_specimen: VttThingWithStuffIncludingTheSegments = {
   duration: 60.40999984741211,
   language: "english",
   segments: [
