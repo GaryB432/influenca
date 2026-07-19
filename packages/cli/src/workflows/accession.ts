@@ -227,11 +227,23 @@ async function transcribeAudio(options: {
       .run();
   });
 
+  // 2. Request VTT format
   const response = await openai.audio.transcriptions.create({
     file: fs.createReadStream(audioPath),
     model: "whisper-1",
+    // response_format: "vtt", // Add this line
+    response_format: "verbose_json",
   });
 
+  // 3. Since response_format: 'vtt' returns a string,
+  // you can cast it or use it directly as the VTT content
+  // const vttContent = response as unknown as string;
+  // console.log(response.segments?.map((s) => s.temperature));
+
+  const vttContent = JSON.stringify(response);
+
   fs.unlinkSync(audioPath);
-  return response.text;
+
+  // Return the VTT string
+  return vttContent;
 }

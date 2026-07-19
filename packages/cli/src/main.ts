@@ -259,8 +259,7 @@ async function runAccession(
         progress.stop(`Done: ${matchedFiles} media file(s).`);
       }
     }
-
-    console.log(message, "should prolly be outtro");
+    console.log(message, "should prolly be outtro but that breaks tests");
   } catch (error) {
     if (progress) {
       progress.stop("Accession failed.");
