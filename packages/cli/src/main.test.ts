@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { mock, test } from "node:test";
 
-import { main } from "./main.js";
+import { getOpenAiApiKey, main } from "./main.js";
 
 test("prints help for unknown command shape", async () => {
   let output = "";
@@ -253,5 +253,21 @@ test.skip("analyze --no-minimal prints expanded stats", async () => {
   } finally {
     writeMock.mock.restore();
     fs.rmSync(tmpRoot, { force: true, recursive: true });
+  }
+});
+
+test("open-ai-key option takes precedence over OPENAI_API_KEY", () => {
+  const originalKey = process.env.OPENAI_API_KEY;
+  process.env.OPENAI_API_KEY = "env-key";
+
+  try {
+    assert.strictEqual(getOpenAiApiKey("option-key"), "option-key");
+    assert.strictEqual(getOpenAiApiKey(undefined), "env-key");
+  } finally {
+    if (typeof originalKey === "undefined") {
+      delete process.env.OPENAI_API_KEY;
+    } else {
+      process.env.OPENAI_API_KEY = originalKey;
+    }
   }
 });

@@ -2,15 +2,9 @@ import { cancel, isCancel, outro, spinner, text } from "@clack/prompts";
 import { cac } from "cac";
 import path from "node:path";
 
-import type { ParsedCommandArgs } from "./command-contract.js";
-
-import {
-  AccessionCommand,
-  type AccessionCommandOptions,
-} from "./commands/accession-command.js";
+import { AccessionCommand } from "./commands/accession-command.js";
 import { AnalyzeCommand } from "./commands/analyze-command.js";
 import { setupEnvironment } from "./environment.js";
-// import { resolveOpenAiKey } from "./workflows/accession.js";
 import { type GreetWorkflowOptions, runGreet } from "./workflows/greet.js";
 
 const accessionCommand = new AccessionCommand();
@@ -36,6 +30,16 @@ type CommonInteractiveOptions = {
 type GreetOptions = {
   offset: number | string;
 } & GreetWorkflowOptions;
+
+export function getOpenAiApiKey(
+  explicitKey: string | undefined,
+): string | symbol {
+  const apiKeyToUse = explicitKey ?? process.env.OPENAI_API_KEY;
+  if (!apiKeyToUse) {
+    return Symbol.for("clack:cancel");
+  }
+  return apiKeyToUse;
+}
 
 export async function main(rawArguments: string[]): Promise<void> {
   setupEnvironment();
@@ -191,9 +195,11 @@ async function runAccession(
 ): Promise<void> {
   const showProgress = !options.verbose;
   let progress: null | ReturnType<typeof spinner> = null;
-  let matchedFiles = 0;
+  const matchedFiles = 0;
 
   const interactive = options.interactive !== false;
+
+  // const m = getOpenAiApiKey(options.openAiKey);
 
   const resolvedInDir = await resolveAccessionInDir({
     inDir,
@@ -234,11 +240,19 @@ async function runAccession(
     //     verbose: options.verbose ?? false,
     //   },
     // };
+
+    const openAiKey = getOpenAiApiKey(options.openAiKey);
+
+    if (isCancel(openAiKey)) {
+      throw new Error("open ai key situation for resolution.  call support");
+    }
+
     const message = await accessionCommand.execute(
       {
         args: [resolvedInDir],
         options: {
           ...options,
+          openAiKey,
           outDir: finalOutDir,
         },
       },
@@ -308,12 +322,4 @@ function withDefaultValue(value: string | undefined): {
     return { defaultValue: value };
   }
   return {};
-}
-
-export function resolveOpenAiKey(explicitKey: string): string {
-  const apiKeyToUse = explicitKey ?? process.env.OPENAI_API_KEY;
-  if (!apiKeyToUse) {
-    throw new Error("open ai key is required at least for now.");
-  }
-  return apiKeyToUse;
 }
