@@ -1,5 +1,7 @@
-import { cancel, isCancel, outro, progress, text } from "@clack/prompts";
+import { cancel, isCancel, outro, text } from "@clack/prompts";
 import { cac } from "cac";
+
+import { progress } from "./utils/meter.js";
 import path from "node:path";
 
 import { AccessionCommand } from "./commands/accession-command.js";
@@ -163,7 +165,6 @@ async function resolveAccessionOutDir(options: {
       if (!value) {
         return "Output directory is required.";
       }
-      // return;
     },
   });
 
@@ -193,7 +194,7 @@ async function runAccession(
   inDir: string | undefined,
   options: AccessionOptions,
 ): Promise<void> {
-  const proper_progress_meter: null | ReturnType<typeof progress> = null;
+  // const proper_progress_meter: null | ReturnType<typeof progress> = null;
 
   const interactive = options.interactive !== false;
 
@@ -220,11 +221,6 @@ async function runAccession(
     );
   }
 
-  // if (showProgress) {
-  //   the_old_spinner = used_to_be_a_spinner();
-  //   the_old_spinner.start("Scanning media files...");
-  // }
-
   const openAiKey = getOpenAiApiKey(options.openAiKey);
 
   if (isCancel(openAiKey)) {
@@ -244,56 +240,11 @@ async function runAccession(
     },
     {
       meter: progress,
-      onProgress(progressUpdate) {
-        console.log(progressUpdate);
+      onProgress() {
         throw new Error("use the other one!");
-
-        // const firstTime = !!progressUpdate.currentFile;
-        // const finished =
-        //   progressUpdate.totalFiles === progressUpdate.completedFiles;
-
-        // if (firstTime) {
-        //   /// init and start
-        //   proper_progress_meter = progress({
-        //     max: progressUpdate.totalFiles,
-        //     style: "heavy",
-        //   });
-        //   proper_progress_meter.start(resolvedInDir);
-        // } else {
-        //   // update to meter
-        //   if (finished && proper_progress_meter) {
-        //     proper_progress_meter.stop("all done");
-        //     // stop
-        //   }
-        // }
-
-        // if (progressUpdate.currentFile && proper_progress_meter) {
-        //   if (
-        //     progressUpdate.totalFiles > 0 &&
-        //     progressUpdate.completedFiles === progressUpdate.totalFiles
-        //   ) {
-        //     proper_progress_meter.stop(
-        //       `Done: ${progressUpdate.completedFiles} media file(s).`,
-        //     );
-        //   } else {
-        //     proper_progress_meter.advance(
-        //       progressUpdate.completedFiles,
-        //       progressUpdate.currentFile,
-        //     );
-        //   }
-        // } else {
-        //   console.log("startem up");
-        //   proper_progress_meter = progress({
-        //     max: progressUpdate.totalFiles,
-        //   });
-        // }
       },
     },
   );
-
-  if (proper_progress_meter) {
-    // proper_progress_meter.stop()
-  }
 
   console.log(message, "should prolly be outtro but that breaks tests");
 }

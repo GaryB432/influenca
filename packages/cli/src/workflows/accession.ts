@@ -10,8 +10,7 @@ import type { ProgressOptions, ProgressResult } from "../utils/meter.js";
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
   inDir: string;
-  meter: (oo: ProgressOptions) => ProgressResult;
-  // onProgress: (progress: unknown) => void;
+  meter: (options: ProgressOptions) => ProgressResult;
   openAiKey: string;
   outDir: string;
   transcribe: boolean;
@@ -77,7 +76,7 @@ export async function runAccessionWorkflow(
   // });
 
   const progress = options.meter({ max: matchedFiles });
-  progress.start("starten");
+  progress.start(`hello ${options.inDir}`);
 
   for (const filename of mediaFiles) {
     const baseName = path.parse(filename).name;
@@ -98,7 +97,8 @@ export async function runAccessionWorkflow(
     //   continue;
     // }
 
-    progress.advance(processedFiles + failedFiles, filename);
+    // progress.advance(processedFiles + failedFiles, filename);
+    progress.advance(processedFiles + failedFiles);
 
     try {
       await transcodeToMp4(inputPath, outputVideoPath);
@@ -164,7 +164,8 @@ export async function runAccessionWorkflow(
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`Pipeline failure on ${filename}: ${message}`);
+      progress.message(message);
+      // console.error(`Pipeline failure on ${filename}: ${message}`);
       // options.formerly_known_as_onp?.({
       //   completedFiles: processedFiles + failedFiles,
       //   currentFile: filename,
@@ -172,10 +173,11 @@ export async function runAccessionWorkflow(
       // });
     }
   }
-
+  
   if (!options.dryRun) {
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   }
+  progress.stop(`colorful ${manifestPath}`)
 
   return {
     failedFiles,
