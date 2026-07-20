@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@lumen-labs-dev/whisper-node": "^0.4.1",
-    "mediaforge": "^0.3.0"
+    "mediaforge": "^0.3.0",
+    "openai": "catalog:"
   }
 }

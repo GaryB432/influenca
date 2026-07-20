@@ -65,6 +65,9 @@ importers:
       mediaforge:
         specifier: ^0.3.0
         version: 0.3.0
+      openai:
+        specifier: 'catalog:'
+        version: 5.23.2
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
