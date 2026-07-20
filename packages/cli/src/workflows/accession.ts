@@ -11,13 +11,17 @@ export type AccessionWorkflowOptions = {
   dryRun: boolean;
   inDir: string;
   meter: (oo: ProgressOptions) => ProgressResult;
-  onProgress: (
-    progress: AccessionWorkflowProgress_which_is_a_private_type,
-  ) => void;
+  // onProgress: (progress: unknown) => void;
   openAiKey: string;
   outDir: string;
   transcribe: boolean;
   verbose: boolean;
+};
+
+export type AccessionWorkflowProgress = {
+  completedFiles: number;
+  currentFile?: string;
+  totalFiles: number;
 };
 
 export type AccessionWorkflowResult = {
@@ -27,12 +31,6 @@ export type AccessionWorkflowResult = {
   outDir: string;
   processedFiles: number;
   transcribedFiles: number;
-};
-
-type AccessionWorkflowProgress_which_is_a_private_type = {
-  completedFiles: number;
-  currentFile?: string;
-  totalFiles: number;
 };
 
 type Manifest = Record<
@@ -78,24 +76,29 @@ export async function runAccessionWorkflow(
   //   totalFiles: matchedFiles,
   // });
 
+  const progress = options.meter({ max: matchedFiles });
+  progress.start("starten");
+
   for (const filename of mediaFiles) {
     const baseName = path.parse(filename).name;
     const targetMp4 = `${baseName}.mp4`;
     const inputPath = path.join(options.inDir, filename);
     const outputVideoPath = path.join(outDir, targetMp4);
 
-    if (options.verbose || options.dryRun) {
-      console.log(`Processing: ${filename} -> ${targetMp4}`);
-    }
+    // if (options.verbose || options.dryRun) {
+    //   console.log(`Processing: ${filename} -> ${targetMp4}`);
+    // }
 
-    if (options.dryRun) {
-      // options.formerly_known_as_onp?.({
-      //   completedFiles: processedFiles + failedFiles + 1,
-      //   currentFile: filename,
-      //   totalFiles: matchedFiles,
-      // });
-      continue;
-    }
+    // if (options.dryRun) {
+    //   // options.formerly_known_as_onp?.({
+    //   //   completedFiles: processedFiles + failedFiles + 1,
+    //   //   currentFile: filename,
+    //   //   totalFiles: matchedFiles,
+    //   // });
+    //   continue;
+    // }
+
+    progress.advance(processedFiles + failedFiles, filename);
 
     try {
       await transcodeToMp4(inputPath, outputVideoPath);

@@ -1,4 +1,3 @@
-
 import {
   type CliCommand,
   type CommandRuntime,
@@ -6,7 +5,7 @@ import {
 } from "../command-contract.js";
 import {
   type AccessionWorkflowOptions,
-  // type AccessionWorkflowProgress,
+  type AccessionWorkflowProgress,
   type AccessionWorkflowResult,
   runAccessionWorkflow,
 } from "../workflows/accession.js";
@@ -20,8 +19,6 @@ export type AccessionCommandOptions = {
 };
 
 export type AccessionCommandRuntime = CommandRuntime<AccessionWorkflowProgress>;
-
-type AccessionWorkflowProgress = any;
 
 export class AccessionCommand implements CliCommand<
   AccessionCommandOptions,
@@ -39,11 +36,10 @@ export class AccessionCommand implements CliCommand<
 
     const accessionOptions: AccessionWorkflowOptions = {
       ...input.options,
-      ...runtime,
       inDir,
-      // meter: runtime.meter,
-      // onProgress: (p: unknown) => {
-      //   throw new Error("use the other one");
+      meter: runtime.meter,
+      // onProgress: function (): void {
+      //   throw new Error("Function not implemented.");
       // },
     };
     const result = await runAccessionWorkflow(accessionOptions);
