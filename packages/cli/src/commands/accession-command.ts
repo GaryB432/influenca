@@ -11,8 +11,8 @@ import {
 
 export type AccessionCommandOptions = {
   dryRun: boolean;
-  openAiKey?: string;
-  outDir?: string;
+  openAiKey: string;
+  outDir: string;
   transcribe: boolean;
   verbose: boolean;
 };
@@ -25,7 +25,7 @@ export class AccessionCommand implements CliCommand<
 > {
   public async execute(
     input: ParsedCommandArgs<AccessionCommandOptions>,
-    runtime?: AccessionCommandRuntime,
+    runtime: AccessionCommandRuntime,
   ): Promise<string> {
     const [inDir] = input.args;
 

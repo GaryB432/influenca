@@ -8,9 +8,9 @@ import OpenAI from "openai";
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
   inDir: string;
-  onProgress?: (progress: AccessionWorkflowProgress) => void;
-  openAiKey?: string;
-  outDir?: string;
+  onProgress: (progress: AccessionWorkflowProgress) => void;
+  openAiKey: string;
+  outDir: string;
   transcribe: boolean;
   verbose: boolean;
 };
@@ -43,8 +43,12 @@ type Manifest = Record<
   }
 >;
 
-export function resolveOpenAiKey(explicitKey?: string): string | undefined {
-  return explicitKey ?? process.env.OPENAI_API_KEY;
+export function resolveOpenAiKey(explicitKey: string): string {
+  const apiKeyToUse = explicitKey ?? process.env.OPENAI_API_KEY;
+  if (!apiKeyToUse) {
+    throw new Error("open ai key is required at least for now.");
+  }
+  return apiKeyToUse;
 }
 
 export async function runAccessionWorkflow(

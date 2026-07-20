@@ -2,10 +2,10 @@ import { spawn } from "child_process";
 
 // TODO reimplement
 type FrameStats = {
-  checksum?: string;
-  mean?: number[];
+  checksum: string;
+  mean: number[];
   pts_time: number;
-  stdev?: number[];
+  stdev: number[];
 };
 
 export function analyzeMotion(inputPath: string): Promise<{

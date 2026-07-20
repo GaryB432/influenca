@@ -2,9 +2,15 @@ import { cancel, isCancel, outro, spinner, text } from "@clack/prompts";
 import { cac } from "cac";
 import path from "node:path";
 
-import { AccessionCommand } from "./commands/accession-command.js";
+import type { ParsedCommandArgs } from "./command-contract.js";
+
+import {
+  AccessionCommand,
+  type AccessionCommandOptions,
+} from "./commands/accession-command.js";
 import { AnalyzeCommand } from "./commands/analyze-command.js";
 import { setupEnvironment } from "./environment.js";
+import { resolveOpenAiKey } from "./workflows/accession.js";
 import { type GreetWorkflowOptions, runGreet } from "./workflows/greet.js";
 
 const accessionCommand = new AccessionCommand();
@@ -217,40 +223,48 @@ async function runAccession(
     progress.start("Scanning media files...");
   }
 
+  const fdf: ParsedCommandArgs<AccessionCommandOptions> = {
+    args: [resolvedInDir],
+    options: {
+      ...options,
+      // dryRun: options.dryRun,
+
+      openAiKey: await resolveOpenAiKey(options.openAiKey),
+      outDir: finalOutDir,
+      transcribe: false,
+      verbose: false,
+    },
+  };
+
   try {
-    const commandExecutionOptions = {
-      args: [resolvedInDir],
-      options: {
-        dryRun: options.dryRun ?? false,
-        ...(options.openAiKey ? { openAiKey: options.openAiKey } : {}),
-        ...(finalOutDir ? { outDir: finalOutDir } : {}),
-        transcribe: options.transcribe ?? false,
-        verbose: options.verbose ?? false,
+    // const commandExecutionOptions: any = {
+    //   args: [resolvedInDir],
+    //   options: {
+    //     dryRun: options.dryRun ?? false,
+    //     ...(options.openAiKey ? { openAiKey: options.openAiKey } : {}),
+    //     ...(finalOutDir ? { outDir: finalOutDir } : {}),
+    //     transcribe: options.transcribe ?? false,
+    //     verbose: options.verbose ?? false,
+    //   },
+    // };
+    const message = await accessionCommand.execute(fdf, {
+      onProgress(progressUpdate) {
+        matchedFiles = progressUpdate.totalFiles;
+        if (!progress) {
+          return;
+        }
+
+        if (progressUpdate.totalFiles === 0) {
+          progress.message("No media files matched.");
+          return;
+        }
+
+        const current = progressUpdate.currentFile ?? "...";
+        progress.message(
+          `[${progressUpdate.completedFiles}/${progressUpdate.totalFiles}] ${current}`,
+        );
       },
-    };
-    const message = await accessionCommand.execute(
-      commandExecutionOptions,
-      showProgress
-        ? {
-            onProgress(progressUpdate) {
-              matchedFiles = progressUpdate.totalFiles;
-              if (!progress) {
-                return;
-              }
-
-              if (progressUpdate.totalFiles === 0) {
-                progress.message("No media files matched.");
-                return;
-              }
-
-              const current = progressUpdate.currentFile ?? "...";
-              progress.message(
-                `[${progressUpdate.completedFiles}/${progressUpdate.totalFiles}] ${current}`,
-              );
-            },
-          }
-        : undefined,
-    );
+    });
 
     if (progress) {
       if (matchedFiles === 0) {

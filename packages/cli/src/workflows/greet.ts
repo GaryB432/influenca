@@ -1,8 +1,8 @@
 import type { CommandRuntime } from "../command-contract.js";
 
 export type GreetWorkflowOptions = {
-  interactive?: boolean;
-  offset?: number | string;
+  interactive: boolean;
+  offset: number | string;
 };
 
 export type GreetWorkflowProgress = {
