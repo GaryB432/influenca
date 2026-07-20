@@ -11,24 +11,24 @@ const accessionCommand = new AccessionCommand();
 const analyzeCommand = new AnalyzeCommand();
 
 type AccessionOptions = {
-  dryRun?: boolean;
-  openAiKey?: string;
-  outDir?: string;
-  timestamp?: boolean;
-  transcribe?: boolean;
-  verbose?: boolean;
+  dryRun: boolean;
+  openAiKey: string;
+  outDir: string;
+  timestamp: boolean;
+  transcribe: boolean;
+  verbose: boolean;
 } & CommonInteractiveOptions;
 
 type AnalyzeOptions = {
-  minimal?: boolean;
+  minimal: boolean;
 };
 
 type CommonInteractiveOptions = {
-  interactive?: boolean;
+  interactive: boolean;
 };
 
 type GreetOptions = {
-  offset?: number | string;
+  offset: number | string;
 } & GreetWorkflowOptions;
 
 export async function main(rawArguments: string[]): Promise<void> {
