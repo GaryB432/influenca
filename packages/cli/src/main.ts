@@ -1,4 +1,4 @@
-import { cancel, isCancel, outro, spinner, text } from "@clack/prompts";
+import { cancel, isCancel, outro, progress, text } from "@clack/prompts";
 import { cac } from "cac";
 import path from "node:path";
 
@@ -193,13 +193,9 @@ async function runAccession(
   inDir: string | undefined,
   options: AccessionOptions,
 ): Promise<void> {
-  const showProgress = !options.verbose;
-  let progress: null | ReturnType<typeof spinner> = null;
-  const matchedFiles = 0;
+  let proper_progress_meter: null | ReturnType<typeof progress> = null;
 
   const interactive = options.interactive !== false;
-
-  // const m = getOpenAiApiKey(options.openAiKey);
 
   const resolvedInDir = await resolveAccessionInDir({
     inDir,
@@ -224,73 +220,80 @@ async function runAccession(
     );
   }
 
-  if (showProgress) {
-    progress = spinner();
-    progress.start("Scanning media files...");
-  }
+  // if (showProgress) {
+  //   the_old_spinner = used_to_be_a_spinner();
+  //   the_old_spinner.start("Scanning media files...");
+  // }
 
-  try {
-    // const commandExecutionOptions: any = {
-    //   args: [resolvedInDir],
-    //   options: {
-    //     dryRun: options.dryRun ?? false,
-    //     ...(options.openAiKey ? { openAiKey: options.openAiKey } : {}),
-    //     ...(finalOutDir ? { outDir: finalOutDir } : {}),
-    //     transcribe: options.transcribe ?? false,
-    //     verbose: options.verbose ?? false,
-    //   },
-    // };
+  const openAiKey = getOpenAiApiKey(options.openAiKey);
 
-    const openAiKey = getOpenAiApiKey(options.openAiKey);
-
-    if (isCancel(openAiKey)) {
-      throw new Error("open ai key situation for resolution.  call support");
-    }
-
-    const message = await accessionCommand.execute(
-      {
-        args: [resolvedInDir],
-        options: {
-          ...options,
-          openAiKey,
-          outDir: finalOutDir,
-        },
-      },
-      {
-        onProgress(progressUpdate) {
-          console.log(progressUpdate);
-          // matchedFiles = progressUpdate.totalFiles;
-          // if (!progress) {
-          //   return;
-          // }
-
-          // if (progressUpdate.totalFiles === 0) {
-          //   progress.message("No media files matched.");
-          //   return;
-          // }
-
-          // const current = progressUpdate.currentFile ?? "...";
-          // progress.message(
-          //   `[${progressUpdate.completedFiles}/${progressUpdate.totalFiles}] ${current}`,
-          // );
-        },
-      },
+  if (isCancel(openAiKey)) {
+    throwValidationError(
+      "openAiKey is required in --no-interactive mode. Provide --open-ai-key or OPENAI_API_KEY.",
     );
-
-    if (progress) {
-      if (matchedFiles === 0) {
-        progress.stop("No media files found.");
-      } else {
-        progress.stop(`Done: ${matchedFiles} media file(s).`);
-      }
-    }
-    console.log(message, "should prolly be outtro but that breaks tests");
-  } catch (error) {
-    if (progress) {
-      progress.stop("Accession failed.");
-    }
-    throw error;
   }
+
+  const message = await accessionCommand.execute(
+    {
+      args: [resolvedInDir],
+      options: {
+        ...options,
+        openAiKey,
+        outDir: finalOutDir,
+      },
+    },
+    {
+      onProgress(progressUpdate) {
+        console.log(progressUpdate);
+
+        const firstTime = !!progressUpdate.currentFile;
+        const finished =
+          progressUpdate.totalFiles === progressUpdate.completedFiles;
+
+        if (firstTime) {
+          /// init and start
+          proper_progress_meter = progress({
+            style: "heavy",
+            max: progressUpdate.totalFiles,
+          });
+          proper_progress_meter.start(resolvedInDir);
+        } else {
+          // update to meter
+          if (finished && proper_progress_meter) {
+            proper_progress_meter.stop("all done");
+            // stop
+          }
+        }
+
+        if (progressUpdate.currentFile && proper_progress_meter) {
+          if (
+            progressUpdate.totalFiles > 0 &&
+            progressUpdate.completedFiles === progressUpdate.totalFiles
+          ) {
+            proper_progress_meter.stop(
+              `Done: ${progressUpdate.completedFiles} media file(s).`,
+            );
+          } else {
+            proper_progress_meter.advance(
+              progressUpdate.completedFiles,
+              progressUpdate.currentFile,
+            );
+          }
+        } else {
+          console.log("startem up");
+          proper_progress_meter = progress({
+            max: progressUpdate.totalFiles,
+          });
+        }
+      },
+    },
+  );
+
+  if (proper_progress_meter) {
+    // proper_progress_meter.stop()
+  }
+
+  console.log(message, "should prolly be outtro but that breaks tests");
 }
 
 async function runAnalyze(
