@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "pnpm --filter @influenca/cli... run build",
-    "test": "pnpm --filter @influenca/cli run test",
+    "test": "pnpm --filter @influenca/cli... run build && pnpm --filter @influenca/cli run test:dist",
     "format": "pnpm dlx prettier -wl .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
