@@ -5,20 +5,19 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import OpenAI from "openai";
 
+import type { ProgressOptions, ProgressResult } from "../utils/meter.js";
+
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
   inDir: string;
-  onProgress: (progress: AccessionWorkflowProgress) => void;
+  meter: (oo: ProgressOptions) => ProgressResult;
+  onProgress: (
+    progress: AccessionWorkflowProgress_which_is_a_private_type,
+  ) => void;
   openAiKey: string;
   outDir: string;
   transcribe: boolean;
   verbose: boolean;
-};
-
-export type AccessionWorkflowProgress = {
-  completedFiles: number;
-  currentFile?: string;
-  totalFiles: number;
 };
 
 export type AccessionWorkflowResult = {
@@ -28,6 +27,12 @@ export type AccessionWorkflowResult = {
   outDir: string;
   processedFiles: number;
   transcribedFiles: number;
+};
+
+type AccessionWorkflowProgress_which_is_a_private_type = {
+  completedFiles: number;
+  currentFile?: string;
+  totalFiles: number;
 };
 
 type Manifest = Record<
@@ -68,10 +73,10 @@ export async function runAccessionWorkflow(
   let processedFiles = 0;
   let transcribedFiles = 0;
 
-  options.onProgress?.({
-    completedFiles: 0,
-    totalFiles: matchedFiles,
-  });
+  // options.formerly_known_as_onp?.({
+  //   completedFiles: 0,
+  //   totalFiles: matchedFiles,
+  // });
 
   for (const filename of mediaFiles) {
     const baseName = path.parse(filename).name;
@@ -84,11 +89,11 @@ export async function runAccessionWorkflow(
     }
 
     if (options.dryRun) {
-      options.onProgress?.({
-        completedFiles: processedFiles + failedFiles + 1,
-        currentFile: filename,
-        totalFiles: matchedFiles,
-      });
+      // options.formerly_known_as_onp?.({
+      //   completedFiles: processedFiles + failedFiles + 1,
+      //   currentFile: filename,
+      //   totalFiles: matchedFiles,
+      // });
       continue;
     }
 
@@ -148,20 +153,20 @@ export async function runAccessionWorkflow(
       };
 
       processedFiles += 1;
-      options.onProgress?.({
-        completedFiles: processedFiles + failedFiles,
-        currentFile: filename,
-        totalFiles: matchedFiles,
-      });
+      // options.formerly_known_as_onp?.({
+      //   completedFiles: processedFiles + failedFiles,
+      //   currentFile: filename,
+      //   totalFiles: matchedFiles,
+      // });
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Pipeline failure on ${filename}: ${message}`);
-      options.onProgress?.({
-        completedFiles: processedFiles + failedFiles,
-        currentFile: filename,
-        totalFiles: matchedFiles,
-      });
+      // options.formerly_known_as_onp?.({
+      //   completedFiles: processedFiles + failedFiles,
+      //   currentFile: filename,
+      //   totalFiles: matchedFiles,
+      // });
     }
   }
 

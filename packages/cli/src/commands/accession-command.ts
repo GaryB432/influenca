@@ -1,10 +1,12 @@
+
 import {
   type CliCommand,
   type CommandRuntime,
   type ParsedCommandArgs,
 } from "../command-contract.js";
 import {
-  type AccessionWorkflowProgress,
+  type AccessionWorkflowOptions,
+  // type AccessionWorkflowProgress,
   type AccessionWorkflowResult,
   runAccessionWorkflow,
 } from "../workflows/accession.js";
@@ -18,6 +20,8 @@ export type AccessionCommandOptions = {
 };
 
 export type AccessionCommandRuntime = CommandRuntime<AccessionWorkflowProgress>;
+
+type AccessionWorkflowProgress = any;
 
 export class AccessionCommand implements CliCommand<
   AccessionCommandOptions,
@@ -33,16 +37,14 @@ export class AccessionCommand implements CliCommand<
       throw new Error("inDir is required.");
     }
 
-    const accessionOptions = {
-      dryRun: input.options.dryRun,
+    const accessionOptions: AccessionWorkflowOptions = {
+      ...input.options,
+      ...runtime,
       inDir,
-      ...(runtime?.onProgress ? { onProgress: runtime.onProgress } : {}),
-      ...(input.options.openAiKey
-        ? { openAiKey: input.options.openAiKey }
-        : {}),
-      ...(input.options.outDir ? { outDir: input.options.outDir } : {}),
-      transcribe: input.options.transcribe,
-      verbose: input.options.verbose,
+      // meter: runtime.meter,
+      // onProgress: (p: unknown) => {
+      //   throw new Error("use the other one");
+      // },
     };
     const result = await runAccessionWorkflow(accessionOptions);
 

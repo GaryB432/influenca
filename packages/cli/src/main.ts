@@ -193,7 +193,7 @@ async function runAccession(
   inDir: string | undefined,
   options: AccessionOptions,
 ): Promise<void> {
-  let proper_progress_meter: null | ReturnType<typeof progress> = null;
+  const proper_progress_meter: null | ReturnType<typeof progress> = null;
 
   const interactive = options.interactive !== false;
 
@@ -243,48 +243,50 @@ async function runAccession(
       },
     },
     {
+      meter: progress,
       onProgress(progressUpdate) {
         console.log(progressUpdate);
+        throw new Error("use the other one!");
 
-        const firstTime = !!progressUpdate.currentFile;
-        const finished =
-          progressUpdate.totalFiles === progressUpdate.completedFiles;
+        // const firstTime = !!progressUpdate.currentFile;
+        // const finished =
+        //   progressUpdate.totalFiles === progressUpdate.completedFiles;
 
-        if (firstTime) {
-          /// init and start
-          proper_progress_meter = progress({
-            style: "heavy",
-            max: progressUpdate.totalFiles,
-          });
-          proper_progress_meter.start(resolvedInDir);
-        } else {
-          // update to meter
-          if (finished && proper_progress_meter) {
-            proper_progress_meter.stop("all done");
-            // stop
-          }
-        }
+        // if (firstTime) {
+        //   /// init and start
+        //   proper_progress_meter = progress({
+        //     max: progressUpdate.totalFiles,
+        //     style: "heavy",
+        //   });
+        //   proper_progress_meter.start(resolvedInDir);
+        // } else {
+        //   // update to meter
+        //   if (finished && proper_progress_meter) {
+        //     proper_progress_meter.stop("all done");
+        //     // stop
+        //   }
+        // }
 
-        if (progressUpdate.currentFile && proper_progress_meter) {
-          if (
-            progressUpdate.totalFiles > 0 &&
-            progressUpdate.completedFiles === progressUpdate.totalFiles
-          ) {
-            proper_progress_meter.stop(
-              `Done: ${progressUpdate.completedFiles} media file(s).`,
-            );
-          } else {
-            proper_progress_meter.advance(
-              progressUpdate.completedFiles,
-              progressUpdate.currentFile,
-            );
-          }
-        } else {
-          console.log("startem up");
-          proper_progress_meter = progress({
-            max: progressUpdate.totalFiles,
-          });
-        }
+        // if (progressUpdate.currentFile && proper_progress_meter) {
+        //   if (
+        //     progressUpdate.totalFiles > 0 &&
+        //     progressUpdate.completedFiles === progressUpdate.totalFiles
+        //   ) {
+        //     proper_progress_meter.stop(
+        //       `Done: ${progressUpdate.completedFiles} media file(s).`,
+        //     );
+        //   } else {
+        //     proper_progress_meter.advance(
+        //       progressUpdate.completedFiles,
+        //       progressUpdate.currentFile,
+        //     );
+        //   }
+        // } else {
+        //   console.log("startem up");
+        //   proper_progress_meter = progress({
+        //     max: progressUpdate.totalFiles,
+        //   });
+        // }
       },
     },
   );

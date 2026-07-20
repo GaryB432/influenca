@@ -1,3 +1,5 @@
+import type { ProgressOptions, ProgressResult } from "./utils/meter.js";
+
 export interface CliCommand<TOptions, TProgress = never> {
   execute(
     input: ParsedCommandArgs<TOptions>,
@@ -6,6 +8,7 @@ export interface CliCommand<TOptions, TProgress = never> {
 }
 
 export type CommandRuntime<TProgress = never> = {
+  meter: (o: ProgressOptions) => ProgressResult;
   onProgress: (progress: TProgress) => void;
 };
 
