@@ -10,7 +10,7 @@ import {
 } from "./commands/accession-command.js";
 import { AnalyzeCommand } from "./commands/analyze-command.js";
 import { setupEnvironment } from "./environment.js";
-import { resolveOpenAiKey } from "./workflows/accession.js";
+// import { resolveOpenAiKey } from "./workflows/accession.js";
 import { type GreetWorkflowOptions, runGreet } from "./workflows/greet.js";
 
 const accessionCommand = new AccessionCommand();
@@ -138,8 +138,8 @@ async function resolveAccessionInDir(options: {
 
 async function resolveAccessionOutDir(options: {
   interactive: boolean;
-  outDir: string | undefined;
-}): Promise<null | string | undefined> {
+  outDir: string;
+}): Promise<string | symbol> {
   const envOutDir = process.env.INFLUENCA_DIR;
   const candidate = options.outDir ?? envOutDir;
 
@@ -148,7 +148,7 @@ async function resolveAccessionOutDir(options: {
   }
 
   if (!options.interactive) {
-    return null;
+    return Symbol.for("clack:cancel");
   }
 
   const response = await text({
@@ -159,27 +159,26 @@ async function resolveAccessionOutDir(options: {
       if (!value) {
         return "Output directory is required.";
       }
-      return;
+      // return;
     },
   });
 
   if (isCancel(response)) {
     cancel("Accession cancelled.");
-    return null;
   }
 
   return response;
 }
 
 function resolveFinalOutDir(
-  outDir: string | undefined,
-  timestamp: boolean | undefined,
-): string | undefined {
-  if (!outDir) {
-    return undefined;
+  outDir: string | symbol,
+  timestamp: boolean,
+): string | symbol {
+  if (!outDir || isCancel(outDir)) {
+    return Symbol.for("clack:cancel");
   }
 
-  if (timestamp === false) {
+  if (!timestamp) {
     return outDir;
   }
 
@@ -210,31 +209,19 @@ async function runAccession(
     interactive,
     outDir: options.outDir,
   });
-  if (resolvedOutDir === null) {
+
+  const finalOutDir = resolveFinalOutDir(resolvedOutDir, options.timestamp);
+
+  if (isCancel(finalOutDir)) {
     throwValidationError(
       "outDir is required in --no-interactive mode. Provide --out-dir or INFLUENCA_DIR.",
     );
   }
 
-  const finalOutDir = resolveFinalOutDir(resolvedOutDir, options.timestamp);
-
   if (showProgress) {
     progress = spinner();
     progress.start("Scanning media files...");
   }
-
-  const fdf: ParsedCommandArgs<AccessionCommandOptions> = {
-    args: [resolvedInDir],
-    options: {
-      ...options,
-      // dryRun: options.dryRun,
-
-      openAiKey: await resolveOpenAiKey(options.openAiKey),
-      outDir: finalOutDir,
-      transcribe: false,
-      verbose: false,
-    },
-  };
 
   try {
     // const commandExecutionOptions: any = {
@@ -247,24 +234,34 @@ async function runAccession(
     //     verbose: options.verbose ?? false,
     //   },
     // };
-    const message = await accessionCommand.execute(fdf, {
-      onProgress(progressUpdate) {
-        matchedFiles = progressUpdate.totalFiles;
-        if (!progress) {
-          return;
-        }
-
-        if (progressUpdate.totalFiles === 0) {
-          progress.message("No media files matched.");
-          return;
-        }
-
-        const current = progressUpdate.currentFile ?? "...";
-        progress.message(
-          `[${progressUpdate.completedFiles}/${progressUpdate.totalFiles}] ${current}`,
-        );
+    const message = await accessionCommand.execute(
+      {
+        args: [resolvedInDir],
+        options: {
+          ...options,
+          outDir: finalOutDir,
+        },
       },
-    });
+      {
+        onProgress(progressUpdate) {
+          console.log(progressUpdate);
+          // matchedFiles = progressUpdate.totalFiles;
+          // if (!progress) {
+          //   return;
+          // }
+
+          // if (progressUpdate.totalFiles === 0) {
+          //   progress.message("No media files matched.");
+          //   return;
+          // }
+
+          // const current = progressUpdate.currentFile ?? "...";
+          // progress.message(
+          //   `[${progressUpdate.completedFiles}/${progressUpdate.totalFiles}] ${current}`,
+          // );
+        },
+      },
+    );
 
     if (progress) {
       if (matchedFiles === 0) {
@@ -311,4 +308,12 @@ function withDefaultValue(value: string | undefined): {
     return { defaultValue: value };
   }
   return {};
+}
+
+export function resolveOpenAiKey(explicitKey: string): string {
+  const apiKeyToUse = explicitKey ?? process.env.OPENAI_API_KEY;
+  if (!apiKeyToUse) {
+    throw new Error("open ai key is required at least for now.");
+  }
+  return apiKeyToUse;
 }

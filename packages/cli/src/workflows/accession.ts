@@ -43,14 +43,6 @@ type Manifest = Record<
   }
 >;
 
-export function resolveOpenAiKey(explicitKey: string): string {
-  const apiKeyToUse = explicitKey ?? process.env.OPENAI_API_KEY;
-  if (!apiKeyToUse) {
-    throw new Error("open ai key is required at least for now.");
-  }
-  return apiKeyToUse;
-}
-
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
 ): Promise<AccessionWorkflowResult> {
@@ -60,7 +52,7 @@ export async function runAccessionWorkflow(
 
   const outDir = options.outDir;
   const manifestPath = path.join(outDir, ".influenca.json");
-  const apiKey = resolveOpenAiKey(options.openAiKey);
+  const apiKey = options.openAiKey;
   const files = fs.readdirSync(options.inDir);
   const mediaFiles = files.filter((filename) => {
     return filename.toLowerCase().match(/\.(avi|mp4)$/);
