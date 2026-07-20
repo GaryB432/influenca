@@ -1,12 +1,11 @@
 import { cancel, isCancel, outro, text } from "@clack/prompts";
 import { cac } from "cac";
-
-import { progress } from "./utils/meter.js";
 import path from "node:path";
 
 import { AccessionCommand } from "./commands/accession-command.js";
 import { AnalyzeCommand } from "./commands/analyze-command.js";
 import { setupEnvironment } from "./environment.js";
+import { progress } from "./utils/meter.js";
 import { type GreetWorkflowOptions, runGreet } from "./workflows/greet.js";
 
 const accessionCommand = new AccessionCommand();

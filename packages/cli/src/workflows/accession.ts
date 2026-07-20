@@ -1,5 +1,6 @@
 import type { FfprobeData, FfprobeStream } from "fluent-ffmpeg";
 
+import { log } from "@clack/prompts";
 import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -98,7 +99,7 @@ export async function runAccessionWorkflow(
     // }
 
     // progress.advance(processedFiles + failedFiles, filename);
-    progress.advance(processedFiles + failedFiles);
+    progress.advance(processedFiles + failedFiles, filename);
 
     try {
       await transcodeToMp4(inputPath, outputVideoPath);
@@ -164,20 +165,16 @@ export async function runAccessionWorkflow(
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
-      progress.message(message);
-      // console.error(`Pipeline failure on ${filename}: ${message}`);
-      // options.formerly_known_as_onp?.({
-      //   completedFiles: processedFiles + failedFiles,
-      //   currentFile: filename,
-      //   totalFiles: matchedFiles,
-      // });
+      console.error(message);
+      // progress.message('nope')
     }
   }
-  
+
   if (!options.dryRun) {
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   }
-  progress.stop(`colorful ${manifestPath}`)
+  progress.stop();
+  log.info(manifestPath);
 
   return {
     failedFiles,
