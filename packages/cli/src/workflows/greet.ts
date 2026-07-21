@@ -1,5 +1,7 @@
 import type { CommandRuntime } from "../command-contract.js";
 
+import { progress } from "../utils/meter.js";
+
 export type GreetWorkflowOptions = {
   interactive: boolean;
   offset: number | string;
@@ -12,7 +14,10 @@ export type GreetWorkflowProgress = {
 export async function runGreet(
   name: string | undefined,
   options: GreetWorkflowOptions,
-  runtime: CommandRuntime<GreetWorkflowProgress> = { onProgress: noopProgress },
+  runtime: CommandRuntime<GreetWorkflowProgress> = {
+    meter: progress,
+    onProgress: noopProgress,
+  },
 ): Promise<void> {
   runtime.onProgress?.({ phase: "started" });
 
