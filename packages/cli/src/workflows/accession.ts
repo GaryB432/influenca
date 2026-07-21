@@ -142,11 +142,6 @@ export async function runAccessionWorkflow(
       // console.log(whisperTranscription);
 
       if (whisperTranscription) {
-        const segmentsPath = path.join(
-          options.outDir,
-          `${filename}.segments.json`,
-        );
-
         const outputSegmentsPath = path.join(outDir, trackBaseName);
 
         fs.writeFileSync(
