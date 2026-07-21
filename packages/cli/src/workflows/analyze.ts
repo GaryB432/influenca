@@ -1,6 +1,8 @@
+import type { TranscriptionSegment } from "@influenca/core";
+
 import { parseManifest, type Transcription } from "@influenca/core";
 import fs from "node:fs";
-import path from "node:path";
+import path, { join } from "node:path";
 
 export type AnalyzeWorkflowOptions = {
   inDir: string;
@@ -11,6 +13,7 @@ export type AnalyzeWorkflowResult = {
   manifestPath: string;
   totalDurationSeconds: number;
   totalFrames: number;
+  totalWords: number;
   videoCount: number;
   withStatsCount: number;
 };
@@ -37,11 +40,26 @@ export async function runAnalyzeWorkflow(
   let totalDurationSeconds = 0;
   let totalFrames = 0;
   let withStatsCount = 0;
+  let totalWords = 0;
 
   for (const entry of entries) {
     const stats = entry.stats;
     if (!stats) {
       continue;
+    }
+
+    if (entry.transcript) {
+      const track = fs.readFileSync(
+        join(options.inDir, entry.transcript.segments),
+        "utf-8",
+      );
+      const segments = JSON.parse(track) as Array<TranscriptionSegment>;
+      const text = segments.map((s) => s.text).join("\n");
+      const words = text.split(/\s+/).length;
+
+      totalWords += words;
+      console.log(text);
+      console.log("---");
     }
 
     withStatsCount += 1;
@@ -53,6 +71,7 @@ export async function runAnalyzeWorkflow(
     manifestPath,
     totalDurationSeconds,
     totalFrames,
+    totalWords,
     videoCount: entries.length,
     withStatsCount,
   };
