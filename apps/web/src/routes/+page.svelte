@@ -33,11 +33,10 @@
   });
 </script>
 
-<video bind:this={videoElement} controls src="/apps/web/static/corpus/VID00000.mp4" width="600">
-  <!-- Kind metadata hides default rendering if you want to render text yourself -->
+<video bind:this={videoElement} controls src="/corpus/VID00000.mp4" width="600">
   <track
     bind:this={trackElement}
-    kind="metadata"
+    kind="captions"
     label="Custom Cue Track"
     default
   />
