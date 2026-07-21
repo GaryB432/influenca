@@ -4,6 +4,7 @@ import {
   type ParsedCommandArgs,
 } from "../command-contract.js";
 import {
+  type AccessionWorkflowOptions,
   type AccessionWorkflowProgress,
   type AccessionWorkflowResult,
   runAccessionWorkflow,
@@ -11,8 +12,8 @@ import {
 
 export type AccessionCommandOptions = {
   dryRun: boolean;
-  openAiKey?: string;
-  outDir?: string;
+  openAiKey: string;
+  outDir: string;
   transcribe: boolean;
   verbose: boolean;
 };
@@ -25,7 +26,7 @@ export class AccessionCommand implements CliCommand<
 > {
   public async execute(
     input: ParsedCommandArgs<AccessionCommandOptions>,
-    runtime?: AccessionCommandRuntime,
+    runtime: AccessionCommandRuntime,
   ): Promise<string> {
     const [inDir] = input.args;
 
@@ -33,16 +34,13 @@ export class AccessionCommand implements CliCommand<
       throw new Error("inDir is required.");
     }
 
-    const accessionOptions = {
-      dryRun: input.options.dryRun,
+    const accessionOptions: AccessionWorkflowOptions = {
+      ...input.options,
       inDir,
-      ...(runtime?.onProgress ? { onProgress: runtime.onProgress } : {}),
-      ...(input.options.openAiKey
-        ? { openAiKey: input.options.openAiKey }
-        : {}),
-      ...(input.options.outDir ? { outDir: input.options.outDir } : {}),
-      transcribe: input.options.transcribe,
-      verbose: input.options.verbose,
+      meter: runtime.meter,
+      // onProgress: function (): void {
+      //   throw new Error("Function not implemented.");
+      // },
     };
     const result = await runAccessionWorkflow(accessionOptions);
 

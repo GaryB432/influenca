@@ -1,47 +1,46 @@
-import { cancel, isCancel, spinner, text } from "@clack/prompts";
+import { cancel, isCancel, outro, text } from "@clack/prompts";
 import { cac } from "cac";
 import path from "node:path";
 
 import { AccessionCommand } from "./commands/accession-command.js";
+import { AnalyzeCommand } from "./commands/analyze-command.js";
 import { setupEnvironment } from "./environment.js";
-import { type GreetWorkflowOptions, runGreet } from "./workflows/greet.js";
+import { progress } from "./utils/meter.js";
 
 const accessionCommand = new AccessionCommand();
+const analyzeCommand = new AnalyzeCommand();
 
 type AccessionOptions = {
-  dryRun?: boolean;
-  openAiKey?: string;
-  outDir?: string;
-  timestamp?: boolean;
-  transcribe?: boolean;
-  verbose?: boolean;
+  dryRun: boolean;
+  openAiKey: string;
+  outDir: string;
+  timestamp: boolean;
+  transcribe: boolean;
+  verbose: boolean;
 } & CommonInteractiveOptions;
 
-type CommonInteractiveOptions = {
-  interactive?: boolean;
+type AnalyzeOptions = {
+  minimal: boolean;
 };
 
-type GreetOptions = {
-  offset?: number | string;
-} & GreetWorkflowOptions;
+type CommonInteractiveOptions = {
+  interactive: boolean;
+};
+
+export function getOpenAiApiKey(
+  explicitKey: string | undefined,
+): string | symbol {
+  const apiKeyToUse = explicitKey ?? process.env.OPENAI_API_KEY;
+  if (!apiKeyToUse) {
+    return Symbol.for("clack:cancel");
+  }
+  return apiKeyToUse;
+}
 
 export async function main(rawArguments: string[]): Promise<void> {
   setupEnvironment();
 
   const cli = cac("influenca");
-
-  cli
-    .command("greet [name]", "Greet someone")
-    .option(
-      "-o, --offset <hours>",
-      "UTC offset hours (use --offset=-6 for negatives)",
-    )
-    .option("--interactive", "Show interactive prompts")
-    .example("greet bob --no-interactive --offset=-6")
-    .example("greet alice --offset=-6")
-    .action(async (name: string | undefined, options: GreetOptions) => {
-      await runGreet(name, options);
-    });
 
   cli
     .command("accession [inDir]", "Process media inputs and emit a manifest")
@@ -60,6 +59,15 @@ export async function main(rawArguments: string[]): Promise<void> {
     )
     .action(async (inDir: string | undefined, options: AccessionOptions) => {
       await runAccession(inDir, options);
+    });
+
+  cli
+    .command("analyze [inDir]", "Summarize .influenca.json in a directory")
+    .option("--minimal", "Print only video-count summary", { default: true })
+    .example("analyze ./tmp/processed")
+    .example("analyze ./tmp/processed --no-minimal")
+    .action(async (inDir: string | undefined, options: AnalyzeOptions) => {
+      await runAnalyze(inDir, options);
     });
 
   const parsedArgs = cli.parse(rawArguments, { run: false });
@@ -117,8 +125,8 @@ async function resolveAccessionInDir(options: {
 
 async function resolveAccessionOutDir(options: {
   interactive: boolean;
-  outDir: string | undefined;
-}): Promise<null | string | undefined> {
+  outDir: string;
+}): Promise<string | symbol> {
   const envOutDir = process.env.INFLUENCA_DIR;
   const candidate = options.outDir ?? envOutDir;
 
@@ -127,7 +135,7 @@ async function resolveAccessionOutDir(options: {
   }
 
   if (!options.interactive) {
-    return null;
+    return Symbol.for("clack:cancel");
   }
 
   const response = await text({
@@ -138,27 +146,25 @@ async function resolveAccessionOutDir(options: {
       if (!value) {
         return "Output directory is required.";
       }
-      return;
     },
   });
 
   if (isCancel(response)) {
     cancel("Accession cancelled.");
-    return null;
   }
 
   return response;
 }
 
 function resolveFinalOutDir(
-  outDir: string | undefined,
-  timestamp: boolean | undefined,
-): string | undefined {
-  if (!outDir) {
-    return undefined;
+  outDir: string | symbol,
+  timestamp: boolean,
+): string | symbol {
+  if (!outDir || isCancel(outDir)) {
+    return Symbol.for("clack:cancel");
   }
 
-  if (timestamp === false) {
+  if (!timestamp) {
     return outDir;
   }
 
@@ -169,9 +175,7 @@ async function runAccession(
   inDir: string | undefined,
   options: AccessionOptions,
 ): Promise<void> {
-  const showProgress = !options.verbose;
-  let progress: null | ReturnType<typeof spinner> = null;
-  let matchedFiles = 0;
+  // const proper_progress_meter: null | ReturnType<typeof progress> = null;
 
   const interactive = options.interactive !== false;
 
@@ -189,69 +193,59 @@ async function runAccession(
     interactive,
     outDir: options.outDir,
   });
-  if (resolvedOutDir === null) {
+
+  const finalOutDir = resolveFinalOutDir(resolvedOutDir, options.timestamp);
+
+  if (isCancel(finalOutDir)) {
     throwValidationError(
       "outDir is required in --no-interactive mode. Provide --out-dir or INFLUENCA_DIR.",
     );
   }
 
-  const finalOutDir = resolveFinalOutDir(resolvedOutDir, options.timestamp);
+  const openAiKey = getOpenAiApiKey(options.openAiKey);
 
-  if (showProgress) {
-    progress = spinner();
-    progress.start("Scanning media files...");
+  if (isCancel(openAiKey)) {
+    throwValidationError(
+      "openAiKey is required in --no-interactive mode. Provide --open-ai-key or OPENAI_API_KEY.",
+    );
   }
 
-  try {
-    const commandExecutionOptions = {
+  const message = await accessionCommand.execute(
+    {
       args: [resolvedInDir],
       options: {
-        dryRun: options.dryRun ?? false,
-        ...(options.openAiKey ? { openAiKey: options.openAiKey } : {}),
-        ...(finalOutDir ? { outDir: finalOutDir } : {}),
-        transcribe: options.transcribe ?? false,
-        verbose: options.verbose ?? false,
+        ...options,
+        openAiKey,
+        outDir: finalOutDir,
       },
-    };
-    const message = await accessionCommand.execute(
-      commandExecutionOptions,
-      showProgress
-        ? {
-            onProgress(progressUpdate) {
-              matchedFiles = progressUpdate.totalFiles;
-              if (!progress) {
-                return;
-              }
+    },
+    {
+      meter: progress,
+      onProgress() {
+        throw new Error("use the other one!");
+      },
+    },
+  );
 
-              if (progressUpdate.totalFiles === 0) {
-                progress.message("No media files matched.");
-                return;
-              }
+  console.log(message, "should prolly be outtro but that breaks tests");
+}
 
-              const current = progressUpdate.currentFile ?? "...";
-              progress.message(
-                `[${progressUpdate.completedFiles}/${progressUpdate.totalFiles}] ${current}`,
-              );
-            },
-          }
-        : undefined,
-    );
-
-    if (progress) {
-      if (matchedFiles === 0) {
-        progress.stop("No media files found.");
-      } else {
-        progress.stop(`Done: ${matchedFiles} media file(s).`);
-      }
-    }
-
-    console.log(message, "should prolly be outtro");
-  } catch (error) {
-    if (progress) {
-      progress.stop("Accession failed.");
-    }
-    throw error;
+async function runAnalyze(
+  inDir: string | undefined,
+  options: AnalyzeOptions,
+): Promise<void> {
+  if (!inDir) {
+    throwValidationError("inDir is required. Provide [inDir].");
   }
+
+  const message = await analyzeCommand.execute({
+    args: [inDir],
+    options: {
+      minimal: options.minimal ?? true,
+    },
+  });
+
+  outro(message);
 }
 
 function throwValidationError(message: string): never {

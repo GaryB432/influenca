@@ -1,6 +1,12 @@
-import type { FrameStats } from "@influenca/core";
-
 import { spawn } from "child_process";
+
+// TODO reimplement
+type FrameStats = {
+  checksum: string;
+  mean: number[];
+  pts_time: number;
+  stdev: number[];
+};
 
 export function analyzeMotion(inputPath: string): Promise<{
   frames: FrameStats[];

@@ -1,16 +1,20 @@
+import type { Manifest, Transcription, VideoEntry } from "@influenca/core";
 import type { FfprobeData, FfprobeStream } from "fluent-ffmpeg";
 
+import { log } from "@clack/prompts";
 import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import OpenAI from "openai";
 
+import type { ProgressOptions, ProgressResult } from "../utils/meter.js";
+
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
   inDir: string;
-  onProgress?: (progress: AccessionWorkflowProgress) => void;
-  openAiKey?: string;
-  outDir?: string;
+  meter: (options: ProgressOptions) => ProgressResult;
+  openAiKey: string;
+  outDir: string;
   transcribe: boolean;
   verbose: boolean;
 };
@@ -30,23 +34,6 @@ export type AccessionWorkflowResult = {
   transcribedFiles: number;
 };
 
-type Manifest = Record<
-  string,
-  {
-    stats: {
-      "as-needed": string;
-      duration_seconds: number;
-      frames: number;
-      "interest-score": number;
-    };
-    transcript: string[];
-  }
->;
-
-export function resolveOpenAiKey(explicitKey?: string): string | undefined {
-  return explicitKey ?? process.env.OPENAI_API_KEY;
-}
-
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
 ): Promise<AccessionWorkflowResult> {
@@ -56,7 +43,7 @@ export async function runAccessionWorkflow(
 
   const outDir = options.outDir;
   const manifestPath = path.join(outDir, ".influenca.json");
-  const apiKey = resolveOpenAiKey(options.openAiKey);
+  const apiKey = options.openAiKey;
   const files = fs.readdirSync(options.inDir);
   const mediaFiles = files.filter((filename) => {
     return filename.toLowerCase().match(/\.(avi|mp4)$/);
@@ -72,10 +59,8 @@ export async function runAccessionWorkflow(
   let processedFiles = 0;
   let transcribedFiles = 0;
 
-  options.onProgress?.({
-    completedFiles: 0,
-    totalFiles: matchedFiles,
-  });
+  const progress = options.meter({ max: matchedFiles });
+  progress.start(`hello ${options.inDir}`);
 
   for (const filename of mediaFiles) {
     const baseName = path.parse(filename).name;
@@ -83,19 +68,7 @@ export async function runAccessionWorkflow(
     const inputPath = path.join(options.inDir, filename);
     const outputVideoPath = path.join(outDir, targetMp4);
 
-    if (options.verbose || options.dryRun) {
-      console.log(`Processing: ${filename} -> ${targetMp4}`);
-    }
-
-    if (options.dryRun) {
-      options.onProgress?.({
-        completedFiles: processedFiles + failedFiles + 1,
-        currentFile: filename,
-        totalFiles: matchedFiles,
-      });
-      continue;
-    }
-
+    const trackBaseName = `${baseName}.track.json`;
     try {
       await transcodeToMp4(inputPath, outputVideoPath);
       if (options.verbose) {
@@ -118,19 +91,15 @@ export async function runAccessionWorkflow(
         );
       }
 
-      let transcript: string | undefined;
+      let whisperTranscription: Transcription | undefined;
       if (options.transcribe && audioStream && apiKey) {
-        transcript = await transcribeAudio({
+        whisperTranscription = await transcribeAudio({
           apiKey,
           baseName,
           outDir,
           outputVideoPath,
         });
         transcribedFiles += 1;
-        if (options.verbose) {
-          const words = transcript.split(" ").filter(Boolean).length;
-          console.log(`  Transcribed (${words} words)`);
-        }
       } else if (options.verbose) {
         if (!options.transcribe) {
           console.log("  Skipping transcription (--transcribe not set)");
@@ -141,37 +110,48 @@ export async function runAccessionWorkflow(
         }
       }
 
-      manifest[targetMp4] = {
+      const videoEntry: VideoEntry = {
         stats: {
-          "as-needed": "tbd",
           duration_seconds: duration,
           frames,
-          "interest-score": 0.5,
         },
-        transcript: transcript ? [transcript] : [],
+        transcript: undefined,
       };
 
+      if (whisperTranscription) {
+        const outputSegmentsPath = path.join(outDir, trackBaseName);
+
+        fs.writeFileSync(
+          outputSegmentsPath,
+          JSON.stringify(whisperTranscription.segments, undefined, 2),
+        );
+
+        videoEntry.transcript = {
+          meta: {
+            duration: whisperTranscription.duration,
+            language: whisperTranscription.language,
+          },
+          segments: trackBaseName,
+        };
+      }
+
+      manifest[targetMp4] = videoEntry;
+
       processedFiles += 1;
-      options.onProgress?.({
-        completedFiles: processedFiles + failedFiles,
-        currentFile: filename,
-        totalFiles: matchedFiles,
-      });
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`Pipeline failure on ${filename}: ${message}`);
-      options.onProgress?.({
-        completedFiles: processedFiles + failedFiles,
-        currentFile: filename,
-        totalFiles: matchedFiles,
-      });
+      console.error(message);
+      // progress.message('nope')
     }
+    progress.advance(processedFiles + failedFiles, filename);
   }
 
   if (!options.dryRun) {
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   }
+  progress.stop();
+  log.info(manifestPath);
 
   return {
     failedFiles,
@@ -213,7 +193,7 @@ async function transcribeAudio(options: {
   baseName: string;
   outDir: string;
   outputVideoPath: string;
-}): Promise<string> {
+}): Promise<Transcription> {
   const openai = new OpenAI({ apiKey: options.apiKey });
   const audioPath = path.join(options.outDir, `${options.baseName}.m4a`);
 
@@ -230,8 +210,10 @@ async function transcribeAudio(options: {
   const response = await openai.audio.transcriptions.create({
     file: fs.createReadStream(audioPath),
     model: "whisper-1",
+    response_format: "verbose_json",
   });
 
   fs.unlinkSync(audioPath);
-  return response.text;
+
+  return response;
 }

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -eu
+
+TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+
+pnpm --filter @influenca/cli... run build
+
+packages/cli/dist/bin.mjs accession fixtures --outDir "tmp/$TIMESTAMP" --no-timestamp --verbose
+
+packages/cli/dist/bin.mjs analyze "tmp/$TIMESTAMP" --no-minimal
+
+printf "\033[32mHello \033[1;35mPurple\033[0m\n"
