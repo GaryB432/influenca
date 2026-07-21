@@ -1,16 +1,14 @@
+import { type Transcription } from "@influenca/core";
 import assert from "node:assert";
 import { test } from "node:test";
 
-import {
-  getExtremelyFoundationalSegmentCount,
-  type VttThingWithStuffIncludingTheSegments,
-} from "./analyze.js";
+import { getExtremelyFoundationalSegmentCount } from "./analyze.js";
 
 test("transcribes basics", () => {
   assert.equal(getExtremelyFoundationalSegmentCount(transcribe_specimen), 8);
 });
 
-const transcribe_specimen: VttThingWithStuffIncludingTheSegments = {
+const transcribe_specimen: Transcription = {
   duration: 60.40999984741211,
   language: "english",
   segments: [
@@ -119,9 +117,8 @@ const transcribe_specimen: VttThingWithStuffIncludingTheSegments = {
       tokens: [50364, 467, 2544, 411, 300, 311, 516, 281, 589, 13, 50428],
     },
   ],
-  task: "transcribe",
   text: "Welcome to my video processing hobby project. I call it Influenza. You know, it's like influenza, only influencer. Let me turn this light on. Hmm, what does this look like? It is 8.43pm, Saturday, July 18th. I've got these lights on and the under the counter kitchen lights on. It seems like that's going to work.",
   usage: { seconds: 61, type: "duration" },
 };
 
-console.log(transcribe_specimen.segments.length);
+console.log(transcribe_specimen.segments!.length);

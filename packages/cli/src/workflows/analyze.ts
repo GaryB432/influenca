@@ -1,4 +1,4 @@
-import { parseManifest } from "@influenca/core";
+import { parseManifest, type Transcription } from "@influenca/core";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -15,32 +15,10 @@ export type AnalyzeWorkflowResult = {
   withStatsCount: number;
 };
 
-export type VttThingWithStuffIncludingTheSegments = {
-  duration: number;
-  language: "crap" | "english";
-  segments: VttSegment[];
-  task: string;
-  text: string;
-  usage: { seconds: number; type: "duration" };
-};
-
-type VttSegment = {
-  avg_logprob: number;
-  compression_ratio: number;
-  end: number;
-  id: number;
-  no_speech_prob: number;
-  seek: number;
-  start: number;
-  temperature: number;
-  text: string;
-  tokens: number[];
-};
-
 export function getExtremelyFoundationalSegmentCount(
-  subjectThatHasANameFromTheVTTProponents: Partial<VttThingWithStuffIncludingTheSegments>,
+  vttTranscription: Transcription,
 ): number | undefined {
-  return subjectThatHasANameFromTheVTTProponents?.segments?.length;
+  return vttTranscription?.segments?.length;
 }
 
 export async function runAnalyzeWorkflow(
@@ -79,3 +57,4 @@ export async function runAnalyzeWorkflow(
     withStatsCount,
   };
 }
+export { type Transcription };

@@ -1,3 +1,4 @@
+import type { Manifest, Transcription, VideoEntry } from "@influenca/core";
 import type { FfprobeData, FfprobeStream } from "fluent-ffmpeg";
 
 import { log } from "@clack/prompts";
@@ -32,19 +33,6 @@ export type AccessionWorkflowResult = {
   processedFiles: number;
   transcribedFiles: number;
 };
-
-type Manifest = Record<
-  string,
-  {
-    stats: {
-      "as-needed": string;
-      duration_seconds: number;
-      frames: number;
-      "interest-score": number;
-    };
-    transcript: string[];
-  }
->;
 
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
@@ -85,6 +73,8 @@ export async function runAccessionWorkflow(
     const inputPath = path.join(options.inDir, filename);
     const outputVideoPath = path.join(outDir, targetMp4);
 
+    const trackBaseName = `${baseName}.track.json`;
+
     // if (options.verbose || options.dryRun) {
     //   console.log(`Processing: ${filename} -> ${targetMp4}`);
     // }
@@ -99,7 +89,6 @@ export async function runAccessionWorkflow(
     // }
 
     // progress.advance(processedFiles + failedFiles, filename);
-    progress.advance(processedFiles + failedFiles, filename);
 
     try {
       await transcodeToMp4(inputPath, outputVideoPath);
@@ -123,19 +112,15 @@ export async function runAccessionWorkflow(
         );
       }
 
-      let transcript: string | undefined;
+      let whisperTranscription: Transcription | undefined;
       if (options.transcribe && audioStream && apiKey) {
-        transcript = await transcribeAudio({
+        whisperTranscription = await transcribeAudio({
           apiKey,
           baseName,
           outDir,
           outputVideoPath,
         });
         transcribedFiles += 1;
-        if (options.verbose) {
-          const words = transcript.split(" ").filter(Boolean).length;
-          console.log(`  Transcribed (${words} words)`);
-        }
       } else if (options.verbose) {
         if (!options.transcribe) {
           console.log("  Skipping transcription (--transcribe not set)");
@@ -146,28 +131,48 @@ export async function runAccessionWorkflow(
         }
       }
 
-      manifest[targetMp4] = {
+      const videoEntry: VideoEntry = {
         stats: {
-          "as-needed": "tbd",
           duration_seconds: duration,
           frames,
-          "interest-score": 0.5,
         },
-        transcript: transcript ? [transcript] : [],
+        transcript: undefined,
       };
 
+      // console.log(whisperTranscription);
+
+      if (whisperTranscription) {
+        const segmentsPath = path.join(
+          options.outDir,
+          `${filename}.segments.json`,
+        );
+
+        const outputSegmentsPath = path.join(outDir, trackBaseName);
+
+        fs.writeFileSync(
+          outputSegmentsPath,
+          JSON.stringify(whisperTranscription.segments, undefined, 2),
+        );
+
+        videoEntry.transcript = {
+          meta: {
+            duration: whisperTranscription.duration,
+            language: whisperTranscription.language,
+          },
+          segments: trackBaseName,
+        };
+      }
+
+      manifest[targetMp4] = videoEntry;
+
       processedFiles += 1;
-      // options.formerly_known_as_onp?.({
-      //   completedFiles: processedFiles + failedFiles,
-      //   currentFile: filename,
-      //   totalFiles: matchedFiles,
-      // });
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
       console.error(message);
       // progress.message('nope')
     }
+    progress.advance(processedFiles + failedFiles, filename);
   }
 
   if (!options.dryRun) {
@@ -216,7 +221,7 @@ async function transcribeAudio(options: {
   baseName: string;
   outDir: string;
   outputVideoPath: string;
-}): Promise<string> {
+}): Promise<Transcription> {
   const openai = new OpenAI({ apiKey: options.apiKey });
   const audioPath = path.join(options.outDir, `${options.baseName}.m4a`);
 
@@ -238,15 +243,8 @@ async function transcribeAudio(options: {
     response_format: "verbose_json",
   });
 
-  // 3. Since response_format: 'vtt' returns a string,
-  // you can cast it or use it directly as the VTT content
-  // const vttContent = response as unknown as string;
-  // console.log(response.segments?.map((s) => s.temperature));
-
-  const vttContent = JSON.stringify(response);
-
   fs.unlinkSync(audioPath);
 
   // Return the VTT string
-  return vttContent;
+  return response;
 }
