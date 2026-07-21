@@ -2,6 +2,8 @@ export * as color from "./color.js";
 export * from "./motion.js";
 export * from "./names.js";
 
+import OpenAI from "openai";
+
 // export type EncodingStats = {
 //   bitrate: string;
 //   fps: number;
@@ -21,11 +23,25 @@ export * from "./names.js";
 //   stdev: number[];
 // };
 
+export type AbbreviatedTranscriptionMetadata = Omit<
+  Transcription,
+  "segments" | "text"
+>;
+
 export type Manifest = Record<string, Partial<VideoEntry>>;
+export type Transcription = OpenAI.Audio.TranscriptionVerbose;
+
+export type TranscriptionSegment = OpenAI.Audio.TranscriptionSegment;
 
 export type VideoEntry = {
   stats: Partial<VideoStatisticalBlock>;
-  transcript: string[];
+  transcript:
+    | {
+        meta: AbbreviatedTranscriptionMetadata;
+
+        segments: string;
+      }
+    | undefined;
 };
 
 type VideoStatisticalBlock = {
