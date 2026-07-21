@@ -1,8 +1,10 @@
 packages:
+  - 'apps/*'
   - 'packages/*'
 
 allowBuilds:
   ffmpeg-static: true
+  esbuild: true
 
 catalog:
   '@clack/prompts': ^1.7.0

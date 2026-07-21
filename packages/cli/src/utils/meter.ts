@@ -23,13 +23,14 @@ export function progress({
     light: { complete: "\u2501", incomplete: "\u2500" },
   }[style];
 
-  const bar = new cliProgress.SingleBar({
+  const barUberOptions = {
     barCompleteChar: chars.complete,
     barIncompleteChar: chars.incomplete,
     barsize: size,
     format: ` {bar} | {percentage}% | {msg}`,
     hideCursor: true,
-  });
+  };
+  const bar = new cliProgress.SingleBar(barUberOptions);
 
   return {
     advance: (currentValue: number, msg?: string): void => {

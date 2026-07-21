@@ -83,6 +83,7 @@ function formatAnalyzeSummary(
     ["missing stats", String(missingStatsCount)],
     ["total duration (s)", result.totalDurationSeconds.toFixed(2)],
     ["total frames", String(result.totalFrames)],
+    ["total words", String(result.totalWords)],
     ["avg duration per video (s)", averageDurationSeconds.toFixed(2)],
     ["avg frames per video", averageFrames.toFixed(2)],
   ];

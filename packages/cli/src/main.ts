@@ -91,16 +91,11 @@ function isoTimestampNow(): string {
 
 async function resolveAccessionInDir(options: {
   inDir: string | undefined;
-  interactive: boolean;
-}): Promise<null | string> {
+}): Promise<string | symbol> {
   const candidate = options.inDir;
 
   if (candidate) {
     return candidate;
-  }
-
-  if (!options.interactive) {
-    return null;
   }
 
   const response = await text({
@@ -117,7 +112,6 @@ async function resolveAccessionInDir(options: {
 
   if (isCancel(response)) {
     cancel("Accession cancelled.");
-    return null;
   }
 
   return response;
@@ -181,12 +175,10 @@ async function runAccession(
 
   const resolvedInDir = await resolveAccessionInDir({
     inDir,
-    interactive,
   });
-  if (!resolvedInDir) {
-    throwValidationError(
-      "inDir is required in --no-interactive mode. Provide [inDir].",
-    );
+
+  if (isCancel(resolvedInDir)) {
+    process.exit();
   }
 
   const resolvedOutDir = await resolveAccessionOutDir({
@@ -227,7 +219,7 @@ async function runAccession(
     },
   );
 
-  console.log(message, "should prolly be outtro but that breaks tests");
+  outro(message);
 }
 
 async function runAnalyze(
