@@ -6,7 +6,6 @@ import { AccessionCommand } from "./commands/accession-command.js";
 import { AnalyzeCommand } from "./commands/analyze-command.js";
 import { setupEnvironment } from "./environment.js";
 import { progress } from "./utils/meter.js";
-import { type GreetWorkflowOptions, runGreet } from "./workflows/greet.js";
 
 const accessionCommand = new AccessionCommand();
 const analyzeCommand = new AnalyzeCommand();
@@ -28,10 +27,6 @@ type CommonInteractiveOptions = {
   interactive: boolean;
 };
 
-type GreetOptions = {
-  offset: number | string;
-} & GreetWorkflowOptions;
-
 export function getOpenAiApiKey(
   explicitKey: string | undefined,
 ): string | symbol {
@@ -46,19 +41,6 @@ export async function main(rawArguments: string[]): Promise<void> {
   setupEnvironment();
 
   const cli = cac("influenca");
-
-  cli
-    .command("greet [name]", "Greet someone")
-    .option(
-      "-o, --offset <hours>",
-      "UTC offset hours (use --offset=-6 for negatives)",
-    )
-    .option("--interactive", "Show interactive prompts")
-    .example("greet bob --no-interactive --offset=-6")
-    .example("greet alice --offset=-6")
-    .action(async (name: string | undefined, options: GreetOptions) => {
-      await runGreet(name, options);
-    });
 
   cli
     .command("accession [inDir]", "Process media inputs and emit a manifest")

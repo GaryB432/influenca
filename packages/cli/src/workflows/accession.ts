@@ -59,11 +59,6 @@ export async function runAccessionWorkflow(
   let processedFiles = 0;
   let transcribedFiles = 0;
 
-  // options.formerly_known_as_onp?.({
-  //   completedFiles: 0,
-  //   totalFiles: matchedFiles,
-  // });
-
   const progress = options.meter({ max: matchedFiles });
   progress.start(`hello ${options.inDir}`);
 
@@ -74,22 +69,6 @@ export async function runAccessionWorkflow(
     const outputVideoPath = path.join(outDir, targetMp4);
 
     const trackBaseName = `${baseName}.track.json`;
-
-    // if (options.verbose || options.dryRun) {
-    //   console.log(`Processing: ${filename} -> ${targetMp4}`);
-    // }
-
-    // if (options.dryRun) {
-    //   // options.formerly_known_as_onp?.({
-    //   //   completedFiles: processedFiles + failedFiles + 1,
-    //   //   currentFile: filename,
-    //   //   totalFiles: matchedFiles,
-    //   // });
-    //   continue;
-    // }
-
-    // progress.advance(processedFiles + failedFiles, filename);
-
     try {
       await transcodeToMp4(inputPath, outputVideoPath);
       if (options.verbose) {
@@ -138,8 +117,6 @@ export async function runAccessionWorkflow(
         },
         transcript: undefined,
       };
-
-      // console.log(whisperTranscription);
 
       if (whisperTranscription) {
         const outputSegmentsPath = path.join(outDir, trackBaseName);
@@ -230,16 +207,13 @@ async function transcribeAudio(options: {
       .run();
   });
 
-  // 2. Request VTT format
   const response = await openai.audio.transcriptions.create({
     file: fs.createReadStream(audioPath),
     model: "whisper-1",
-    // response_format: "vtt", // Add this line
     response_format: "verbose_json",
   });
 
   fs.unlinkSync(audioPath);
 
-  // Return the VTT string
   return response;
 }

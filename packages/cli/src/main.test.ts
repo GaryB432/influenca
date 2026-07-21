@@ -6,64 +6,6 @@ import { mock, test } from "node:test";
 
 import { getOpenAiApiKey, main } from "./main.js";
 
-test("prints help for unknown command shape", async () => {
-  let output = "";
-  const writeMock = mock.method(process.stdout, "write", (chunk: string) => {
-    output += chunk;
-    return true;
-  });
-
-  await main(["node", "bin.js", "Alice", "America/Chicago"]);
-
-  assert.match(output, /Usage:/);
-  assert.match(output, /greet \[name\]/);
-
-  writeMock.mock.restore();
-});
-
-test("matches greet command with positional name", async () => {
-  let stderr = "";
-  const stderrMock = mock.method(process.stderr, "write", (chunk: string) => {
-    stderr += chunk;
-    return true;
-  });
-
-  await main([
-    "node",
-    "bin.js",
-    "greet",
-    "bob",
-    "--no-interactive",
-    "--offset=-6",
-  ]);
-
-  assert.doesNotMatch(stderr, /Usage:/);
-
-  stderrMock.mock.restore();
-});
-
-test("prints greet command help", async () => {
-  let output = "";
-  const writeMock = mock.method(process.stdout, "write", (chunk: string) => {
-    output += chunk;
-    return true;
-  });
-
-  await main(["node", "bin.js", "greet", "--help"]);
-
-  assert.match(output, /greet \[name\]/);
-  assert.match(output, /--offset <hours>/);
-  assert.match(output, /--no-interactive/);
-
-  writeMock.mock.restore();
-});
-
-test("greet supports --no-interactive boolean flag", async () => {
-  await assert.doesNotReject(async () => {
-    await main(["node", "bin.js", "greet", "bob", "--no-interactive"]);
-  });
-});
-
 test("prints accession command help", async () => {
   let output = "";
   const writeMock = mock.method(process.stdout, "write", (chunk: string) => {
