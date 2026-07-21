@@ -1,5 +1,6 @@
 .env
 .svelte-kit/
+apps/web/static/corpus/
 dist/
 node_modules/
 tmp/
