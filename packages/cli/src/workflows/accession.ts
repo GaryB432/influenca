@@ -2,6 +2,7 @@ import type { Manifest, Transcription, VideoEntry } from "@influenca/core";
 import type { FfprobeData, FfprobeStream } from "fluent-ffmpeg";
 
 import { log } from "@clack/prompts";
+import { color } from "@influenca/core";
 import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -60,7 +61,7 @@ export async function runAccessionWorkflow(
   let transcribedFiles = 0;
 
   const progress = options.meter({ max: matchedFiles });
-  progress.start(`hello ${options.inDir}`);
+  progress.start(color.summaryTone.path(options.outDir));
 
   for (const filename of mediaFiles) {
     const baseName = path.parse(filename).name;
@@ -71,9 +72,9 @@ export async function runAccessionWorkflow(
     const trackBaseName = `${baseName}.track.json`;
     try {
       await transcodeToMp4(inputPath, outputVideoPath);
-      if (options.verbose) {
-        console.log(`  Transcoded to ${targetMp4}`);
-      }
+      // if (options.verbose) {
+      //   console.log(`  Transcoded to ${targetMp4}`);
+      // }
 
       const metadata = await probeVideo(outputVideoPath);
       const videoStream = metadata.streams.find(
@@ -85,11 +86,11 @@ export async function runAccessionWorkflow(
       const frames = parseInt(videoStream?.nb_frames || "0", 10);
       const duration = parseFloat(metadata.format.duration?.toString() || "0");
 
-      if (options.verbose) {
-        console.log(
-          `  Extracted metadata (${frames} frames, ${duration.toFixed(1)}s)`,
-        );
-      }
+      // if (options.verbose) {
+      //   console.log(
+      //     `  Extracted metadata (${frames} frames, ${duration.toFixed(1)}s)`,
+      //   );
+      // }
 
       let whisperTranscription: Transcription | undefined;
       if (options.transcribe && audioStream && apiKey) {
@@ -101,13 +102,13 @@ export async function runAccessionWorkflow(
         });
         transcribedFiles += 1;
       } else if (options.verbose) {
-        if (!options.transcribe) {
-          console.log("  Skipping transcription (--transcribe not set)");
-        } else if (!audioStream) {
-          console.log("  No audio stream, skipping transcription");
-        } else {
-          console.log("  OPENAI_API_KEY not set, skipping transcription");
-        }
+        // if (!options.transcribe) {
+        //   console.log("  Skipping transcription (--transcribe not set)");
+        // } else if (!audioStream) {
+        //   console.log("  No audio stream, skipping transcription");
+        // } else {
+        //   console.log("  OPENAI_API_KEY not set, skipping transcription");
+        // }
       }
 
       const videoEntry: VideoEntry = {
@@ -144,7 +145,10 @@ export async function runAccessionWorkflow(
       console.error(message);
       // progress.message('nope')
     }
-    progress.advance(processedFiles + failedFiles, filename);
+    progress.advance(
+      processedFiles + failedFiles,
+      `${filename} was just completed`,
+    );
   }
 
   if (!options.dryRun) {
