@@ -1,4 +1,5 @@
 .env
+.svelte-kit/
 dist/
 node_modules/
 tmp/
