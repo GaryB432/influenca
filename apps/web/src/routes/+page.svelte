@@ -1,9 +1,7 @@
 <script lang="ts">
   import { segmentToCue } from "$lib";
-  import type { Manifest } from "@influenca/core";
+  import type { Manifest, TranscriptionSegment } from "@influenca/core";
   import { onMount } from "svelte";
-
-  type TranscriptionSegment = any;
 
   let trackElement = $state<HTMLTrackElement | null>(null);
 
@@ -51,26 +49,33 @@
   bind:value={selectedVidWithMP4ExtensionYuk}
   onchange={async () => {
     if (trackJson) {
+      if (!trackElement?.track) {
+        return;
+      }
       const response = await fetch(trackJson);
-      const raw = (await response.json()) as TranscriptionSegment[];
+      const segments = (await response.json()) as TranscriptionSegment[];
 
-      const cues = raw
+      const cues = segments
         .map(segmentToCue)
         .map((c) => new VTTCue(c.startTime, c.endTime, c.text));
 
-      if (!trackElement || !trackElement.track) return;
       const textTrack = trackElement.track;
-      textTrack.mode = "showing"; // Make cues active and visible
+      if (textTrack.cues) {
+        const cuesa = Array.from(textTrack.cues);
+        cuesa.forEach((c) => {
+          textTrack.removeCue(c);
+        });
+      }
+      textTrack.mode = "showing";
 
       cues.forEach((cue) => {
         textTrack.addCue(cue);
       });
-      console.log(cues);
     }
   }}
 >
-  {#each Object.keys(manifest) as key}
-    <option value={key}>{key}</option>
+  {#each Object.keys(manifest) as slug (slug)}
+    <option value={slug}>{slug} is good</option>
   {/each}
 </select>
 <!-- <p>{JSON.stringify(Object.keys(manifest))}</p> -->
