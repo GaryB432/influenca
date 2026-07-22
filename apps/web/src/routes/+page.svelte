@@ -1,18 +1,21 @@
 <script lang="ts">
   import { segmentToCue } from "$lib";
-  import type { Transcription, TranscriptionSegment } from "@influenca/core";
+  import type { TranscriptionSegment } from "@influenca/core";
   import { onMount } from "svelte";
 
-  let videoElement = $state<HTMLVideoElement | null>(null);
+  // let videoElement = $state<HTMLVideoElement | null>(null);
   let trackElement = $state<HTMLTrackElement | null>(null);
+
+  let vvf = $state("VID00050");
+  let cc = $derived(`corpus/${vvf}`);
 
   onMount(() => {
     (async () => {
       // 1. Fetch JSON from the static folder
-      const response = await fetch("/corpus/VID00000.track.json");
-      const raw = await response.json() as TranscriptionSegment[];
+      const response = await fetch(`/${cc}.track.json`);
+      const raw = (await response.json()) as TranscriptionSegment[];
 
-      const data = raw.map(segmentToCue)
+      const data = raw.map(segmentToCue);
 
       console.log(data);
 
@@ -39,7 +42,7 @@
   });
 </script>
 
-<video bind:this={videoElement} controls src="/corpus/VID00000.mp4" width="600">
+<video controls src={`/${cc}.mp4`} width="600">
   <track
     bind:this={trackElement}
     kind="captions"
