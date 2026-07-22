@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { segmentToCue } from "$lib";
+  import type { Transcription, TranscriptionSegment } from "@influenca/core";
   import { onMount } from "svelte";
 
   let videoElement = $state<HTMLVideoElement | null>(null);
@@ -7,8 +9,12 @@
   onMount(() => {
     (async () => {
       // 1. Fetch JSON from the static folder
-      const response = await fetch("/captions.json");
-      const data = await response.json();
+      const response = await fetch("/corpus/VID00000.track.json");
+      const raw = await response.json() as TranscriptionSegment[];
+
+      const data = raw.map(segmentToCue)
+
+      console.log(data);
 
       // 2. Ensure track sheet is ready (browser requirement)
       if (!trackElement || !trackElement.track) return;

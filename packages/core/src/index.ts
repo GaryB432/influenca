@@ -1,4 +1,3 @@
-export * as captions from "./captions.js";
 export * as color from "./color.js";
 export * from "./motion.js";
 export * from "./names.js";
