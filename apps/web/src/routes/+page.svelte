@@ -1,48 +1,44 @@
 <script lang="ts">
   import { segmentToCue } from "$lib";
-  import type { TranscriptionSegment } from "@influenca/core";
+  import type { Manifest } from "@influenca/core";
   import { onMount } from "svelte";
 
-  // let videoElement = $state<HTMLVideoElement | null>(null);
+  type TranscriptionSegment = any;
+
   let trackElement = $state<HTMLTrackElement | null>(null);
 
-  let vvf = $state("VID00050");
-  let cc = $derived(`corpus/${vvf}`);
+  const CORPUS = "corpus";
+
+  let manifest: Manifest = $state({});
+
+  let selectedVidWithMP4ExtensionYuk = $state<string>();
+
+  let prollyHasAMP4ExtensionToDealWith = $derived(
+    selectedVidWithMP4ExtensionYuk
+      ? CORPUS.concat("/").concat(selectedVidWithMP4ExtensionYuk)
+      : undefined,
+  );
+  let trackJson = $derived(
+    selectedVidWithMP4ExtensionYuk
+      ? CORPUS.concat("/")
+          .concat(selectedVidWithMP4ExtensionYuk.slice(0, -4))
+          .concat(".track.json")
+      : undefined,
+  );
+  // let maniFetch = $state(fetch(`${CORPUS}/.influenca.json`));
 
   onMount(() => {
     (async () => {
-      // 1. Fetch JSON from the static folder
-      const response = await fetch(`/${cc}.track.json`);
-      const raw = (await response.json()) as TranscriptionSegment[];
-
-      const data = raw.map(segmentToCue);
-
-      console.log(data);
-
-      // 2. Ensure track sheet is ready (browser requirement)
-      if (!trackElement || !trackElement.track) return;
-      const textTrack = trackElement.track;
-      textTrack.mode = "showing"; // Make cues active and visible
-
-      // 3. Map JSON objects to native VTTCues and add them
-      data.forEach(
-        (item: {
-          startTime: number;
-          endTime: number;
-          text: string;
-          id?: string;
-        }) => {
-          const cue = new VTTCue(item.startTime, item.endTime, item.text);
-          if (item.id) cue.id = item.id;
-
-          textTrack.addCue(cue);
-        },
-      );
+      const maniFetch = fetch(`${CORPUS}/.influenca.json`);
+      const maniResponse = await maniFetch;
+      const maniText = await maniResponse.text();
+      manifest = JSON.parse(maniText) as Manifest;
+      selectedVidWithMP4ExtensionYuk = Object.keys(manifest).at(0);
     })();
   });
 </script>
 
-<video controls src={`/${cc}.mp4`} width="600">
+<video controls src={`/${prollyHasAMP4ExtensionToDealWith}`} width="600">
   <track
     bind:this={trackElement}
     kind="captions"
@@ -50,3 +46,34 @@
     default
   />
 </video>
+
+<select
+  bind:value={selectedVidWithMP4ExtensionYuk}
+  onchange={async () => {
+    if (trackJson) {
+      const response = await fetch(trackJson);
+      const raw = (await response.json()) as TranscriptionSegment[];
+
+      const cues = raw
+        .map(segmentToCue)
+        .map((c) => new VTTCue(c.startTime, c.endTime, c.text));
+
+      if (!trackElement || !trackElement.track) return;
+      const textTrack = trackElement.track;
+      textTrack.mode = "showing"; // Make cues active and visible
+
+      cues.forEach((cue) => {
+        textTrack.addCue(cue);
+      });
+      console.log(cues);
+    }
+  }}
+>
+  {#each Object.keys(manifest) as key}
+    <option value={key}>{key}</option>
+  {/each}
+</select>
+<!-- <p>{JSON.stringify(Object.keys(manifest))}</p> -->
+<p>{prollyHasAMP4ExtensionToDealWith}</p>
+<p>{selectedVidWithMP4ExtensionYuk}</p>
+<p>{trackJson}</p>
