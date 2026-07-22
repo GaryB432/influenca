@@ -4,18 +4,18 @@ export function buildManifestFilePath(directory: string) {
   return join(directory, ".influenca.json");
 }
 
-export function videoCaptionPath(slug: string): string {
+export function videoCaptionPath(slug: string, dir = "cloud"): string {
   return format({
-    dir: "cloud",
+    dir,
     ext: ".json",
     name: slug.concat(".track"),
     root: "/",
   });
 }
 
-export function videoSrcPath(slug: string): string {
+export function videoSrcPath(slug: string, dir = "cloud"): string {
   return format({
-    dir: "cloud",
+    dir,
     ext: ".mp4",
     name: slug,
     root: "/",

@@ -1,6 +1,7 @@
 export * as color from "./color.js";
 export * from "./motion.js";
 export * from "./names.js";
+export * as fs from "./shims/fs.js";
 
 import OpenAI from "openai";
 
