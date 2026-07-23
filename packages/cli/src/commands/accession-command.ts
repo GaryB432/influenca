@@ -1,14 +1,15 @@
 import {
-  type CliCommand,
-  type CommandRuntime,
-  type ParsedCommandArgs,
-} from "../command-contract.js";
-import {
   type AccessionWorkflowOptions,
   type AccessionWorkflowProgress,
   type AccessionWorkflowResult,
   runAccessionWorkflow,
-} from "../workflows/accession.js";
+} from "@influenca/core";
+
+import {
+  type CliCommand,
+  type CommandRuntime,
+  type ParsedCommandArgs,
+} from "../command-contract.js";
 
 export type AccessionCommandOptions = {
   dryRun: boolean;
