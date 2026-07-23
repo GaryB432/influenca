@@ -13,12 +13,6 @@
   "dependencies": {
     "@clack/prompts": "catalog:",
     "@influenca/core": "workspace:^",
-    "cac": "catalog:",
-    "cli-progress": "^3.12.0",
-    "fluent-ffmpeg": "catalog:",
-    "openai": "catalog:"
-  },
-  "devDependencies": {
-    "@types/fluent-ffmpeg": "catalog:"
+    "cac": "catalog:"
   }
 }

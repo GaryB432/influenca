@@ -20,6 +20,11 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    watch: {
+      ignored: ["**/corpus/**"],
+    },
+  },
 });
 
 // kit: {

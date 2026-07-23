@@ -1,13 +1,13 @@
 import { color } from "@influenca/core";
+import {
+  type AnalyzeWorkflowResult,
+  runAnalyzeWorkflow,
+} from "@influenca/core";
 
 import {
   type CliCommand,
   type ParsedCommandArgs,
 } from "../command-contract.js";
-import {
-  type AnalyzeWorkflowResult,
-  runAnalyzeWorkflow,
-} from "../workflows/analyze.js";
 
 export type AnalyzeCommandOptions = {
   minimal: boolean;

@@ -1,4 +1,4 @@
-import type { ProgressOptions, ProgressResult } from "./utils/meter.js";
+import type { ProgressOptions, ProgressResult } from "@influenca/core";
 
 export interface CliCommand<TOptions, TProgress = never> {
   execute(

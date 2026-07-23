@@ -28,6 +28,7 @@
     "@sveltejs/kit": "^2.63.0",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@types/cli-progress": "^3.11.6",
+    "@types/fluent-ffmpeg": "catalog:",
     "@types/node": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "eslint": "catalog:",
@@ -42,9 +43,5 @@
     "typescript-eslint": "catalog:",
     "vite": "^8.0.16"
   },
-  "dependencies": {
-    "@lumen-labs-dev/whisper-node": "^0.4.1",
-    "mediaforge": "^0.3.0",
-    "openai": "catalog:"
-  }
+  "dependencies": {}
 }

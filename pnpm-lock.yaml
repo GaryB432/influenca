@@ -30,6 +30,9 @@ catalogs:
     cac:
       specifier: ^7.0.0
       version: 7.0.0
+    cli-progress:
+      specifier: ^3.12.0
+      version: 3.12.0
     eslint:
       specifier: latest
       version: 10.7.0
@@ -47,7 +50,7 @@ catalogs:
       version: 5.23.2
     tsdown:
       specifier: latest
-      version: 0.22.12
+      version: 0.22.13
     typescript:
       specifier: ^6
       version: 6.0.3
@@ -58,16 +61,6 @@ catalogs:
 importers:
 
   .:
-    dependencies:
-      '@lumen-labs-dev/whisper-node':
-        specifier: ^0.4.1
-        version: 0.4.1
-      mediaforge:
-        specifier: ^0.3.0
-        version: 0.3.0
-      openai:
-        specifier: 'catalog:'
-        version: 5.23.2
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -90,6 +83,9 @@ importers:
       '@types/cli-progress':
         specifier: ^3.11.6
         version: 3.11.6
+      '@types/fluent-ffmpeg':
+        specifier: 'catalog:'
+        version: 2.1.28
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.3
@@ -119,7 +115,7 @@ importers:
         version: 4.7.3(picomatch@4.0.5)(svelte@5.56.7(@typescript-eslint/types@8.65.0))(typescript@6.0.3)
       tsdown:
         specifier: 'catalog:'
-        version: 0.22.12(typescript@6.0.3)
+        version: 0.22.13(typescript@6.0.3)
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -143,21 +139,24 @@ importers:
       cac:
         specifier: 'catalog:'
         version: 7.0.0
+
+  packages/core:
+    dependencies:
+      '@lumen-labs-dev/whisper-node':
+        specifier: ^0.4.1
+        version: 0.4.1
       cli-progress:
-        specifier: ^3.12.0
+        specifier: 'catalog:'
         version: 3.12.0
       fluent-ffmpeg:
         specifier: 'catalog:'
         version: 2.1.3
+      mediaforge:
+        specifier: ^0.3.0
+        version: 0.3.0
       openai:
         specifier: 'catalog:'
         version: 5.23.2
-    devDependencies:
-      '@types/fluent-ffmpeg':
-        specifier: 'catalog:'
-        version: 2.1.28
-
-  packages/core: {}
 
 packages:
 
@@ -2236,14 +2235,14 @@ packages:
   tsconfig-paths@3.15.0:
     resolution: {integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg==}
 
-  tsdown@0.22.12:
-    resolution: {integrity: sha512-IzGRfGwSsufXJWOcQ0tmECKMG/dbxhUwDOySTS7JE1AM8pkB9+bpcTPs8bTxxSNrSvGocSczrBlOh97tZObq9Q==}
+  tsdown@0.22.13:
+    resolution: {integrity: sha512-XaYFhtiKRUvTpXv/YAehsHdbEb3LN/iMlzjSINbjlaATtXN2zVPKox2STKhcyFPlh++8Zg7suNN27E679IfAUA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     hasBin: true
     peerDependencies:
       '@arethetypeswrong/core': ^0.18.1
-      '@tsdown/css': 0.22.12
-      '@tsdown/exe': 0.22.12
+      '@tsdown/css': 0.22.13
+      '@tsdown/exe': 0.22.13
       '@vitejs/devtools': '*'
       publint: ^0.3.8
       tsx: '*'
@@ -4791,7 +4790,7 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
-  tsdown@0.22.12(typescript@6.0.3):
+  tsdown@0.22.13(typescript@6.0.3):
     dependencies:
       ansis: 4.3.1
       cac: 7.0.0
