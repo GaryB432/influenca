@@ -36,10 +36,11 @@ export function progress({
     advance: (currentValue: number, msg?: string): void => {
       // Explicitly sets the absolute current value (0 to max) directly
       // bar.update(currentValue, msg ? { msg } : undefined);
+      console.log(currentValue, msg);
     },
 
     start: (msg: string = "Processing"): void => {
-      console.log("bar be cue");
+      console.log("bar be cue", msg, max, size, barUberOptions);
       // bar.start(max, 0, { msg });
     },
 
