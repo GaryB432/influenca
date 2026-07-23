@@ -13,8 +13,6 @@
   "dependencies": {
     "@clack/prompts": "catalog:",
     "@influenca/core": "workspace:^",
-    "cac": "catalog:",
-    "cli-progress": "^3.12.0"
-  },
-  "devDependencies": {}
+    "cac": "catalog:"
+  }
 }

@@ -30,6 +30,9 @@ catalogs:
     cac:
       specifier: ^7.0.0
       version: 7.0.0
+    cli-progress:
+      specifier: ^3.12.0
+      version: 3.12.0
     eslint:
       specifier: latest
       version: 10.7.0
@@ -58,16 +61,6 @@ catalogs:
 importers:
 
   .:
-    dependencies:
-      '@lumen-labs-dev/whisper-node':
-        specifier: ^0.4.1
-        version: 0.4.1
-      mediaforge:
-        specifier: ^0.3.0
-        version: 0.3.0
-      openai:
-        specifier: 'catalog:'
-        version: 5.23.2
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -146,15 +139,21 @@ importers:
       cac:
         specifier: 'catalog:'
         version: 7.0.0
-      cli-progress:
-        specifier: ^3.12.0
-        version: 3.12.0
 
   packages/core:
     dependencies:
+      '@lumen-labs-dev/whisper-node':
+        specifier: ^0.4.1
+        version: 0.4.1
+      cli-progress:
+        specifier: 'catalog:'
+        version: 3.12.0
       fluent-ffmpeg:
         specifier: 'catalog:'
         version: 2.1.3
+      mediaforge:
+        specifier: ^0.3.0
+        version: 0.3.0
       openai:
         specifier: 'catalog:'
         version: 5.23.2
@@ -2023,8 +2022,8 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
-  rolldown-plugin-dts@0.27.12:
-    resolution: {integrity: sha512-DJg5ELVEdLAVhirvtak7GS4nbNvBzLNAtYL1M8hLghDURBFKU2MwEH6ncHibYs6khq1NaRQ97iFMiHvzw+WoSw==}
+  rolldown-plugin-dts@0.27.13:
+    resolution: {integrity: sha512-DeVZJbbB0ajp5q6vABqC8ZCJzxftlxbiV60Bk96GFdQaysGVpgTTVjQu0lUt4Lb+aRCtejfOixtQKDRol7IuVQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
       '@typescript/native-preview': '*'
@@ -4491,7 +4490,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rolldown-plugin-dts@0.27.12(rolldown@1.2.0)(typescript@6.0.3):
+  rolldown-plugin-dts@0.27.13(rolldown@1.2.0)(typescript@6.0.3):
     dependencies:
       dts-resolver: 3.0.0
       get-tsconfig: 5.0.0-beta.5
@@ -4787,7 +4786,7 @@ snapshots:
       obug: 2.1.4
       picomatch: 4.0.5
       rolldown: 1.2.0
-      rolldown-plugin-dts: 0.27.12(rolldown@1.2.0)(typescript@6.0.3)
+      rolldown-plugin-dts: 0.27.13(rolldown@1.2.0)(typescript@6.0.3)
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
       tree-kill: 1.2.2
