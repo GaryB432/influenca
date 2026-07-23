@@ -39,4 +39,4 @@ jobs:
         run: pnpm run lint
 
       - name: Run Build/Test
-        run: pnpm test --run
+        run: pnpm test
