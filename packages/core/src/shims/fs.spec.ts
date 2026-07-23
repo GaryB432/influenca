@@ -1,6 +1,5 @@
-import { describe, test } from "node:test";
-
 import assert from "node:assert";
+import { describe, test } from "node:test";
 
 import { add, greet, meaning } from "./fs.js";
 
@@ -12,6 +11,6 @@ describe("Fs", () => {
     assert.equal(greet("world"), "fs says: hello to world");
   });
   test("meaning", () => {
-    assert.equal(meaning.life,42)
+    assert.equal(meaning.life, 42);
   });
 });

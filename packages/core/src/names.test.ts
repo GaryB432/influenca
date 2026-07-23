@@ -10,4 +10,3 @@ test("gets video source path", () => {
 test("gets video caption path", () => {
   assert.equal(videoCaptionPath("fun"), "cloud/fun.track.json");
 });
-

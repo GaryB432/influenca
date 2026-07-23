@@ -1,9 +1,10 @@
 import type { PathOrFileDescriptor, WriteFileOptions } from "fs";
+
 import * as fs from "fs";
 
 export function writeFileSync(
   file: PathOrFileDescriptor,
-  data: string | NodeJS.ArrayBufferView,
+  data: NodeJS.ArrayBufferView | string,
   options?: WriteFileOptions,
 ): void {
   return fs.writeFileSync(file, data, options);
@@ -11,12 +12,12 @@ export function writeFileSync(
 export function writeJSONSync<T>(
   file: PathOrFileDescriptor,
   data: T,
-  options?: WriteFileOptions & {
+  options?: {
     stringify?: {
       replacer?: (number | string)[] | null;
-      space?: string | number;
+      space?: number | string;
     };
-  },
+  } & WriteFileOptions,
 ): void {
   const replacer = options?.stringify?.replacer;
   const space = options?.stringify?.space;
