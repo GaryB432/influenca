@@ -88,7 +88,7 @@ export async function main(rawArguments: string[]): Promise<void> {
 }
 
 function isoTimestampNow(): string {
-  return new Date(Date.now()).toISOString();
+  return new Date().toISOString().replace(/[-:]|\.\d{3}/g, "");
 }
 
 async function resolveAccessionInDir(options: {

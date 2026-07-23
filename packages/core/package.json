@@ -10,8 +10,9 @@
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts",
-    "test": "echo \"no tests yet\""
+    "build": "tsdown src/index.ts src/**/*.test.ts",
+    "test": "pnpm run build && pnpm run test:dist",
+    "test:dist": "node --test dist/**/*.test.mjs"
   },
   "dependencies": {
     "cli-progress": "catalog:",
