@@ -1,6 +1,9 @@
 export * as color from "./color.js";
 export * from "./motion.js";
 export * from "./names.js";
+export * from "./utils/meter.js";
+export * from "./workflows/accession.js";
+export * from "./workflows/analyze.js";
 
 import OpenAI from "openai";
 

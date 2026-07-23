@@ -13,5 +13,11 @@
     "build": "tsdown src/index.ts",
     "test": "echo \"no tests yet\""
   },
-  "dependencies": {}
+  "dependencies": {
+    "cli-progress": "catalog:",
+    "fluent-ffmpeg": "catalog:",
+    "@lumen-labs-dev/whisper-node": "^0.4.1",
+    "mediaforge": "^0.3.0",
+    "openai": "catalog:"
+  }
 }
