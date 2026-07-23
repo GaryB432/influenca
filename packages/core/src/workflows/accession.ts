@@ -53,11 +53,6 @@ export async function runAccessionWorkflow(
   const manifestPath = path.join(outDir, ".influenca.json");
   const apiKey = options.openAiKey;
   const files = fs.readdirSync(options.inDir);
-  // const so_many_mediaFiles = files.filter((filename) => {
-  //   return filename.toLowerCase().match(/\.(avi|mp4)$/);
-  // });
-  const doffmpeg = false;
-  const limit = 5;
 
   const every_media_parts = files
     .map((f) => path.parse(f))
@@ -255,8 +250,8 @@ async function transcodeToMp4(
     if (drier) {
       console.log(
         JSON.stringify({
-          m: "transcodeToMp4",
           inputPath,
+          m: "transcodeToMp4",
           outputVideoPath,
         }),
       );
@@ -321,3 +316,6 @@ async function transcribeAudio(
   }
   return result;
 }
+
+const doffmpeg = true;
+const limit = Infinity;
