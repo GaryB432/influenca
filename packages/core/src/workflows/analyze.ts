@@ -1,8 +1,10 @@
-import type { TranscriptionSegment } from "@influenca/core";
-
-import { parseManifest, type Transcription } from "@influenca/core";
 import fs from "node:fs";
 import path, { join } from "node:path";
+import {
+  parseManifest,
+  type Transcription,
+  type TranscriptionSegment,
+} from "../index.js";
 
 export type AnalyzeWorkflowOptions = {
   inDir: string;

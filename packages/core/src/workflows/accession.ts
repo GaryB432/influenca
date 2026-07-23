@@ -1,14 +1,11 @@
-import type { Manifest, Transcription, VideoEntry } from "@influenca/core";
 import type { FfprobeData, FfprobeStream } from "fluent-ffmpeg";
-
-import { log } from "@clack/prompts";
-import { color } from "@influenca/core";
+import type { Manifest, Transcription, VideoEntry } from "../index.js";
+import * as color from "../color.js";
 import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
+import type { ProgressOptions, ProgressResult } from "../utils/meter.js";
 import * as path from "node:path";
 import OpenAI from "openai";
-
-import type { ProgressOptions, ProgressResult } from "../../../cli/src/utils/meter.js";
 
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
@@ -155,7 +152,7 @@ export async function runAccessionWorkflow(
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   }
   progress.stop();
-  log.info(manifestPath);
+  console.log(manifestPath, "you used to be mine");
 
   return {
     failedFiles,

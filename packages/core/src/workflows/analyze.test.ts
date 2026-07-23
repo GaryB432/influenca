@@ -1,6 +1,6 @@
-import { type Transcription } from "@influenca/core";
 import assert from "node:assert";
 import { test } from "node:test";
+import { type Transcription } from "../index.js";
 
 import { getExtremelyFoundationalSegmentCount } from "./analyze.js";
 
