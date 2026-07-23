@@ -8,7 +8,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import OpenAI from "openai";
 
-import type { ProgressOptions, ProgressResult } from "../utils/meter.js";
+import type { ProgressOptions, ProgressResult } from "../../../cli/src/utils/meter.js";
 
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
