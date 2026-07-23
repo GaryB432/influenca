@@ -38,11 +38,15 @@ export type Transcription = OpenAI.Audio.TranscriptionVerbose;
 export type TranscriptionSegment = OpenAI.Audio.TranscriptionSegment;
 
 export type VideoEntry = {
-  stats: Partial<VideoStatisticalBlock>;
+  video: Record<
+    string,
+    {
+      stats: Partial<VideoStatisticalBlock>;
+    }
+  >;
   transcript:
     | {
         meta: AbbreviatedTranscriptionMetadata;
-
         segments: string;
       }
     | undefined;
