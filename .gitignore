@@ -3,3 +3,4 @@
 dist/
 node_modules/
 tmp/
+apps/web/static/corpus/*.mp4
