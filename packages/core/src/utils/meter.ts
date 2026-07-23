@@ -1,4 +1,4 @@
-// import cliProgress from "cli-progress";
+import cliProgress from "cli-progress";
 
 export interface ProgressOptions {
   max?: number;
@@ -30,22 +30,20 @@ export function progress({
     format: ` {bar} | {percentage}% | {msg}`,
     hideCursor: true,
   };
-  // const bar = new cliProgress.SingleBar(barUberOptions);
+  const bar = new cliProgress.SingleBar(barUberOptions);
 
   return {
     advance: (currentValue: number, msg?: string): void => {
       // Explicitly sets the absolute current value (0 to max) directly
-      // bar.update(currentValue, msg ? { msg } : undefined);
-      console.log(currentValue, msg);
+      bar.update(currentValue, msg ? { msg } : undefined);
     },
 
     start: (msg: string = "Processing"): void => {
-      console.log("bar be cue", msg, max, size, barUberOptions);
-      // bar.start(max, 0, { msg });
+      bar.start(max, 0, { msg });
     },
 
     stop: (): void => {
-      // bar.stop();
+      bar.stop();
     },
   };
 }
