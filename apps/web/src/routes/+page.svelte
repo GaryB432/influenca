@@ -1,7 +1,6 @@
 <script lang="ts">
   import { segmentToCue } from "$lib";
   import type { Manifest, TranscriptionSegment } from "@influenca/core";
-  // import { videoSrcPath } from "@influenca/core";
   import { onMount } from "svelte";
 
   let trackElement = $state<HTMLTrackElement | null>(null);
@@ -10,16 +9,9 @@
 
   let manifest: Manifest = $state({});
 
-  // let asdf = $derived(
-  //   Object.keys(manifest).map((k) => {
-  //     return k;
-  //   }),
-  // );
-
-  // let selectedVidWithMP4ExtensionYuk = $state<string>();
   let selectedSlug = $state<string>();
 
-  let fff = $derived.by(() => {
+  let selectedVideoSrc = $derived.by(() => {
     if (selectedSlug) {
       const e = manifest[selectedSlug!];
 
@@ -31,38 +23,43 @@
         }
       }
     }
-    return undefined;
   });
 
-  let ffg = $derived.by(() => {
+  let selectedTrack = $derived.by(() => {
     if (selectedSlug) {
       const e = manifest[selectedSlug];
 
-      if (!e) throw new Error("wtf");
-
       if (e.transcript) {
-        const f = CORPUS.concat("/").concat(e.transcript.segments);
-        console.log(f);
-        // apps/web/static/corpus/PXL_20260717_150719138.vtt.json
-        //                 corpus/PXL_20260717_150719138.vtt.json
-        return f;
-        // const txks = Object.keys(e.transcript);
-        // const fvk = txks!;
-        // if (fvk) {
-        //   return CORPUS.concat("/").concat(fvk);
-        // }
+        return CORPUS.concat("/").concat(e.transcript?.segments);
       }
     }
-    return undefined;
   });
 
-  // let prollyHasAMP4ExtensionToDealWith = $derived(
-  //   selectedVidWithMP4ExtensionYuk
-  //     ? CORPUS.concat("/").concat(selectedVidWithMP4ExtensionYuk)
-  //     : undefined,
-  // );
+  async function slugSelected() {
+    if (selectedTrack && trackElement) {
+      // if (!trackElement) {
+      //   throw new Error("o please");
+      // }
+      const response = await fetch(selectedTrack);
 
-  // let maniFetch = $state(fetch(`${CORPUS}/.influenca.json`));
+      if (!response.ok) {
+        throw new Error("no tracks");
+      }
+      const segments = (await response.json()) as TranscriptionSegment[];
+
+      const cues = segments
+        .map(segmentToCue)
+        .map((c) => new VTTCue(c.startTime, c.endTime, c.text));
+
+      const textTrack = trackElement.track;
+      clearCues(textTrack);
+      textTrack.mode = "showing";
+
+      cues.forEach((cue) => {
+        textTrack.addCue(cue);
+      });
+    }
+  }
 
   onMount(() => {
     (async () => {
@@ -73,14 +70,26 @@
       }
       const maniText = await maniResponse.text();
       manifest = JSON.parse(maniText) as Manifest;
-      // selectedVidWithMP4ExtensionYuk = Object.keys(manifest).at(0);
+
       selectedSlug = Object.keys(manifest).at(0);
+      setTimeout(() => {
+        slugSelected();
+      }, 0);
     })();
   });
+
+  function clearCues(textTrack: TextTrack) {
+    if (textTrack.cues) {
+      const cuesa = Array.from(textTrack.cues);
+      cuesa.forEach((c) => {
+        textTrack.removeCue(c);
+      });
+    }
+  }
 </script>
 
 {#if selectedSlug}
-  <video controls src={`/${fff}`} width="400">
+  <video controls src={`/${selectedVideoSrc}`} width="400">
     <track
       bind:this={trackElement}
       kind="captions"
@@ -89,51 +98,11 @@
     />
   </video>
 
-  <select
-    bind:value={selectedSlug}
-    onchange={async () => {
-      if (ffg) {
-        if (!trackElement) {
-          throw new Error("o please");
-        }
-        // if (!trackElement?.track) {
-        //   return;
-        // }
-        const response = await fetch(ffg);
-
-        if (!response.ok) {
-          throw new Error("nope");
-        }
-        const segments = (await response.json()) as TranscriptionSegment[];
-
-        console.log(segments);
-
-        const cues = segments
-          .map(segmentToCue)
-          .map((c) => new VTTCue(c.startTime, c.endTime, c.text));
-
-        const textTrack = trackElement.track;
-        if (textTrack.cues) {
-          const cuesa = Array.from(textTrack.cues);
-          cuesa.forEach((c) => {
-            textTrack.removeCue(c);
-          });
-        }
-        textTrack.mode = "showing";
-
-        cues.forEach((cue) => {
-          textTrack.addCue(cue);
-        });
-      }
-    }}
-  >
+  <select bind:value={selectedSlug} onchange={slugSelected}>
     {#each Object.keys(manifest) as slug (slug)}
       <option value={slug}>{slug} is good</option>
     {/each}
   </select>
 {/if}
-<h1>controller stuff</h1>
-<!-- <p>{JSON.stringify(Object.keys(manifest))}</p> -->
-<p>{ffg}</p>
-<p>{fff}</p>
-<h1>more</h1>
+
+<p>If you have stuff it will be just above</p>
