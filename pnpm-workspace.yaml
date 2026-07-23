@@ -17,6 +17,7 @@ catalog:
   '@types/node': ^24.13.2
   '@typescript-eslint/parser': latest
   cac: ^7.0.0
+  cli-progress: "^3.12.0"
   eslint-plugin-import: latest
   eslint: latest
   expect": ^30.4.1
