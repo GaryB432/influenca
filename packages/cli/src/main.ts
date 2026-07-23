@@ -1,11 +1,13 @@
+// import type { ProgressOptions, ProgressResult } from "@influenca/core";
+
 import { cancel, isCancel, outro, text } from "@clack/prompts";
+import { progress } from "@influenca/core";
 import { cac } from "cac";
 import path from "node:path";
 
 import { AccessionCommand } from "./commands/accession-command.js";
 import { AnalyzeCommand } from "./commands/analyze-command.js";
 import { setupEnvironment } from "./environment.js";
-import { progress } from "./utils/meter.js";
 
 const accessionCommand = new AccessionCommand();
 const analyzeCommand = new AnalyzeCommand();

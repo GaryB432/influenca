@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path, { join } from "node:path";
+
 import {
   parseManifest,
   type Transcription,
