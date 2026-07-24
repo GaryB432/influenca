@@ -10,8 +10,12 @@ import type {
   ProgressOptions,
   ProgressResult,
   Transcription,
+  TranscriptionSegment,
   VideoEntry,
 } from "../index.js";
+
+import * as color from "../color.js";
+import * as finny from "../shims/fs.js";
 
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
@@ -29,8 +33,6 @@ export type AccessionWorkflowProgress = {
   totalFiles: number;
 };
 
-import * as color from "../color.js";
-
 export type AccessionWorkflowResult = {
   failedFiles: number;
   manifestPath: string;
@@ -39,18 +41,6 @@ export type AccessionWorkflowResult = {
   processedFiles: number;
   transcribedFiles: number;
 };
-
-// export interface ProgressOptions {
-//   max?: number;
-//   size?: number;
-//   style?: "block" | "heavy" | "light";
-// }
-
-// export interface ProgressResult {
-//   advance(currentValue: number, msg?: string): void;
-//   start(msg?: string): void;
-//   stop(): void;
-// }
 
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
@@ -63,9 +53,13 @@ export async function runAccessionWorkflow(
   const manifestPath = path.join(outDir, ".influenca.json");
   const apiKey = options.openAiKey;
   const files = fs.readdirSync(options.inDir);
-  const mediaFiles = files.filter((filename) => {
-    return filename.toLowerCase().match(/\.(avi|mp4)$/);
-  });
+
+  const every_media_parts = files
+    .map((f) => path.parse(f))
+    .filter((p) => p.ext.toLowerCase().match(/\.(avi|mp4)$/));
+
+  const media_parts = every_media_parts.slice(0, limit);
+
   const manifest: Manifest = {};
 
   if (!options.dryRun && !fs.existsSync(outDir)) {
@@ -73,27 +67,36 @@ export async function runAccessionWorkflow(
   }
 
   let failedFiles = 0;
-  const matchedFiles = mediaFiles.length;
+  const matchedFiles = media_parts.length;
   let processedFiles = 0;
   let transcribedFiles = 0;
 
   const progress = options.meter({ max: matchedFiles });
   progress.start(color.summaryTone.path(options.outDir));
 
-  for (const filename of mediaFiles) {
-    const baseName = path.parse(filename).name;
-    const targetMp4 = `${baseName}.mp4`;
-    const inputPath = path.join(options.inDir, filename);
-    const outputVideoPath = path.join(outDir, targetMp4);
+  for (const partThepart of media_parts) {
+    // const f = {
+    //   filename: "VID00000.AVI",
+    //   partThepart: {
+    //     base: "VID00000.AVI",
+    //     dir: "",
+    //     ext: ".AVI",
+    //     name: "VID00000",
+    //     root: "",
+    //   },
+    // };
 
-    const trackBaseName = `${baseName}.track.json`;
+    const inputPath = path.join(options.inDir, path.format(partThepart));
+    const tmp4 = partThepart.name.concat(".mp4");
+    const ovp = path.join(options.outDir, tmp4);
+
     try {
-      await transcodeToMp4(inputPath, outputVideoPath);
+      await transcodeToMp4(inputPath, ovp, !doffmpeg);
       // if (options.verbose) {
       //   console.log(`  Transcoded to ${targetMp4}`);
       // }
 
-      const metadata = await probeVideo(outputVideoPath);
+      const metadata = await probeVideo(ovp, !doffmpeg);
       const videoStream = metadata.streams.find(
         (stream: FfprobeStream) => stream.codec_type === "video",
       );
@@ -110,13 +113,16 @@ export async function runAccessionWorkflow(
       // }
 
       let whisperTranscription: Transcription | undefined;
-      if (options.transcribe && audioStream && apiKey) {
-        whisperTranscription = await transcribeAudio({
-          apiKey,
-          baseName,
-          outDir,
-          outputVideoPath,
-        });
+      if (!doffmpeg || (options.transcribe && audioStream && apiKey)) {
+        whisperTranscription = await transcribeAudio(
+          {
+            apiKey,
+            baseName: partThepart.name,
+            outDir,
+            outputVideoPath: ovp,
+          },
+          !doffmpeg,
+        );
         transcribedFiles += 1;
       } else if (options.verbose) {
         // if (!options.transcribe) {
@@ -129,19 +135,41 @@ export async function runAccessionWorkflow(
       }
 
       const videoEntry: VideoEntry = {
-        stats: {
-          duration_seconds: duration,
-          frames,
-        },
         transcript: undefined,
+
+        video: {
+          [tmp4]: {
+            stats: {
+              duration_seconds: duration,
+              frames,
+            },
+          },
+        },
       };
 
       if (whisperTranscription) {
-        const outputSegmentsPath = path.join(outDir, trackBaseName);
+        const segmentJsonPath = partThepart.name.concat(".vtt.json");
+        const outputSegmentsPath = path.join(outDir, segmentJsonPath);
 
-        fs.writeFileSync(
+        const blank_segment_for_fun: TranscriptionSegment = {
+          avg_logprob: 0,
+          compression_ratio: 0,
+          end: 5,
+          id: 0,
+          no_speech_prob: 0,
+          seek: 0,
+          start: 0,
+          temperature: 0,
+          text: "NOTHING TO HEAR HERE",
+          tokens: [3, 5, 7, 9],
+        };
+
+        finny.writeJSONSync<TranscriptionSegment[]>(
           outputSegmentsPath,
-          JSON.stringify(whisperTranscription.segments, undefined, 2),
+          whisperTranscription.segments ?? [blank_segment_for_fun],
+          {
+            stringify: { replacer: null, space: 2 },
+          },
         );
 
         videoEntry.transcript = {
@@ -149,11 +177,11 @@ export async function runAccessionWorkflow(
             duration: whisperTranscription.duration,
             language: whisperTranscription.language,
           },
-          segments: trackBaseName,
+          segments: segmentJsonPath,
         };
       }
 
-      manifest[targetMp4] = videoEntry;
+      manifest[partThepart.name] = videoEntry;
 
       processedFiles += 1;
     } catch (error) {
@@ -164,15 +192,18 @@ export async function runAccessionWorkflow(
     }
     progress.advance(
       processedFiles + failedFiles,
-      `${filename} was just completed`,
+      `${partThepart.base} was just completed`,
     );
   }
 
   if (!options.dryRun) {
-    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+    finny.writeJSONSync<Manifest>(manifestPath, manifest, {
+      stringify: { replacer: null, space: 2 },
+    });
+    // finny.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   }
   progress.stop();
-  console.log(manifestPath, "you used to be mine");
+  console.log(manifestPath, "wuz jes wrote");
 
   return {
     failedFiles,
@@ -184,57 +215,107 @@ export async function runAccessionWorkflow(
   };
 }
 
-async function probeVideo(videoPath: string): Promise<FfprobeData> {
+async function probeVideo(
+  videoPath: string,
+  drier: boolean,
+): Promise<FfprobeData> {
   return new Promise<FfprobeData>((resolve, reject) => {
-    ffmpeg.ffprobe(videoPath, (error, data) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      resolve(data);
-    });
+    if (drier) {
+      console.log("probeVideo");
+      setTimeout(() => {
+        resolve({
+          chapters: [],
+          format: {},
+          streams: [],
+        });
+      }, 20000);
+    } else {
+      ffmpeg.ffprobe(videoPath, (error, data) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(data);
+      });
+    }
   });
 }
 
-async function transcodeToMp4(inputPath: string, outputVideoPath: string) {
+async function transcodeToMp4(
+  inputPath: string,
+  outputVideoPath: string,
+  drier: boolean,
+): Promise<void> {
   await new Promise<void>((resolve, reject) => {
-    ffmpeg(inputPath)
-      .output(outputVideoPath)
-      .videoCodec("libx264")
-      .audioCodec("aac")
-      .outputOptions("-crf", "23", "-preset", "fast")
-      .on("end", () => resolve())
-      .on("error", reject)
-      .run();
+    if (drier) {
+      console.log(
+        JSON.stringify({
+          inputPath,
+          m: "transcodeToMp4",
+          outputVideoPath,
+        }),
+      );
+      setTimeout(() => {
+        resolve();
+      }, 5000);
+    } else {
+      ffmpeg(inputPath)
+        .output(outputVideoPath)
+        .videoCodec("libx264")
+        .audioCodec("aac")
+        .outputOptions("-crf", "23", "-preset", "fast")
+        .on("end", () => resolve())
+        .on("error", reject)
+        .run();
+    }
   });
 }
 
-async function transcribeAudio(options: {
-  apiKey: string;
-  baseName: string;
-  outDir: string;
-  outputVideoPath: string;
-}): Promise<Transcription> {
+async function transcribeAudio(
+  options: {
+    apiKey: string;
+    baseName: string;
+    outDir: string;
+    outputVideoPath: string;
+  },
+  drier: boolean,
+): Promise<Transcription> {
   const openai = new OpenAI({ apiKey: options.apiKey });
   const audioPath = path.join(options.outDir, `${options.baseName}.m4a`);
 
+  let result: Transcription = {
+    duration: 2.4,
+    language: "english",
+    text: "I WAS SKIPPED",
+  };
+
   await new Promise<void>((resolve, reject) => {
-    ffmpeg(options.outputVideoPath)
-      .noVideo()
-      .audioCodec("aac")
-      .output(audioPath)
-      .on("end", () => resolve())
-      .on("error", reject)
-      .run();
+    if (drier) {
+      console.log("transcribeAudio");
+      setTimeout(() => {
+        resolve();
+      }, 100);
+    } else {
+      ffmpeg(options.outputVideoPath)
+        .noVideo()
+        .audioCodec("aac")
+        .output(audioPath)
+        .on("end", () => resolve())
+        .on("error", reject)
+        .run();
+    }
   });
 
-  const response = await openai.audio.transcriptions.create({
-    file: fs.createReadStream(audioPath),
-    model: "whisper-1",
-    response_format: "verbose_json",
-  });
-
-  fs.unlinkSync(audioPath);
-
-  return response;
+  if (!drier) {
+    result = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(audioPath),
+      model: "whisper-1",
+      response_format: "verbose_json",
+    });
+    fs.unlinkSync(audioPath);
+  }
+  return result;
 }
+
+const doffmpeg = true;
+const limit = Infinity;

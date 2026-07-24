@@ -9,50 +9,42 @@
 
   let manifest: Manifest = $state({});
 
-  let selectedVidWithMP4ExtensionYuk = $state<string>();
+  let selectedSlug = $state<string>();
 
-  let prollyHasAMP4ExtensionToDealWith = $derived(
-    selectedVidWithMP4ExtensionYuk
-      ? CORPUS.concat("/").concat(selectedVidWithMP4ExtensionYuk)
-      : undefined,
-  );
-  let trackJson = $derived(
-    selectedVidWithMP4ExtensionYuk
-      ? CORPUS.concat("/")
-          .concat(selectedVidWithMP4ExtensionYuk.slice(0, -4))
-          .concat(".track.json")
-      : undefined,
-  );
-  // let maniFetch = $state(fetch(`${CORPUS}/.influenca.json`));
+  let selectedVideoSrc = $derived.by(() => {
+    if (selectedSlug) {
+      const e = manifest[selectedSlug!];
 
-  onMount(() => {
-    (async () => {
-      const maniFetch = fetch(`${CORPUS}/.influenca.json`);
-      const maniResponse = await maniFetch;
-      const maniText = await maniResponse.text();
-      manifest = JSON.parse(maniText) as Manifest;
-      selectedVidWithMP4ExtensionYuk = Object.keys(manifest).at(0);
-    })();
-  });
-</script>
-
-<video controls src={`/${prollyHasAMP4ExtensionToDealWith}`} width="600">
-  <track
-    bind:this={trackElement}
-    kind="captions"
-    label="Custom Cue Track"
-    default
-  />
-</video>
-
-<select
-  bind:value={selectedVidWithMP4ExtensionYuk}
-  onchange={async () => {
-    if (trackJson) {
-      if (!trackElement?.track) {
-        return;
+      if (e.video) {
+        const videoKeys = Object.keys(e.video);
+        const fvk = videoKeys.at(0);
+        if (fvk) {
+          return CORPUS.concat("/").concat(fvk);
+        }
       }
-      const response = await fetch(trackJson);
+    }
+  });
+
+  let selectedTrack = $derived.by(() => {
+    if (selectedSlug) {
+      const e = manifest[selectedSlug];
+
+      if (e.transcript) {
+        return CORPUS.concat("/").concat(e.transcript?.segments);
+      }
+    }
+  });
+
+  async function slugSelected() {
+    if (selectedTrack && trackElement) {
+      // if (!trackElement) {
+      //   throw new Error("o please");
+      // }
+      const response = await fetch(selectedTrack);
+
+      if (!response.ok) {
+        throw new Error("no tracks");
+      }
       const segments = (await response.json()) as TranscriptionSegment[];
 
       const cues = segments
@@ -60,25 +52,57 @@
         .map((c) => new VTTCue(c.startTime, c.endTime, c.text));
 
       const textTrack = trackElement.track;
-      if (textTrack.cues) {
-        const cuesa = Array.from(textTrack.cues);
-        cuesa.forEach((c) => {
-          textTrack.removeCue(c);
-        });
-      }
+      clearCues(textTrack);
       textTrack.mode = "showing";
 
       cues.forEach((cue) => {
         textTrack.addCue(cue);
       });
     }
-  }}
->
-  {#each Object.keys(manifest) as slug (slug)}
-    <option value={slug}>{slug} is good</option>
-  {/each}
-</select>
-<!-- <p>{JSON.stringify(Object.keys(manifest))}</p> -->
-<p>{prollyHasAMP4ExtensionToDealWith}</p>
-<p>{selectedVidWithMP4ExtensionYuk}</p>
-<p>{trackJson}</p>
+  }
+
+  onMount(() => {
+    (async () => {
+      const maniFetch = fetch(`${CORPUS}/.influenca.json`);
+      const maniResponse = await maniFetch;
+      if (!maniResponse.ok) {
+        return;
+      }
+      const maniText = await maniResponse.text();
+      manifest = JSON.parse(maniText) as Manifest;
+
+      selectedSlug = Object.keys(manifest).at(0);
+      setTimeout(() => {
+        slugSelected();
+      }, 0);
+    })();
+  });
+
+  function clearCues(textTrack: TextTrack) {
+    if (textTrack.cues) {
+      const cuesa = Array.from(textTrack.cues);
+      cuesa.forEach((c) => {
+        textTrack.removeCue(c);
+      });
+    }
+  }
+</script>
+
+{#if selectedSlug}
+  <video controls src={`/${selectedVideoSrc}`} width="400">
+    <track
+      bind:this={trackElement}
+      kind="captions"
+      label="Custom Cue Track"
+      default
+    />
+  </video>
+
+  <select bind:value={selectedSlug} onchange={slugSelected}>
+    {#each Object.keys(manifest) as slug (slug)}
+      <option value={slug}>{slug} is good</option>
+    {/each}
+  </select>
+{/if}
+
+<p>If you have stuff it will be just above</p>

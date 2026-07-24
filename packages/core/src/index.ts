@@ -1,8 +1,8 @@
 export * as color from "./color.js";
 export * from "./motion.js";
-export * from "./names.js";
 export * as fs from "./shims/fs.js";
 export * from "./utils/meter.js";
+export * from "./utils/names.js";
 export * from "./workflows/accession.js";
 export * from "./workflows/analyze.js";
 
@@ -38,14 +38,18 @@ export type Transcription = OpenAI.Audio.TranscriptionVerbose;
 export type TranscriptionSegment = OpenAI.Audio.TranscriptionSegment;
 
 export type VideoEntry = {
-  stats: Partial<VideoStatisticalBlock>;
   transcript:
     | {
         meta: AbbreviatedTranscriptionMetadata;
-
         segments: string;
       }
     | undefined;
+  video: Record<
+    string,
+    {
+      stats: Partial<VideoStatisticalBlock>;
+    }
+  >;
 };
 
 type VideoStatisticalBlock = {
