@@ -6,11 +6,11 @@ import * as path from "node:path";
 import OpenAI from "openai";
 
 const console_wrapper = {
-  log(...s: string[]) {
-    console.log(s);
-  },
   error(...s: string[]) {
     console.error(s);
+  },
+  log(...s: string[]) {
+    console.log(s);
   },
 };
 
@@ -54,6 +54,9 @@ export type AccessionWorkflowResult = {
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
 ): Promise<AccessionWorkflowResult> {
+  if (options.verbose) {
+    throw new Error("verbosity is a matter for the terminal layer");
+  }
   if (!options.outDir) {
     throw new Error("outDir is required.");
   }
@@ -83,7 +86,7 @@ export async function runAccessionWorkflow(
   const progress = options.meter({ max: matchedFiles });
   progress.start(color.summaryTone.path(options.outDir));
 
-  for (const partThepart of media_parts) {
+  for (const path_part of media_parts) {
     // const f = {
     //   filename: "VID00000.AVI",
     //   partThepart: {
@@ -95,17 +98,18 @@ export async function runAccessionWorkflow(
     //   },
     // };
 
-    const inputPath = path.join(options.inDir, path.format(partThepart));
-    const tmp4 = partThepart.name.concat(".mp4");
+    const inputPath = path.join(options.inDir, path.format(path_part));
+    const tmp4 = path_part.name.concat(".mp4");
     const ovp = path.join(options.outDir, tmp4);
 
     try {
-      await transcodeToMp4(inputPath, ovp, !doffmpeg);
+      await transcodeToMp4(inputPath, ovp, !really_call_ffmpeg);
 
-      const metadata = await probeVideo(ovp, !doffmpeg);
+      const metadata = await probeVideo(ovp, !really_call_ffmpeg);
       const videoStream = metadata.streams.find(
         (stream: FfprobeStream) => stream.codec_type === "video",
       );
+      // TODO are we duplicating audio? for whisper later?
       const audioStream = metadata.streams.find(
         (stream: FfprobeStream) => stream.codec_type === "audio",
       );
@@ -113,15 +117,18 @@ export async function runAccessionWorkflow(
       const duration = parseFloat(metadata.format.duration?.toString() || "0");
 
       let whisperTranscription: Transcription | undefined;
-      if (!doffmpeg || (options.transcribe && audioStream && apiKey)) {
+      if (
+        !really_call_ffmpeg ||
+        (options.transcribe && audioStream && apiKey)
+      ) {
         whisperTranscription = await transcribeAudio(
           {
             apiKey,
-            baseName: partThepart.name,
+            baseName: path_part.name,
             outDir,
             outputVideoPath: ovp,
           },
-          !doffmpeg,
+          !really_call_ffmpeg,
         );
         transcribedFiles += 1;
       } else if (options.verbose) {
@@ -148,7 +155,7 @@ export async function runAccessionWorkflow(
       };
 
       if (whisperTranscription) {
-        const segmentJsonPath = partThepart.name.concat(".vtt");
+        const segmentJsonPath = path_part.name.concat(".vtt");
         const outputSegmentsPath = path.join(outDir, segmentJsonPath);
 
         const blank_segment_for_fun: TranscriptionSegment = {
@@ -181,7 +188,7 @@ export async function runAccessionWorkflow(
         };
       }
 
-      manifest[partThepart.name] = videoEntry;
+      manifest[path_part.name] = videoEntry;
 
       processedFiles += 1;
     } catch (error) {
@@ -192,7 +199,7 @@ export async function runAccessionWorkflow(
     }
     progress.advance(
       processedFiles + failedFiles,
-      `${partThepart.base} was just completed`,
+      `${path_part.base} was just completed`,
     );
   }
 
@@ -316,5 +323,5 @@ async function transcribeAudio(
   return result;
 }
 
-const doffmpeg = true;
+const really_call_ffmpeg = true;
 const limit = Infinity;
