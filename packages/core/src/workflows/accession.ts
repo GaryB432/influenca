@@ -15,7 +15,7 @@ import type {
 } from "../index.js";
 
 import * as color from "../color.js";
-import * as finny from "../shims/fs.js";
+import { writeJSONSync } from "../shims/fs.js";
 
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
@@ -164,7 +164,7 @@ export async function runAccessionWorkflow(
           tokens: [3, 5, 7, 9],
         };
 
-        finny.writeJSONSync<TranscriptionSegment[]>(
+        writeJSONSync<TranscriptionSegment[]>(
           outputSegmentsPath,
           whisperTranscription.segments ?? [blank_segment_for_fun],
           {
@@ -197,7 +197,7 @@ export async function runAccessionWorkflow(
   }
 
   if (!options.dryRun) {
-    finny.writeJSONSync<Manifest>(manifestPath, manifest, {
+    writeJSONSync<Manifest>(manifestPath, manifest, {
       stringify: { replacer: null, space: 2 },
     });
     // finny.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
