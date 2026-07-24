@@ -1,10 +1,10 @@
-SPECIMEN="/mnt/d/influenca/caps/20260722T212257Z"
+SPECIMEN="/mnt/d/influenca/caps/20260724T000404Z"
 
 CORPUS_DIR="$SPECIMEN/"
 
 # Check if the directory does NOT exist
 if [ ! -d $CORPUS_DIR ]; then
-  echo "Directory missing. Creating it now..."
+  echo "'$CORPUS_DIR' not found. "
 else
   rm -rf apps/web/static/corpus
 
