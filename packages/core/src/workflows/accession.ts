@@ -5,6 +5,15 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import OpenAI from "openai";
 
+const console_wrapper = {
+  log(...s: string[]) {
+    console.log(s);
+  },
+  error(...s: string[]) {
+    console.error(s);
+  },
+};
+
 import type {
   Manifest,
   ProgressOptions,
@@ -92,9 +101,6 @@ export async function runAccessionWorkflow(
 
     try {
       await transcodeToMp4(inputPath, ovp, !doffmpeg);
-      // if (options.verbose) {
-      //   console.log(`  Transcoded to ${targetMp4}`);
-      // }
 
       const metadata = await probeVideo(ovp, !doffmpeg);
       const videoStream = metadata.streams.find(
@@ -105,12 +111,6 @@ export async function runAccessionWorkflow(
       );
       const frames = parseInt(videoStream?.nb_frames || "0", 10);
       const duration = parseFloat(metadata.format.duration?.toString() || "0");
-
-      // if (options.verbose) {
-      //   console.log(
-      //     `  Extracted metadata (${frames} frames, ${duration.toFixed(1)}s)`,
-      //   );
-      // }
 
       let whisperTranscription: Transcription | undefined;
       if (!doffmpeg || (options.transcribe && audioStream && apiKey)) {
@@ -126,11 +126,11 @@ export async function runAccessionWorkflow(
         transcribedFiles += 1;
       } else if (options.verbose) {
         // if (!options.transcribe) {
-        //   console.log("  Skipping transcription (--transcribe not set)");
+        //   dont_use_the_console.log("  Skipping transcription (--transcribe not set)");
         // } else if (!audioStream) {
-        //   console.log("  No audio stream, skipping transcription");
+        //   dont_use_the_console.log("  No audio stream, skipping transcription");
         // } else {
-        //   console.log("  OPENAI_API_KEY not set, skipping transcription");
+        //   dont_use_the_console.log("  OPENAI_API_KEY not set, skipping transcription");
         // }
       }
 
@@ -187,7 +187,7 @@ export async function runAccessionWorkflow(
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
-      console.error(message);
+      console_wrapper.error(message);
       // progress.message('nope')
     }
     progress.advance(
@@ -203,7 +203,6 @@ export async function runAccessionWorkflow(
     // finny.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   }
   progress.stop();
-  console.log(manifestPath, "wuz jes wrote");
 
   return {
     failedFiles,
@@ -221,7 +220,7 @@ async function probeVideo(
 ): Promise<FfprobeData> {
   return new Promise<FfprobeData>((resolve, reject) => {
     if (drier) {
-      console.log("probeVideo");
+      console_wrapper.log("probeVideo");
       setTimeout(() => {
         resolve({
           chapters: [],
@@ -248,7 +247,7 @@ async function transcodeToMp4(
 ): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     if (drier) {
-      console.log(
+      console_wrapper.log(
         JSON.stringify({
           inputPath,
           m: "transcodeToMp4",
@@ -291,7 +290,7 @@ async function transcribeAudio(
 
   await new Promise<void>((resolve, reject) => {
     if (drier) {
-      console.log("transcribeAudio");
+      console_wrapper.log("transcribeAudio");
       setTimeout(() => {
         resolve();
       }, 100);

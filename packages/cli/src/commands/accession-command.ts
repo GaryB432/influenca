@@ -2,6 +2,7 @@ import {
   type AccessionWorkflowOptions,
   type AccessionWorkflowProgress,
   type AccessionWorkflowResult,
+  color,
   runAccessionWorkflow,
 } from "@influenca/core";
 
@@ -57,5 +58,33 @@ function formatSummary(
     return `Dry run complete: matched ${result.matchedFiles} file(s) in ${result.outDir}.`;
   }
 
-  return `Accession complete: processed ${result.processedFiles}/${result.matchedFiles}, transcribed ${result.transcribedFiles}, failed ${result.failedFiles}. Manifest: ${result.manifestPath}`;
+  const tone = { ...color.summaryTone };
+
+  const rows: Array<[label: string, value: string]> = [
+    ["failedFiles", String(result.failedFiles)],
+    ["manifest", result.manifestPath],
+    ["matched files", String(result.matchedFiles)],
+    ["output dir", result.outDir],
+    ["processed files", String(result.processedFiles)],
+    ["transcribed files", String(result.transcribedFiles)],
+  ];
+  const labelWidth = rows.reduce(
+    (max, [label]) => Math.max(max, label.length),
+    0,
+  );
+
+  const paths = ["manifest", "output dir"];
+
+  const prettyRows = rows.map(([label, value]) => {
+    const paddedLabel = `${label.padEnd(labelWidth)}:`;
+    const isPath = paths.includes(label);
+    const colorizedValue = isPath ? tone.path(value) : tone.number(value);
+    return `${tone.label(paddedLabel)} ${colorizedValue}`;
+  });
+
+  return [
+    tone.heading("Accession stats"),
+    tone.accent("-----------------------------"),
+    ...prettyRows,
+  ].join("\n");
 }
