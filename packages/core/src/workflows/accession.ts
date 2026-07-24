@@ -148,7 +148,7 @@ export async function runAccessionWorkflow(
       };
 
       if (whisperTranscription) {
-        const segmentJsonPath = partThepart.name.concat(".vtt.json");
+        const segmentJsonPath = partThepart.name.concat(".vtt");
         const outputSegmentsPath = path.join(outDir, segmentJsonPath);
 
         const blank_segment_for_fun: TranscriptionSegment = {
