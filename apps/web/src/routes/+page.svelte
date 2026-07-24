@@ -100,9 +100,9 @@
 
   <select bind:value={selectedSlug} onchange={slugSelected}>
     {#each Object.keys(manifest) as slug (slug)}
-      <option value={slug}>{slug} is good</option>
+      <option value={slug}>{slug}</option>
     {/each}
   </select>
+{:else}
+  <p>Video content is unavailable</p>
 {/if}
-
-<p>If you have stuff it will be just above</p>
