@@ -1,81 +1,54 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import { segmentToCue } from "$lib";
-  import type { Manifest, TranscriptionSegment } from "@influenca/core";
+  import { error } from "@sveltejs/kit";
   import { onMount } from "svelte";
+  import type { TranscriptionResponse } from "../app";
 
   let trackElement = $state<HTMLTrackElement | null>(null);
 
-  const CORPUS = "corpus";
-
-  let manifest: Manifest = $state({});
+  let { data } = $props();
 
   let selectedSlug = $state<string>();
 
-  let selectedVideoSrc = $derived.by(() => {
-    if (selectedSlug) {
-      const e = manifest[selectedSlug!];
-
-      if (e.video) {
-        const videoKeys = Object.keys(e.video);
-        const fvk = videoKeys.at(0);
-        if (fvk) {
-          return CORPUS.concat("/").concat(fvk);
-        }
-      }
-    }
-  });
-
-  let selectedTrack = $derived.by(() => {
-    if (selectedSlug) {
-      const e = manifest[selectedSlug];
-
-      if (e.transcript) {
-        return CORPUS.concat("/").concat(e.transcript?.segments);
-      }
-    }
-  });
+  let selectedVideoSrc = $derived(`cloud/videos/${selectedSlug}`);
+  let selectedTrack = $derived(`cloud/transcripts/${selectedSlug}`);
 
   async function slugSelected() {
-    if (selectedTrack && trackElement) {
-      // if (!trackElement) {
-      //   throw new Error("o please");
-      // }
+
+    if (selectedTrack) {
       const response = await fetch(selectedTrack);
 
       if (!response.ok) {
-        throw new Error("no tracks");
+        error(501, "no tracks");
       }
-      const segments = (await response.json()) as TranscriptionSegment[];
 
-      const cues = segments
+      const deets = (await response.json()) as TranscriptionResponse;
+
+      const cues = deets.vtt
         .map(segmentToCue)
         .map((c) => new VTTCue(c.startTime, c.endTime, c.text));
 
-      const textTrack = trackElement.track;
-      clearCues(textTrack);
-      textTrack.mode = "showing";
-
       cues.forEach((cue) => {
-        textTrack.addCue(cue);
+        console.log(cue);
       });
+
+      if (trackElement) {
+        const textTrack = trackElement.track;
+        clearCues(textTrack);
+        textTrack.mode = "showing";
+        cues.forEach((cue) => {
+          textTrack.addCue(cue);
+        });
+      }
     }
   }
 
   onMount(() => {
-    (async () => {
-      const maniFetch = fetch(`${CORPUS}/.influenca.json`);
-      const maniResponse = await maniFetch;
-      if (!maniResponse.ok) {
-        return;
-      }
-      const maniText = await maniResponse.text();
-      manifest = JSON.parse(maniText) as Manifest;
-
-      selectedSlug = Object.keys(manifest).at(0);
-      setTimeout(() => {
-        slugSelected();
-      }, 0);
-    })();
+    selectedSlug = Object.keys(data.manifest).at(0);
+    setTimeout(() => {
+      slugSelected();
+    }, 0);
   });
 
   function clearCues(textTrack: TextTrack) {
@@ -89,7 +62,7 @@
 </script>
 
 {#if selectedSlug}
-  <video controls src={`/${selectedVideoSrc}`} width="400">
+  <video controls src={selectedVideoSrc} width="400">
     <track
       bind:this={trackElement}
       kind="captions"
@@ -99,10 +72,26 @@
   </video>
 
   <select bind:value={selectedSlug} onchange={slugSelected}>
-    {#each Object.keys(manifest) as slug (slug)}
+    {#each Object.keys(data.manifest) as slug (slug)}
       <option value={slug}>{slug}</option>
     {/each}
   </select>
 {:else}
-  <p>Video content is unavailable</p>
+  <p>Video content is unavailable atm</p>
+{/if}
+
+<p>
+  {selectedVideoSrc}
+</p>
+{#if selectedSlug}
+  <p>
+    {selectedSlug}
+  </p>
+  <p>
+    <a
+      target="_blank"
+      href={resolve("/cloud/transcripts/[slug]", { slug: selectedSlug })}
+      >selected track</a
+    >
+  </p>
 {/if}
