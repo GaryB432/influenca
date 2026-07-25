@@ -6,7 +6,7 @@ TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 
 pnpm --filter @influenca/cli... run build
 
-apps/cli/dist/bin.js accession fixtures --outDir "tmp/$TIMESTAMP" --no-timestamp --verbose
+apps/cli/dist/bin.js accession fixtures --outDir "tmp/$TIMESTAMP" --no-timestamp
 
 apps/cli/dist/bin.js analyze "tmp/$TIMESTAMP" --no-minimal
 
