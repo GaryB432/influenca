@@ -5,9 +5,9 @@ import { progress } from "@influenca/core";
 import { cac } from "cac";
 import path from "node:path";
 
-import { AccessionCommand } from "./commands/accession-command.js";
-import { AnalyzeCommand } from "./commands/analyze-command.js";
-import { setupEnvironment } from "./environment.js";
+import { AccessionCommand } from "./commands/accession-command";
+import { AnalyzeCommand } from "./commands/analyze-command";
+import { setupEnvironment } from "./environment";
 
 const accessionCommand = new AccessionCommand();
 const analyzeCommand = new AnalyzeCommand();

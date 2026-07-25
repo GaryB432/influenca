@@ -1,17 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
     "types": ["node"],
     "lib": ["ES2022"]
   },
-  "include": ["src/**/*.ts"],
-  "references": [
-    {
-      "path": "../../libraries/core"
-    },
-    {
-      "path": "../../libraries/shared"
-    }
-  ]
+  "include": ["src/**/*.ts"]
 }

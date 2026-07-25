@@ -4,10 +4,7 @@ import {
   runAnalyzeWorkflow,
 } from "@influenca/core";
 
-import {
-  type CliCommand,
-  type ParsedCommandArgs,
-} from "../command-contract.js";
+import { type CliCommand, type ParsedCommandArgs } from "../command-contract";
 
 export type AnalyzeCommandOptions = {
   minimal: boolean;

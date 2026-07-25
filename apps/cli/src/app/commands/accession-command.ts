@@ -10,7 +10,7 @@ import {
   type CliCommand,
   type CommandRuntime,
   type ParsedCommandArgs,
-} from "../command-contract.js";
+} from "../command-contract";
 
 export type AccessionCommandOptions = {
   dryRun: boolean;

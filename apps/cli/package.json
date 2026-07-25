@@ -7,7 +7,7 @@
     "build": "tsdown --config tsdown.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src --max-warnings=0",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --config vitest.config.ts"
   },
   "bin": {
     "influenca": "./dist/bin.js"
