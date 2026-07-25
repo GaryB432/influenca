@@ -1,0 +1,7 @@
+packages:
+  - 'apps/*'
+  - 'libraries/*'
+
+allowBuilds:
+  ffmpeg-static: true
+  esbuild: true

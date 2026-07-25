@@ -1,0 +1,17 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/cli"
+    },
+    {
+      "path": "./apps/web"
+    },
+    {
+      "path": "./libraries/core"
+    },
+    {
+      "path": "./libraries/shared"
+    }
+  ]
+}

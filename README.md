@@ -23,16 +23,34 @@ move `avi` files from your Windows `G:` drive to a time-stamped temporary folder
 pnpm install
 ```
 
-- Run the unit tests:
+- Run the full workspace checks:
 
 ```bash
-pnpm run test
+pnpm run check
 ```
 
-- Build the library:
+- Build apps to dist:
 
 ```bash
 pnpm run build
+```
+
+- Typecheck all projects:
+
+```bash
+pnpm run typecheck
+```
+
+- Lint all projects:
+
+```bash
+pnpm run lint
+```
+
+- Test all projects:
+
+```bash
+pnpm run test
 ```
 
 ## Speech-to-Text Transcription
