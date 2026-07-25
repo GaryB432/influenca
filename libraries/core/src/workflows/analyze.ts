@@ -48,37 +48,61 @@ export async function runAnalyzeWorkflow(
   let totalWords = 0;
 
   for (const entry of entries) {
-    const e: VideoEntry = {
-      transcript: undefined,
-      video: { adsf: { stats: {} } },
-    };
-
-    if (!e.video) {
-      continue;
-    }
-
-    const statsBlock = Object.values(e.video).at(0);
-
-    if (!statsBlock || !statsBlock.stats) {
-      continue;
-    }
-
     if (entry.transcript) {
-      const segments = gbfs.readJSONSync<Array<TranscriptionSegment>>(
-        join(options.inDir, entry.transcript.segments),
-      );
-      const text = segments.map((s) => s.text).join("\n");
-      const words = text.split(/\s+/).length;
-
-      totalWords += words;
-      console.log(text);
-      console.log("---");
+      if (entry.transcript.segments) {
+        const segments = gbfs.readJSONSync<Array<TranscriptionSegment>>(
+          join(options.inDir, entry.transcript.segments),
+        );
+        const text = segments.map((s) => s.text).join("\n");
+        const words = text.split(/\s+/).length;
+        totalWords += words;
+      }
+      // const segments = gbfs.readJSONSync<Array<TranscriptionSegment>>(
+      //       join(options.inDir, entry.transcript.segments),
+      //     );
+      //     const text = segments.map((s) => s.text).join("\n");
+      //     const words = text.split(/\s+/).length;
     }
+    if (entry.video) {
+      const firstAndOnlyVideo = Object.values(entry.video).at(0);
 
-    withStatsCount += 1;
-    totalDurationSeconds += statsBlock.stats.duration_seconds ?? 0;
-    totalFrames += Math.trunc(statsBlock.stats.frames ?? 0);
+      if (firstAndOnlyVideo) {
+        withStatsCount += 1;
+        totalFrames += firstAndOnlyVideo.stats.frames;
+        totalDurationSeconds += firstAndOnlyVideo.stats.duration_seconds;
+      }
+    }
   }
+
+  // for (const entry of entries) {
+  //   // const e: VideoEntry = {
+  //   //   transcript: undefined,
+  //   //   video: { adsf: { stats: {} } },
+  //   // };
+
+  //   // if (!e.video) {
+  //   //   continue;
+  //   // }
+
+  //   const e =
+
+  //   const statsBlock = Object.values(e.video).at(0);
+
+  //   if (!statsBlock || !statsBlock.stats) {
+  //     continue;
+  //   }
+
+  //   if (entry.transcript) {
+
+  //     totalWords += words;
+  //     console.log(text);
+  //     console.log("---");
+  //   }
+
+  //   withStatsCount += 1;
+  //   totalDurationSeconds += statsBlock.stats.duration_seconds ?? 0;
+  //   totalFrames += Math.trunc(statsBlock.stats.frames ?? 0);
+  // }
 
   return {
     manifestPath,

@@ -32,7 +32,7 @@ export type AbbreviatedTranscriptionMetadata = Omit<
   "segments" | "text"
 >;
 
-export type Manifest = Record<string, Partial<VideoEntry>>;
+export type Manifest = Record<string, VideoEntry>;
 export type Transcription = OpenAI.Audio.TranscriptionVerbose;
 
 export type TranscriptionSegment = OpenAI.Audio.TranscriptionSegment;
