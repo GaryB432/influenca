@@ -26,6 +26,7 @@
     "@eslint/json": "^0.13.1",
     "@eslint/markdown": "^7.3.0",
     "@sveltejs/adapter-node": "^5.5.7",
+    "@types/cli-progress": "^3.11.6",
     "@types/fluent-ffmpeg": "^2.1.28",
     "@types/node": "^24.3.0",
     "eslint": "^9.34.0",
