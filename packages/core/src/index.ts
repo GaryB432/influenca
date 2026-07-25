@@ -47,12 +47,12 @@ export type VideoEntry = {
   video: Record<
     string,
     {
-      stats: Partial<VideoStatisticalBlock>;
+      stats: VideoStatisticalBlock;
     }
   >;
 };
 
-type VideoStatisticalBlock = {
+export type VideoStatisticalBlock = {
   arbitraryFutureMetric?: string;
   duration_seconds: number;
   frames: number;

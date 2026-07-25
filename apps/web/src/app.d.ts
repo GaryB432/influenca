@@ -1,13 +1,22 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
-// for information about these interfaces
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+
 declare global {
   namespace App {
-    // interface Error {}
-    // interface Locals {}
-    // interface PageData {}
-    // interface PageState {}
-    // interface Platform {}
+    interface Locals {
+      user: null | User;
+    }
+    interface PageData {}
+    interface PageState {}
+    interface Platform {}
+    interface User {
+      email: string;
+      id: string;
+      role: "admin" | "editor" | "user";
+    }
   }
 }
 
-export {};
+export type TranscriptionResponse = {
+  videoEntry: VideoEntry;
+  vtt: TranscriptionSegment[];
+};
