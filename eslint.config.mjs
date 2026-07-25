@@ -60,7 +60,7 @@ export default tseslint.config(
   },
 
   {
-    files: ["apps/cli/src/**/*.ts"],
+    files: ["apps/core/src/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",

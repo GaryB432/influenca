@@ -28,10 +28,7 @@ Always import command contracts from `../command-contract.js` (not `./command-co
 Template:
 
 ```ts
-import {
-  type CliCommand,
-  type ParsedCommandArgs,
-} from "../command-contract.js";
+import { type CliCommand, type ParsedCommandArgs } from "../command-contract";
 
 export type CommandOptions = {
   // define typed options here
@@ -117,7 +114,7 @@ If failures occur, fix root cause and rerun both commands.
 Use a minimal safe invocation (often dry-run if available):
 
 ```bash
-node packages/cli/dist/bin.mjs <command-name> ...args
+node apps/cli/dist/bin.js <command-name> ...args
 ```
 
 Confirm output is understandable and validation errors are actionable.

@@ -9,11 +9,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-    "baseUrl": ".",
-    "paths": {
-      "@influenca/core": ["libraries/core/src/index.ts"],
-      "@influenca/shared": ["libraries/shared/src/index.ts"]
-    }
+    "verbatimModuleSyntax": true
   }
 }
