@@ -67,5 +67,5 @@ echo "✅ Intake complete!"
 printf "✨ %s %s %s\n" \
   "$(tput setaf 208)node" \
   "$(tput setaf 81)packages/cli/dist/bin.mjs accession" \
-  "$(tput setaf 121)$DEST_DIR/$(tput sgr0)"
+  "$(tput setaf 121)$DEST_DIR$(tput sgr0)"
 

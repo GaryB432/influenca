@@ -1,7 +1,8 @@
 .env
 .svelte-kit/
-apps/web/static/corpus/
 dist/
 node_modules/
 tmp/
-apps/web/static/corpus/*.mp4
+
+apps/web/static/corpus/**
+!apps/web/static/corpus/.influenca.json

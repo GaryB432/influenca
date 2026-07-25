@@ -5,7 +5,9 @@ import {
   parseManifest,
   type Transcription,
   type TranscriptionSegment,
+  type VideoEntry,
 } from "../index.js";
+import * as gbfs from "../shims/fs.js";
 
 export type AnalyzeWorkflowOptions = {
   inDir: string;
@@ -46,17 +48,25 @@ export async function runAnalyzeWorkflow(
   let totalWords = 0;
 
   for (const entry of entries) {
-    const stats = entry.stats;
-    if (!stats) {
+    const e: VideoEntry = {
+      transcript: undefined,
+      video: { adsf: { stats: {} } },
+    };
+
+    if (!e.video) {
+      continue;
+    }
+
+    const statsBlock = Object.values(e.video).at(0);
+
+    if (!statsBlock || !statsBlock.stats) {
       continue;
     }
 
     if (entry.transcript) {
-      const track = fs.readFileSync(
+      const segments = gbfs.readJSONSync<Array<TranscriptionSegment>>(
         join(options.inDir, entry.transcript.segments),
-        "utf-8",
       );
-      const segments = JSON.parse(track) as Array<TranscriptionSegment>;
       const text = segments.map((s) => s.text).join("\n");
       const words = text.split(/\s+/).length;
 
@@ -66,8 +76,8 @@ export async function runAnalyzeWorkflow(
     }
 
     withStatsCount += 1;
-    totalDurationSeconds += stats.duration_seconds ?? 0;
-    totalFrames += Math.trunc(stats.frames ?? 0);
+    totalDurationSeconds += statsBlock.stats.duration_seconds ?? 0;
+    totalFrames += Math.trunc(statsBlock.stats.frames ?? 0);
   }
 
   return {
