@@ -1,11 +1,10 @@
-import assert from "node:assert";
-import { test } from "node:test";
+import { expect, test } from "vitest";
 
-import { type Transcription } from "../index.js";
-import { getExtremelyFoundationalSegmentCount } from "./analyze.js";
+import { type Transcription } from "../index";
+import { getExtremelyFoundationalSegmentCount } from "./analyze";
 
 test("transcribes basics", () => {
-  assert.equal(getExtremelyFoundationalSegmentCount(transcribe_specimen), 1);
+  expect(getExtremelyFoundationalSegmentCount(transcribe_specimen)).toEqual(1);
 });
 
 const transcribe_specimen: Transcription = {

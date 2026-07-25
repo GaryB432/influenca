@@ -6,8 +6,8 @@ import {
   type Transcription,
   type TranscriptionSegment,
   type VideoEntry,
-} from "../index.js";
-import * as gbfs from "../shims/fs.js";
+} from "../index";
+import * as gbfs from "../shims/fs";
 
 export type AnalyzeWorkflowOptions = {
   inDir: string;

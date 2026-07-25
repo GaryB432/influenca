@@ -21,10 +21,10 @@ import type {
   Transcription,
   TranscriptionSegment,
   VideoEntry,
-} from "../index.js";
+} from "../index";
 
-import * as color from "../color.js";
-import { writeJSONSync } from "../shims/fs.js";
+import * as color from "../color";
+import { writeJSONSync } from "../shims/fs";
 
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
