@@ -1,3 +1,5 @@
+/* eslint-disable no-empty, @typescript-eslint/no-unused-vars */
+
 import type { FfprobeData, FfprobeStream } from "fluent-ffmpeg";
 
 import ffmpeg from "fluent-ffmpeg";

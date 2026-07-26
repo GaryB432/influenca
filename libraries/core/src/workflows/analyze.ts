@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import fs from "node:fs";
 import path, { join } from "node:path";
 

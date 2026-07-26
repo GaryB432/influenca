@@ -17,6 +17,7 @@ export default tseslint.config(
       perfectionist.configs["recommended-alphabetical"],
     ],
     files: ["**/*.{js,mjs,ts}"],
+    ignores: ["**/eslint.config.mjs"],
     rules: {
       "@typescript-eslint/no-restricted-imports": [
         "error",
