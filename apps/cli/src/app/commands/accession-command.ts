@@ -50,9 +50,9 @@ export class AccessionCommand implements CliCommand<
   }
 }
 
-function formatSummary(
+export function formatSummary(
   result: AccessionWorkflowResult,
-  dryRun: boolean,
+  dryRun?: boolean,
 ): string {
   if (dryRun) {
     return `Dry run complete: matched ${result.matchedFiles} file(s) in ${result.outDir}.`;
