@@ -17,7 +17,7 @@
     "typecheck": "pnpm -r --if-present run typecheck",
     "lint": "pnpm -r --if-present run lint",
     "format": "pnpm dlx prettier -wl .",
-    "test": "vitest run --config vitest.config.ts",
+    "test": "pnpm -r --filter './apps/*' --filter './libraries/*' --if-present run test",
     "check": "pnpm run lint && pnpm run typecheck && pnpm run test",
     "clean": "pnpm -r --filter './apps/*' exec rm -rf dist"
   },
