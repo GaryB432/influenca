@@ -1,11 +1,12 @@
-import { defineConfig } from "vitest/config";
-import { playwright } from "@vitest/browser-playwright";
 import adapter from "@sveltejs/adapter-node";
 import { sveltekit } from "@sveltejs/kit/vite";
+import { playwright } from "@vitest/browser-playwright";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [
     sveltekit({
+      adapter: adapter(),
       alias: {
         "@influenca/core": "../../libraries/core/src/index.ts",
       },
@@ -14,7 +15,6 @@ export default defineConfig({
         runes: ({ filename }) =>
           filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
       },
-      adapter: adapter(),
     }),
   ],
   test: {
@@ -23,24 +23,24 @@ export default defineConfig({
       {
         extends: "./vite.config.ts",
         test: {
-          name: "client",
           browser: {
             enabled: true,
-            provider: playwright(),
             instances: [{ browser: "chromium", headless: true }],
+            provider: playwright(),
           },
-          include: ["src/**/*.svelte.{test,spec}.{js,ts}"],
           exclude: ["src/lib/server/**"],
+          include: ["src/**/*.svelte.{test,spec}.{js,ts}"],
+          name: "client",
         },
       },
 
       {
         extends: "./vite.config.ts",
         test: {
-          name: "server",
           environment: "node",
-          include: ["src/**/*.{test,spec}.{js,ts}"],
           exclude: ["src/**/*.svelte.{test,spec}.{js,ts}"],
+          include: ["src/**/*.{test,spec}.{js,ts}"],
+          name: "server",
         },
       },
     ],
