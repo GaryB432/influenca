@@ -4,6 +4,7 @@ tmp
 # Output
 
 **/.svelte-kit
+**/build
 **/dist
 
 # OS
