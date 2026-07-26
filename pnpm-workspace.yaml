@@ -4,6 +4,10 @@ packages:
   - 'libraries/core'
   - 'libraries/shared'
 
+catalog:
+  vitest: ^4.1.10
+  '@vitest/browser-playwright': ^4.1.10
+
 allowBuilds:
   ffmpeg-static: true
   esbuild: true
