@@ -1,6 +1,8 @@
 packages:
-  - 'apps/*'
-  - 'libraries/*'
+  - 'apps/cli'
+  - 'apps/web'
+  - 'libraries/core'
+  - 'libraries/shared'
 
 allowBuilds:
   ffmpeg-static: true
