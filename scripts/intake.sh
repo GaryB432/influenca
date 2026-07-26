@@ -57,7 +57,7 @@ rsync -rtv --progress --include="*/" --include="*.AVI" --include="*.avi" --exclu
 
 rm -rf "$MOUNT_POINT/AUDIO" "$MOUNT_POINT/DCIMA"
 
-echo "2026-01-01 00:00:00 N" > "$MOUNT_POINT/TIME.TXT"
+echo "2026-01-01 00:00:01 N" > "$MOUNT_POINT/TIME.TXT"
 # sudo umount /mnt/rushmore
 
 ls "$DEST_DIR"
