@@ -14,14 +14,14 @@ describe("captions", () => {
         transcribedFiles: 0,
       }),
     ).toMatchInlineSnapshot(`
-      "[1m[38;5;177mAccession stats[0m[0m
-      [38;5;147m-----------------------------[0m
-      [38;5;81mfailedFiles      :[0m [38;5;221m0[0m
-      [38;5;81mmanifest         :[0m [38;5;121m[0m
-      [38;5;81mmatched files    :[0m [38;5;221m0[0m
-      [38;5;81moutput dir       :[0m [38;5;121m[0m
-      [38;5;81mprocessed files  :[0m [38;5;221m0[0m
-      [38;5;81mtranscribed files:[0m [38;5;221m0[0m"
+      "Accession stats
+      -----------------------------
+      failedFiles      : 0
+      manifest         : 
+      matched files    : 0
+      output dir       : 
+      processed files  : 0
+      transcribed files: 0"
     `);
   });
 });
