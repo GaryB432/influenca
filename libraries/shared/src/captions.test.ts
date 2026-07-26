@@ -4,7 +4,7 @@ import { add, greet, meaning } from "./captions";
 
 describe("captions", () => {
   it("greets with module prefix", () => {
-    expect(greet("Gary")).toBe("captions says: hello to Gary");
+    expect(greet("World")).toBe("captions says: hello to World");
   });
 
   it("adds two numbers", () => {
