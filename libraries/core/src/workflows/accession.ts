@@ -102,98 +102,93 @@ export async function runAccessionWorkflow(
     const tmp4 = path_part.name.concat(".mp4");
     const ovp = path.join(options.outDir, tmp4);
 
+    await transcodeToMp4(inputPath, ovp, !really_call_ffmpeg);
 
-          await transcodeToMp4(inputPath, ovp, !really_call_ffmpeg);
+    const metadata = await probeVideo(ovp, !really_call_ffmpeg);
+    const videoStream = metadata.streams.find(
+      (stream: FfprobeStream) => stream.codec_type === "video",
+    );
+    // TODO are we duplicating audio? for whisper later?
+    const audioStream = metadata.streams.find(
+      (stream: FfprobeStream) => stream.codec_type === "audio",
+    );
+    const frames = parseInt(videoStream?.nb_frames || "0", 10);
+    const duration = parseFloat(metadata.format.duration?.toString() || "0");
 
-      const metadata = await probeVideo(ovp, !really_call_ffmpeg);
-      const videoStream = metadata.streams.find(
-        (stream: FfprobeStream) => stream.codec_type === "video",
+    let whisperTranscription: Transcription | undefined;
+    if (!really_call_ffmpeg || (options.transcribe && audioStream && apiKey)) {
+      whisperTranscription = await transcribeAudio(
+        {
+          apiKey,
+          baseName: path_part.name,
+          outDir,
+          outputVideoPath: ovp,
+        },
+        !really_call_ffmpeg,
       );
-      // TODO are we duplicating audio? for whisper later?
-      const audioStream = metadata.streams.find(
-        (stream: FfprobeStream) => stream.codec_type === "audio",
-      );
-      const frames = parseInt(videoStream?.nb_frames || "0", 10);
-      const duration = parseFloat(metadata.format.duration?.toString() || "0");
+      transcribedFiles += 1;
+    } else if (options.verbose) {
+      // if (!options.transcribe) {
+      //   dont_use_the_console.log("  Skipping transcription (--transcribe not set)");
+      // } else if (!audioStream) {
+      //   dont_use_the_console.log("  No audio stream, skipping transcription");
+      // } else {
+      //   dont_use_the_console.log("  OPENAI_API_KEY not set, skipping transcription");
+      // }
+    }
 
-      let whisperTranscription: Transcription | undefined;
-      if (
-        !really_call_ffmpeg ||
-        (options.transcribe && audioStream && apiKey)
-      ) {
-        whisperTranscription = await transcribeAudio(
-          {
-            apiKey,
-            baseName: path_part.name,
-            outDir,
-            outputVideoPath: ovp,
-          },
-          !really_call_ffmpeg,
-        );
-        transcribedFiles += 1;
-      } else if (options.verbose) {
-        // if (!options.transcribe) {
-        //   dont_use_the_console.log("  Skipping transcription (--transcribe not set)");
-        // } else if (!audioStream) {
-        //   dont_use_the_console.log("  No audio stream, skipping transcription");
-        // } else {
-        //   dont_use_the_console.log("  OPENAI_API_KEY not set, skipping transcription");
-        // }
-      }
+    const videoEntry: VideoEntry = {
+      transcript: undefined,
 
-      const videoEntry: VideoEntry = {
-        transcript: undefined,
-
-        video: {
-          [tmp4]: {
-            stats: {
-              duration_seconds: duration,
-              frames,
-            },
+      video: {
+        [tmp4]: {
+          stats: {
+            duration_seconds: duration,
+            frames,
           },
         },
-      };
+      },
+    };
 
-      // if (whisperTranscription) {
-      //   const segmentJsonPath = path_part.name.concat(".vtt");
-      //   const outputSegmentsPath = path.join(outDir, segmentJsonPath);
+    // if (whisperTranscription) {
+    //   const segmentJsonPath = path_part.name.concat(".vtt");
+    //   const outputSegmentsPath = path.join(outDir, segmentJsonPath);
 
-      //   const blank_segment_for_fun: TranscriptionSegment = {
-      //     avg_logprob: 0,
-      //     compression_ratio: 0,
-      //     end: 5,
-      //     id: 0,
-      //     no_speech_prob: 0,
-      //     seek: 0,
-      //     start: 0,
-      //     temperature: 0,
-      //     text: "NOTHING TO HEAR HERE",
-      //     tokens: [3, 5, 7, 9],
-      //   };
+    //   const blank_segment_for_fun: TranscriptionSegment = {
+    //     avg_logprob: 0,
+    //     compression_ratio: 0,
+    //     end: 5,
+    //     id: 0,
+    //     no_speech_prob: 0,
+    //     seek: 0,
+    //     start: 0,
+    //     temperature: 0,
+    //     text: "NOTHING TO HEAR HERE",
+    //     tokens: [3, 5, 7, 9],
+    //   };
 
-      //   writeJSONSync<TranscriptionSegment[]>(
-      //     outputSegmentsPath,
-      //     whisperTranscription.segments ?? [blank_segment_for_fun],
-      //     {
-      //       stringify: { replacer: null, space: 2 },
-      //     },
-      //   );
+    //   writeJSONSync<TranscriptionSegment[]>(
+    //     outputSegmentsPath,
+    //     whisperTranscription.segments ?? [blank_segment_for_fun],
+    //     {
+    //       stringify: { replacer: null, space: 2 },
+    //     },
+    //   );
 
-      //   videoEntry.transcript = {
-      //     meta: {
-      //       duration: whisperTranscription.duration,
-      //       language: whisperTranscription.language,
-      //     },
-      //     segments: segmentJsonPath,
-      //   };
-      // }
+    //   videoEntry.transcript = {
+    //     meta: {
+    //       duration: whisperTranscription.duration,
+    //       language: whisperTranscription.language,
+    //     },
+    //     segments: segmentJsonPath,
+    //   };
+    // }
 
-      manifest[path_part.name] = videoEntry;
+    manifest[path_part.name] = videoEntry;
 
-      processedFiles += 1;
+    processedFiles += 1;
 
     try {
-
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
