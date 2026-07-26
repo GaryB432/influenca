@@ -30,6 +30,14 @@ export function color256(colorCode: number, value: string): string {
   return `\u001b[38;5;${colorCode}m${value}${ansiReset()}`;
 }
 
+export function maybeColorize(colorCode: number, value: string): string {
+  if (!supportsModernColors()) {
+    return value;
+  }
+
+  return color256(colorCode, value);
+}
+
 export function supportsModernColors(): boolean {
   if (!process.stdout.isTTY) {
     return false;
@@ -51,9 +59,12 @@ export function supportsModernColors(): boolean {
 }
 
 export const summaryTone: SummaryTone = {
-  accent: (value) => color256(147, value),
-  heading: (value) => `${ansiBold()}${color256(177, value)}${ansiReset()}`,
-  label: (value) => color256(81, value),
-  number: (value) => color256(221, value),
-  path: (value) => color256(121, value),
+  accent: (value) => maybeColorize(147, value),
+  heading: (value) =>
+    supportsModernColors()
+      ? `${ansiBold()}${color256(177, value)}${ansiReset()}`
+      : value,
+  label: (value) => maybeColorize(81, value),
+  number: (value) => maybeColorize(221, value),
+  path: (value) => maybeColorize(121, value),
 };
