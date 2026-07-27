@@ -1,9 +1,10 @@
 import type { Manifest, VideoStatisticalBlock } from "@influenca/core";
+import { INFLUENCA_DIR } from "$env/static/private";
 
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const CORPUS_DIR = "/mnt/e/influenca-corpus-26/20260724T202910Z";
+const CORPUS_DIR = path.join(INFLUENCA_DIR, "20260726T231351Z");
 
 let cachedCorpus: Manifest;
 
