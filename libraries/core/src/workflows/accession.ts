@@ -184,7 +184,6 @@ export async function runAccessionWorkflow(
       };
     }
 
-
     manifest[path_part.name] = videoEntry;
 
     try {
