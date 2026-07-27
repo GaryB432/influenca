@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
     // Common caching headers for both full and partial responses
     const cacheHeaders = {
       "Cache-Control": "public, max-age=31536000, immutable", // Cache for 1 year
-      "ETag": etag,
+      ETag: etag,
       "Accept-Ranges": "bytes",
       "Content-Type": "video/mp4",
     };
