@@ -114,7 +114,7 @@ If failures occur, fix root cause and rerun both commands.
 Use a minimal safe invocation (often dry-run if available):
 
 ```bash
-node apps/cli/dist/bin.js <command-name> ...args
+node apps/cli/dist/bin.mjs <command-name> ...args
 ```
 
 Confirm output is understandable and validation errors are actionable.

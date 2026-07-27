@@ -64,8 +64,8 @@ ls "$DEST_DIR"
 
 echo "✅ Intake complete!"
 
-printf "✨ %s %s %s\n" \
+printf "✨ Next Steps: %s %s %s\n" \
   "$(tput setaf 208)node" \
-  "$(tput setaf 81)apps/cli/dist/bin.js accession" \
+  "$(tput setaf 81)apps/cli/dist/bin.mjs accession" \
   "$(tput setaf 121)$DEST_DIR$(tput sgr0)"
 

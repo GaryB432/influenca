@@ -2,7 +2,7 @@
   "name": "@influenca/cli",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/bin.js",
+  "main": "dist/bin.mjs",
   "scripts": {
     "build": "tsdown --config tsdown.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -10,7 +10,7 @@
     "test": "vitest run --config vitest.config.ts"
   },
   "bin": {
-    "influenca": "./dist/bin.js"
+    "influenca": "./dist/bin.mjs"
   },
   "keywords": [],
   "author": "",
