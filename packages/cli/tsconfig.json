@@ -5,8 +5,10 @@
       "paths": {
         "@influenca/core": ["../core/src/index.ts"]
       },
+      "rootDir": "..",
       "outDir": "./dist",
       "tsBuildInfoFile": "./dist/.tsbuildinfo"
     },
-    "include": ["src/**/*.ts", "../core/src/**/*.ts"]
+    "include": ["src/**/*.ts", "../core/src/**/*.ts"],
+    "exclude": ["../core/src/**/*.spec.ts", "../core/src/**/*.test.ts"]
 }
