@@ -3,16 +3,11 @@
   "compilerOptions": {
     "composite": true,
     "paths": {
-      "@influenca/core": ["../core/src/index.ts"]
+        "@influenca/core": ["../core/src/index.ts"]
+      },
+      "rootDir": "./src",
+      "outDir": "./dist",
+      "tsBuildInfoFile": "./dist/.tsbuildinfo"
     },
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "tsBuildInfoFile": "./dist/.tsbuildinfo"
-  },
-  "include": ["src/**/*.ts"],
-  "references": [
-    {
-      "path": "../core"
-    }
-  ]
+    "include": ["src/**/*.ts"]
 }
