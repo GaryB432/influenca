@@ -6,14 +6,18 @@ export default defineConfig({
   plugins: [
     sveltekit({
       adapter: adapter(),
+      env: {
+        dir: "../../",
+      },
       alias: {
         "@influenca/core": "../../libraries/core/src/index.ts",
       },
       compilerOptions: {
-        // Force runes mode for the project, except for libraries. Can be removed in svelte 6.
         runes: ({ filename }) =>
           filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
       },
     }),
   ],
+  // Keep this here so standard Vite systems (like route building) can locate it too
+  envDir: "../../",
 });
