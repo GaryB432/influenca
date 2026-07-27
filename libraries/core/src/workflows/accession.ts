@@ -152,39 +152,40 @@ export async function runAccessionWorkflow(
       },
     };
 
-    // if (whisperTranscription) {
-    //   const segmentJsonPath = path_part.name.concat(".vtt");
-    //   const outputSegmentsPath = path.join(outDir, segmentJsonPath);
+    if (whisperTranscription) {
+      const segmentJsonPath = path_part.name.concat(".vtt");
+      const outputSegmentsPath = path.join(outDir, segmentJsonPath);
 
-    //   const blank_segment_for_fun: TranscriptionSegment = {
-    //     avg_logprob: 0,
-    //     compression_ratio: 0,
-    //     end: 5,
-    //     id: 0,
-    //     no_speech_prob: 0,
-    //     seek: 0,
-    //     start: 0,
-    //     temperature: 0,
-    //     text: "NOTHING TO HEAR HERE",
-    //     tokens: [3, 5, 7, 9],
-    //   };
+      const blank_segment_for_fun: TranscriptionSegment = {
+        avg_logprob: 0,
+        compression_ratio: 0,
+        end: 5,
+        id: 0,
+        no_speech_prob: 0,
+        seek: 0,
+        start: 0,
+        temperature: 0,
+        text: "NOTHING TO HEAR HERE",
+        tokens: [3, 5, 7, 9],
+      };
 
-    //   writeJSONSync<TranscriptionSegment[]>(
-    //     outputSegmentsPath,
-    //     whisperTranscription.segments ?? [blank_segment_for_fun],
-    //     {
-    //       stringify: { replacer: null, space: 2 },
-    //     },
-    //   );
+      writeJSONSync<TranscriptionSegment[]>(
+        outputSegmentsPath,
+        whisperTranscription.segments ?? [blank_segment_for_fun],
+        {
+          stringify: { replacer: null, space: 2 },
+        },
+      );
 
-    //   videoEntry.transcript = {
-    //     meta: {
-    //       duration: whisperTranscription.duration,
-    //       language: whisperTranscription.language,
-    //     },
-    //     segments: segmentJsonPath,
-    //   };
-    // }
+      videoEntry.transcript = {
+        meta: {
+          duration: whisperTranscription.duration,
+          language: whisperTranscription.language,
+        },
+        segments: segmentJsonPath,
+      };
+    }
+
 
     manifest[path_part.name] = videoEntry;
 
