@@ -1,42 +1,75 @@
-# sv
+# @influenca/web
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+SvelteKit web app for browsing generated cloud artifacts (videos and transcripts).
 
-## Creating a project
+## Prerequisites
 
-If you're seeing this, you've probably already done this step. Congrats!
+Install workspace dependencies from the repository root:
 
-```sh
-# create a new project
-npx sv create my-app
+```bash
+pnpm install
 ```
 
-To recreate this project with the same configuration:
+## Development
 
-```sh
-# recreate this project
-pnpm dlx sv@0.16.6 create --template minimal --types ts --add eslint vitest="usages:unit,component" sveltekit-adapter="adapter:node" --install pnpm xeb
+From repository root:
+
+```bash
+pnpm --filter @influenca/web run dev
 ```
 
-## Developing
+Or from this directory:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```bash
+pnpm run dev
 ```
 
-## Building
+## Build
 
-To create a production version of your app:
+From repository root:
 
-```sh
-npm run build
+```bash
+pnpm --filter @influenca/web run build
 ```
 
-You can preview the production build with `npm run preview`.
+Or from this directory:
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```bash
+pnpm run build
+```
+
+Note: this project uses `@sveltejs/adapter-node` and emits a Node-compatible server build.
+
+## Preview
+
+From this directory:
+
+```bash
+pnpm run preview
+```
+
+## Quality Checks
+
+- Type and Svelte checks:
+
+```bash
+pnpm run check
+```
+
+- Lint:
+
+```bash
+pnpm run lint
+```
+
+- Unit tests:
+
+```bash
+pnpm run test
+```
+
+From repository root, you can run all workspace checks with:
+
+```bash
+pnpm run check
+```
