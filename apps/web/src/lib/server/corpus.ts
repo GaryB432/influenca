@@ -4,7 +4,7 @@ import { INFLUENCA_DIR } from "$env/static/private";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const CORPUS_DIR = path.join(INFLUENCA_DIR, "20260726T231351Z");
+const CORPUS_DIR = path.join(INFLUENCA_DIR, "20260727T203224Z");
 
 let cachedCorpus: Manifest;
 
