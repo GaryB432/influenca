@@ -7,8 +7,10 @@
   },
   "scripts": {
     "build": "tsdown src/bin.ts src/main.test.ts src/workflows/**.test.ts",
+    "pretypecheck": "pnpm --filter @influenca/core run build",
     "test": "pnpm run build && pnpm run test:dist",
-    "test:dist": "node --test dist/main.test.mjs dist/workflows/**.test.mjs"
+    "test:dist": "node --test dist/main.test.mjs dist/workflows/**.test.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@clack/prompts": "catalog:",

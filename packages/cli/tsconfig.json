@@ -1,14 +1,9 @@
 {
-  "extends": "../../tsconfig.base.json",
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
       "composite": true,
-      "paths": {
-        "@influenca/core": ["../core/src/index.ts"]
-      },
-      "rootDir": "..",
       "outDir": "./dist",
       "tsBuildInfoFile": "./dist/.tsbuildinfo"
     },
-    "include": ["src/**/*.ts", "../core/src/**/*.ts"],
-    "exclude": ["../core/src/**/*.spec.ts", "../core/src/**/*.test.ts"]
+    "include": ["src/**/*.ts"]
 }
