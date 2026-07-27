@@ -29,10 +29,16 @@ pnpm install
 pnpm run check
 ```
 
-- Build apps to dist:
+- Build apps and libraries to dist:
 
 ```bash
 pnpm run build
+```
+
+- Run CLI end-to-end smoke test:
+
+```bash
+pnpm run build && ./scripts/e2e-all.sh
 ```
 
 - Typecheck all projects:

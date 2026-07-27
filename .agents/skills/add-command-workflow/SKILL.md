@@ -21,7 +21,7 @@ If anything is missing, ask concise follow-up questions.
 
 ## 1. Implement the command class
 
-Create `packages/cli/src/commands/<command-name>-command.ts`.
+Create `apps/cli/src/app/commands/<command-name>-command.ts`.
 
 Always import command contracts from `../command-contract.js` (not `./command-contract.js`).
 
@@ -57,7 +57,7 @@ Pick one path:
    Use an existing module and call it from the command class.
 
 2. No pre-existing workflow path (common for new commands like `analyze`).
-   Create a new module such as `packages/cli/src/<command-name>-workflow.ts` with:
+  Create a new module such as `libraries/core/src/workflows/<command-name>.ts` with:
 
 - typed input options
 - pure helper functions where possible
@@ -67,7 +67,7 @@ Keep side effects (filesystem, network, subprocesses) inside small isolated func
 
 ## 3. Register the command in CLI entry
 
-Update `packages/cli/src/main.ts`:
+Update `apps/cli/src/app/main.ts`:
 
 1. Import and instantiate the command near other command instances.
 2. Add `.command(...)` with positional args.
@@ -87,7 +87,7 @@ Notes:
 
 ## 4. Add focused tests
 
-Update `packages/cli/src/main.test.ts`:
+Update or add tests under `apps/cli/src/app/commands/*.test.ts`:
 
 1. Command help test.
    Assert command name and critical options are shown.
@@ -103,7 +103,7 @@ Update `packages/cli/src/main.test.ts`:
 From repo root:
 
 ```bash
-pnpm --filter @influenca/cli run build
+pnpm --filter @influenca/cli... run build
 pnpm --filter @influenca/cli run test
 ```
 
