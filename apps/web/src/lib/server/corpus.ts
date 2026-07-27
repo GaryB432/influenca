@@ -1,6 +1,6 @@
 import type { Manifest, VideoStatisticalBlock } from "@influenca/core";
-import { INFLUENCA_DIR } from "$env/static/private";
 
+import { INFLUENCA_DIR } from "$env/static/private";
 import fs from "node:fs/promises";
 import path from "node:path";
 

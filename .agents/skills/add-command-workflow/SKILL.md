@@ -57,7 +57,7 @@ Pick one path:
    Use an existing module and call it from the command class.
 
 2. No pre-existing workflow path (common for new commands like `analyze`).
-  Create a new module such as `libraries/core/src/workflows/<command-name>.ts` with:
+   Create a new module such as `libraries/core/src/workflows/<command-name>.ts` with:
 
 - typed input options
 - pure helper functions where possible

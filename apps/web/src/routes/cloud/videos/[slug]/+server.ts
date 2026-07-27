@@ -2,6 +2,7 @@ import { error } from "@sveltejs/kit";
 import { getVideoCorpus } from "$lib/server/corpus";
 import { createReadStream, statSync } from "node:fs";
 import { Readable } from "node:stream";
+
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ params, request }) => {
@@ -32,10 +33,10 @@ export const GET: RequestHandler = async ({ params, request }) => {
 
     // Common caching headers for both full and partial responses
     const cacheHeaders = {
-      "Cache-Control": "public, max-age=31536000, immutable", // Cache for 1 year
-      ETag: etag,
       "Accept-Ranges": "bytes",
+      "Cache-Control": "public, max-age=31536000, immutable", // Cache for 1 year
       "Content-Type": "video/mp4",
+      ETag: etag,
     };
 
     const range = request.headers.get("range");
@@ -60,23 +61,23 @@ export const GET: RequestHandler = async ({ params, request }) => {
 
     if (start >= totalSize || end >= totalSize || start > end) {
       return new Response(null, {
-        status: 416,
         headers: { "Content-Range": `bytes */${totalSize}` },
+        status: 416,
       });
     }
 
     const chunkLength = end - start + 1;
-    const nodeStream = createReadStream(filePath, { start, end });
+    const nodeStream = createReadStream(filePath, { end, start });
     const webStream = Readable.toWeb(nodeStream);
 
     return new Response(webStream as ReadableStream, {
-      status: 206,
-      statusText: "Partial Content",
       headers: {
         ...cacheHeaders,
-        "Content-Range": `bytes ${start}-${end}/${totalSize}`,
         "Content-Length": chunkLength.toString(),
+        "Content-Range": `bytes ${start}-${end}/${totalSize}`,
       },
+      status: 206,
+      statusText: "Partial Content",
     });
   } catch {
     error(404, "Video not found");
