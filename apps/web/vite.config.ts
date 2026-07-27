@@ -3,12 +3,11 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  // Keep this here so standard Vite systems (like route building) can locate it too
+  envDir: "../../",
   plugins: [
     sveltekit({
       adapter: adapter(),
-      env: {
-        dir: "../../",
-      },
       alias: {
         "@influenca/core": "../../libraries/core/src/index.ts",
       },
@@ -16,8 +15,9 @@ export default defineConfig({
         runes: ({ filename }) =>
           filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
       },
+      env: {
+        dir: "../../",
+      },
     }),
   ],
-  // Keep this here so standard Vite systems (like route building) can locate it too
-  envDir: "../../",
 });
