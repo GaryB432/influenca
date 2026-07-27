@@ -1,17 +1,14 @@
 import { error } from "@sveltejs/kit";
 import { getVideoCorpus } from "$lib/server/corpus";
-import { open } from "node:fs/promises";
-
+import { createReadStream, statSync } from "node:fs";
+import { Readable } from "node:stream";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ params }) => {
   const manifest = await getVideoCorpus();
-
   const { slug } = params;
-
   const videoEntry = manifest[slug];
   const videoEntryKeys = Object.keys(videoEntry.video ?? {});
-
   const mp4name = videoEntryKeys.at(0);
 
   if (!mp4name) {
@@ -21,19 +18,19 @@ export const GET: RequestHandler = async ({ params }) => {
   const filePath = mp4name;
 
   try {
-    const fileHandle = await open(filePath, "r");
-    const stat = await fileHandle.stat();
+    // 1. Get the exact file size synchronously (or asynchronously if preferred)
+    const stats = statSync(filePath);
 
-    // 1. Get the Node web-compatible stream
-    const webStream = fileHandle.readableWebStream();
+    // 2. Create a standard Node read stream
+    const nodeStream = createReadStream(filePath);
 
-    // 2. Pass it directly to Response, casting it to 'any'
-    // This overrides the typing mismatch between Node and the browser
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new Response(webStream as any, {
+    // 3. Convert it to a native Web Stream that SvelteKit completely controls
+    const webStream = Readable.toWeb(nodeStream);
+
+    return new Response(webStream as ReadableStream, {
       headers: {
         "Accept-Ranges": "bytes",
-        "Content-Length": stat.size.toString(),
+        "Content-Length": stats.size.toString(),
         "Content-Type": "video/mp4",
       },
     });
