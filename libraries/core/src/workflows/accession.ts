@@ -187,9 +187,9 @@ export async function runAccessionWorkflow(
 
     manifest[path_part.name] = videoEntry;
 
-    processedFiles += 1;
-
     try {
+      // all the stuff above
+      processedFiles += 1;
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
