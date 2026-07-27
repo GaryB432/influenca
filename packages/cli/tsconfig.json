@@ -1,13 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "composite": true,
-    "paths": {
+    "compilerOptions": {
+      "composite": true,
+      "paths": {
         "@influenca/core": ["../core/src/index.ts"]
       },
-      "rootDir": "./src",
       "outDir": "./dist",
       "tsBuildInfoFile": "./dist/.tsbuildinfo"
     },
-    "include": ["src/**/*.ts"]
+    "include": ["src/**/*.ts", "../core/src/**/*.ts"]
 }
