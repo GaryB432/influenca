@@ -2,11 +2,12 @@ import { console_wrapper as coolsole } from "@influenca/shared";
 import fs from "node:fs";
 import path, { join } from "node:path";
 
-import { color256, summaryTone } from "../color";
+import { color256 } from "../color";
 import {
-  parseManifest,
+  type Manifest,
   type Transcription,
   type TranscriptionSegment,
+  type VideoStatisticalBlock,
 } from "../index";
 import * as gbfs from "../shims/fs";
 
@@ -39,84 +40,96 @@ export async function runAnalyzeWorkflow(
     throw new Error(`No manifest found at ${manifestPath}.`);
   }
 
-  const rawManifest = fs.readFileSync(manifestPath, "utf8");
-  const manifest = parseManifest(rawManifest);
-  const entries = Object.values(manifest);
+  const manifest = gbfs.readJSONSync<Manifest>(manifestPath, "utf-8");
+  const manifest_keys = Object.keys(manifest);
 
   let totalDurationSeconds = 0;
   let totalFrames = 0;
   let withStatsCount = 0;
   let totalWords = 0;
 
-  for (const entry of entries) {
-    if (entry.transcript) {
-      if (entry.transcript.segments) {
-        const segs = gbfs.readJSONSync<Array<TranscriptionSegment>>(
-          join(options.inDir, entry.transcript.segments),
-        );
-        const text = segs.map((s) => s.text).join("\n");
-        const words = text.split(/\s+/).length;
-        totalWords += words;
-        if (!options.minimal) {
-          const colorful = segs.map((s) => color256(7, s.text)).join("\n");
+  const primaryLanguage = "english";
 
-          coolsole.log(
-            `${summaryTone.label("Language")}: ${summaryTone.number(entry.transcript.meta.language)}`,
-          );
-          coolsole.log(colorful);
-        }
-      }
-      // const segments = gbfs.readJSONSync<Array<TranscriptionSegment>>(
-      //   join(options.inDir, entry.transcript.segments),
-      // );
-    }
-    if (entry.video) {
-      const [firstAndOnlyVideo] = Object.values(entry.video);
-
-      if (firstAndOnlyVideo) {
-        withStatsCount += 1;
-        totalFrames += firstAndOnlyVideo.stats.frames;
-        totalDurationSeconds += firstAndOnlyVideo.stats.duration_seconds;
-      }
-    }
+  function isPrimaryLanguage(l: string) {
+    return l === primaryLanguage;
   }
 
-  // for (const entry of entries) {
-  //   // const e: VideoEntry = {
-  //   //   transcript: undefined,
-  //   //   video: { adsf: { stats: {} } },
-  //   // };
+  function languageConsoleLine(lang: string): string {
+    return color256(isPrimaryLanguage(lang) ? 2 : 241, "language")
+      .concat("  : ")
+      .concat(color256(isPrimaryLanguage(lang) ? 10 : 241, lang));
+  }
 
-  //   // if (!e.video) {
-  //   //   continue;
-  //   // }
+  for (const manifest_key of manifest_keys) {
+    const entry = manifest[manifest_key];
+    if (!entry) {
+      continue;
+    }
 
-  //   const e =
+    const [mp4name] = Object.keys(entry.video);
 
-  //   const statsBlock = Object.values(e.video).at(0);
+    if (!mp4name) {
+      throw new Error("tbd");
+    }
+    const videoStats = entry.video[mp4name]!;
 
-  //   if (!statsBlock || !statsBlock.stats) {
-  //     continue;
-  //   }
+    coolsole.log(logForVideoId(mp4name, videoStats));
 
-  //   if (entry.transcript) {
+    // coolsole.log(
+    //   `${summaryTone.label(mp4name)}: ${summaryTone.number(JSON.stringify(videoStats))}`,
+    // );
 
-  //     totalWords += words;
-  //     coolsole.log(text);
-  //     coolsole.log("---");
-  //   }
+    if (entry.transcript && entry.transcript.meta.language) {
+      if (entry.transcript.segments) {
+        const segments = gbfs.readJSONSync<Array<TranscriptionSegment>>(
+          join(options.inDir, entry.transcript.segments),
+        );
+        const text = segments.map((s) => s.text).join("\n");
+        const words = text.split(/\s+/).length;
+        totalWords += words;
 
-  //   withStatsCount += 1;
-  //   totalDurationSeconds += statsBlock.stats.duration_seconds ?? 0;
-  //   totalFrames += Math.trunc(statsBlock.stats.frames ?? 0);
-  // }
+        const { meta } = entry.transcript;
+
+        if (!options.minimal) {
+          const mutedSegments = segments
+            .map((seg) =>
+              color256(isPrimaryLanguage(meta.language) ? 15 : 241, seg.text),
+            )
+            .join("\n");
+
+          console.log(languageConsoleLine(entry.transcript.meta.language));
+
+          // coolsole.log(labeledLan);
+          coolsole.log(mutedSegments);
+        }
+      }
+    } else {
+      coolsole.log(logForNoTranscript());
+    }
+
+    withStatsCount += 1;
+    totalFrames += videoStats.stats.frames;
+    totalDurationSeconds += videoStats.stats.duration_seconds;
+  }
 
   return {
     manifestPath,
     totalDurationSeconds,
     totalFrames,
     totalWords,
-    videoCount: entries.length,
+    videoCount: manifest_keys.length,
     withStatsCount,
   };
+}
+function logForNoTranscript(): string {
+  return color256(241, "No Transcript");
+}
+
+function logForVideoId(
+  mp4name: string,
+  videoStats: { stats: VideoStatisticalBlock },
+) {
+  return color256(10, mp4name)
+    .concat("  : ")
+    .concat(color256(10, `${videoStats.stats.duration_seconds}s`));
 }
