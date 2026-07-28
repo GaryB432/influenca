@@ -14,6 +14,7 @@ import * as gbfs from "../shims/fs";
 export type AnalyzeWorkflowOptions = {
   inDir: string;
   minimal: boolean;
+  primaryLanguage: string | undefined;
 };
 
 export type AnalyzeWorkflowResult = {
@@ -48,16 +49,14 @@ export async function runAnalyzeWorkflow(
   let withStatsCount = 0;
   let totalWords = 0;
 
-  const primaryLanguage = "english";
-
-  function isPrimaryLanguage(l: string) {
-    return l === primaryLanguage;
-  }
-
-  function languageConsoleLine(lang: string): string {
-    return color256(isPrimaryLanguage(lang) ? 2 : 241, "language")
+  function languageConsoleLine(
+    lang: string,
+    primeLang: string | undefined,
+  ): string {
+    const ipl = Boolean(options.primaryLanguage) ? lang === primeLang : true;
+    return color256(ipl ? 2 : 241, "language")
       .concat("  : ")
-      .concat(color256(isPrimaryLanguage(lang) ? 10 : 241, lang));
+      .concat(color256(ipl ? 10 : 241, lang));
   }
 
   for (const manifest_key of manifest_keys) {
@@ -88,16 +87,21 @@ export async function runAnalyzeWorkflow(
         const words = text.split(/\s+/).length;
         totalWords += words;
 
-        const { meta } = entry.transcript;
-
         if (!options.minimal) {
+          const is_language_dim = options.primaryLanguage
+            ? entry.transcript.meta.language !== options.primaryLanguage
+            : false;
+
           const mutedSegments = segments
-            .map((seg) =>
-              color256(isPrimaryLanguage(meta.language) ? 15 : 241, seg.text),
-            )
+            .map((seg) => color256(is_language_dim ? 241 : 15, seg.text))
             .join("\n");
 
-          console.log(languageConsoleLine(entry.transcript.meta.language));
+          console.log(
+            languageConsoleLine(
+              entry.transcript.meta.language,
+              options.primaryLanguage,
+            ),
+          );
 
           // coolsole.log(labeledLan);
           coolsole.log(mutedSegments);
