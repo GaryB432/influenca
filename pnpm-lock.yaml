@@ -134,6 +134,9 @@ importers:
 
   libraries/core:
     dependencies:
+      '@influenca/shared':
+        specifier: workspace:^
+        version: link:../shared
       '@lumen-labs-dev/whisper-node':
         specifier: ^0.4.1
         version: 0.4.1

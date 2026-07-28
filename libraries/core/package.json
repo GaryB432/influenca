@@ -28,6 +28,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@influenca/shared": "workspace:^",
     "@lumen-labs-dev/whisper-node": "^0.4.1",
     "cli-progress": "^3.12.0",
     "fluent-ffmpeg": "^2.1.3",
