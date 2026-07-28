@@ -53,7 +53,7 @@ export async function runAnalyzeWorkflow(
     lang: string,
     primeLang: string | undefined,
   ): string {
-    const ipl = Boolean(options.primaryLanguage) ? lang === primeLang : true;
+    const ipl = options.primaryLanguage ? lang === primeLang : true;
     return color256(ipl ? 2 : 241, "language")
       .concat("  : ")
       .concat(color256(ipl ? 10 : 241, lang));
