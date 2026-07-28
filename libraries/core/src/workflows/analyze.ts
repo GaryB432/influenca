@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import { greet } from "@influenca/shared";
 import fs from "node:fs";
 import path, { join } from "node:path";
-import { greet } from "@influenca/shared";
 
 import {
   parseManifest,
