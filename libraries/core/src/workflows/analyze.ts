@@ -1,14 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-import { greet } from "@influenca/shared";
+import { console_wrapper as coolsole } from "@influenca/shared";
 import fs from "node:fs";
 import path, { join } from "node:path";
 
+import { color256, summaryTone } from "../color";
 import {
   parseManifest,
   type Transcription,
   type TranscriptionSegment,
-  type VideoEntry,
 } from "../index";
 import * as gbfs from "../shims/fs";
 
@@ -53,21 +51,27 @@ export async function runAnalyzeWorkflow(
   for (const entry of entries) {
     if (entry.transcript) {
       if (entry.transcript.segments) {
-        const segments = gbfs.readJSONSync<Array<TranscriptionSegment>>(
+        const segs = gbfs.readJSONSync<Array<TranscriptionSegment>>(
           join(options.inDir, entry.transcript.segments),
         );
-        const text = segments.map((s) => s.text).join("\n");
+        const text = segs.map((s) => s.text).join("\n");
         const words = text.split(/\s+/).length;
         totalWords += words;
+        if (!options.minimal) {
+          const colorful = segs.map((s) => color256(7, s.text)).join("\n");
+
+          coolsole.log(
+            `${summaryTone.label("Language")}: ${summaryTone.number(entry.transcript.meta.language)}`,
+          );
+          coolsole.log(colorful);
+        }
       }
       // const segments = gbfs.readJSONSync<Array<TranscriptionSegment>>(
-      //       join(options.inDir, entry.transcript.segments),
-      //     );
-      //     const text = segments.map((s) => s.text).join("\n");
-      //     const words = text.split(/\s+/).length;
+      //   join(options.inDir, entry.transcript.segments),
+      // );
     }
     if (entry.video) {
-      const firstAndOnlyVideo = Object.values(entry.video).at(0);
+      const [firstAndOnlyVideo] = Object.values(entry.video);
 
       if (firstAndOnlyVideo) {
         withStatsCount += 1;
@@ -98,8 +102,8 @@ export async function runAnalyzeWorkflow(
   //   if (entry.transcript) {
 
   //     totalWords += words;
-  //     console.log(text);
-  //     console.log("---");
+  //     coolsole.log(text);
+  //     coolsole.log("---");
   //   }
 
   //   withStatsCount += 1;
@@ -116,4 +120,3 @@ export async function runAnalyzeWorkflow(
     withStatsCount,
   };
 }
-export { type Transcription };
