@@ -43,3 +43,15 @@ To prevent "missing argument" errors, commands should define arguments as option
 - `libraries/core`: Core business logic, utilities, and workflow implementations.
 - `libraries/shared`: Shared cross-project helpers and types.
 - `fixtures/`: Sample media and manifests used for development and testing.
+
+## 🧭 Monorepo Build Policy (Source-First)
+
+Use a source-first workflow by default.
+
+- `lint`, `typecheck`, and `test` should run against source across the workspace.
+- Library packages are internal-first and should not require `dist` outputs for local development.
+- App packages are the primary build targets; their build artifacts are the required outputs.
+- Library build scripts may exist, but they are optional capabilities (for packaging/release scenarios), not prerequisites for app typechecking or tests.
+- Performance optimizations (incremental caches, dist-first dependency contracts, extra declaration build steps) should be added only after a measured slowdown.
+
+Decision rule: prioritize clarity and predictable development flow over premature build optimizations.

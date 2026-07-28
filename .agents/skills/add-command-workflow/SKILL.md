@@ -9,6 +9,11 @@ Use this whenever a user asks for a new command (for example `analyze`, `accessi
 
 ## 0. Gather the command contract first
 
+Before making command changes, assume a source-first workspace workflow:
+
+1. Local typecheck/test should run from package source, not from required library `dist` artifacts.
+2. Library build outputs are optional for local development unless explicitly required for release packaging.
+
 Before editing code, confirm and restate:
 
 1. Command name and positional args.
