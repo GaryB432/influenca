@@ -58,8 +58,3 @@ export type VideoStatisticalBlock = {
   frames: number;
   interestScore?: number;
 };
-
-export function parseManifest(rawManifest: string): Manifest {
-  // TODO validate with a proper json schema 7
-  return JSON.parse(rawManifest) as Manifest;
-}
