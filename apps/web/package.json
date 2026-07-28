@@ -6,11 +6,36 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "test": "node --test",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "typecheck": "pnpm run check",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:unit": "vitest --config vitest.config.ts",
+    "test": "npm run test:unit -- --run"
+  },
+  "dependencies": {
+    "@influenca/core": "workspace:^",
+    "@influenca/shared": "workspace:^"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@sveltejs/adapter-node": "^5.5.4",
+    "@sveltejs/kit": "^2.63.0",
+    "@sveltejs/vite-plugin-svelte": "^7.1.2",
+    "@types/node": "^24",
+    "@vitest/browser-playwright": "catalog:",
+    "eslint": "^10.4.1",
+    "eslint-plugin-svelte": "^3.19.0",
+    "globals": "^17.6.0",
+    "playwright": "^1.60.0",
+    "svelte": "^5.56.1",
+    "svelte-check": "^4.6.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.1",
+    "vite": "^8.0.16",
+    "vitest": "catalog:",
+    "vitest-browser-svelte": "^2.1.1"
   }
 }

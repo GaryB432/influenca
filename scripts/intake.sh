@@ -57,15 +57,15 @@ rsync -rtv --progress --include="*/" --include="*.AVI" --include="*.avi" --exclu
 
 rm -rf "$MOUNT_POINT/AUDIO" "$MOUNT_POINT/DCIMA"
 
-echo "2026-01-01 00:00:00 N" > "$MOUNT_POINT/TIME.TXT"
+echo "2026-01-01 00:00:01 N" > "$MOUNT_POINT/TIME.TXT"
 # sudo umount /mnt/rushmore
 
 ls "$DEST_DIR"
 
 echo "✅ Intake complete!"
 
-printf "✨ %s %s %s\n" \
+printf "✨ Next Steps: %s %s %s\n" \
   "$(tput setaf 208)node" \
-  "$(tput setaf 81)packages/cli/dist/bin.mjs accession" \
+  "$(tput setaf 81)apps/cli/dist/bin.mjs accession" \
   "$(tput setaf 121)$DEST_DIR$(tput sgr0)"
 

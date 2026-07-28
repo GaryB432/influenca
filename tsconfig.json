@@ -1,12 +1,14 @@
 {
-  "extends": "./tsconfig.base.json",
   "files": [],
   "references": [
     {
-      "path": "./packages/core"
+      "path": "./apps/cli"
     },
     {
-      "path": "./packages/cli"
+      "path": "./libraries/core"
+    },
+    {
+      "path": "./libraries/shared"
     }
   ]
 }

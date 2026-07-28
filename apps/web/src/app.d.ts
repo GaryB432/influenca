@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
+import type { TranscriptionSegment, VideoEntry } from "@influenca/core";
 
 declare global {
   namespace App {
     interface Locals {
       user: null | User;
     }
-    interface PageData {}
-    interface PageState {}
-    interface Platform {}
+    // interface PageData {}
+    // interface PageState {}
+    // interface Platform {}
     interface User {
       email: string;
       id: string;

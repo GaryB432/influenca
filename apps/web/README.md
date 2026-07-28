@@ -1,24 +1,75 @@
-# Influenca Web
+# @influenca/web
 
-## Developing
+SvelteKit web app for browsing generated cloud artifacts (videos and transcripts).
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Prerequisites
 
-```sh
-npm run dev
+Install workspace dependencies from the repository root:
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```bash
+pnpm install
 ```
 
-## Building
+## Development
 
-To create a production version of your app:
+From repository root:
 
-```sh
-npm run build
+```bash
+pnpm --filter @influenca/web run dev
 ```
 
-You can preview the production build with `npm run preview`.
+Or from this directory:
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```bash
+pnpm run dev
+```
+
+## Build
+
+From repository root:
+
+```bash
+pnpm --filter @influenca/web run build
+```
+
+Or from this directory:
+
+```bash
+pnpm run build
+```
+
+Note: this project uses `@sveltejs/adapter-node` and emits a Node-compatible server build.
+
+## Preview
+
+From this directory:
+
+```bash
+pnpm run preview
+```
+
+## Quality Checks
+
+- Type and Svelte checks:
+
+```bash
+pnpm run check
+```
+
+- Lint:
+
+```bash
+pnpm run lint
+```
+
+- Unit tests:
+
+```bash
+pnpm run test
+```
+
+From repository root, you can run all workspace checks with:
+
+```bash
+pnpm run check
+```

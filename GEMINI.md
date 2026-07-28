@@ -26,17 +26,32 @@ To prevent "missing argument" errors, commands should define arguments as option
 
 - **Command Pattern**: All CLI commands must implement the `CliCommand<TOptions>` interface defined in `command-contract.ts`.
 - **Structure**:
-  - Implementations: `packages/cli/src/commands/*.ts`
-  - Orchestration: `packages/cli/src/main.ts`
+  - Implementations: `apps/cli/src/app/commands/*.ts`
+  - Orchestration: `apps/cli/src/app/main.ts`
 - **Expanding the CLI**: When implementing a new command, activate the `add-command-workflow` skill to ensure consistent registration and wiring.
 
 ### Validation & Quality
 
 - **Linting**: `pnpm run lint` is a mandatory check. No task is complete until the linter passes.
-- **Build Verification**: Changes to the CLI must be verified with `pnpm --filter @influenca/cli run build`.
+- **Build Verification**: Changes to the CLI must be verified with `pnpm --filter @influenca/cli... run build`.
+- **CLI Smoke Verification**: Validate end-to-end behavior with `pnpm run build && ./scripts/e2e-all.sh`.
 
 ## 📦 Workspace Structure
 
-- `packages/cli`: The entry point and command orchestration.
-- `packages/core`: Core business logic, utilities, and shared types.
-- `fixtures/`: Sample data (e.g., `influenca.json`) used for development and testing.
+- `apps/cli`: CLI entry point and command orchestration.
+- `apps/web`: SvelteKit web app.
+- `libraries/core`: Core business logic, utilities, and workflow implementations.
+- `libraries/shared`: Shared cross-project helpers and types.
+- `fixtures/`: Sample media and manifests used for development and testing.
+
+## 🧭 Monorepo Build Policy (Source-First)
+
+Use a source-first workflow by default.
+
+- `lint`, `typecheck`, and `test` should run against source across the workspace.
+- Library packages are internal-first and should not require `dist` outputs for local development.
+- App packages are the primary build targets; their build artifacts are the required outputs.
+- Library build scripts may exist, but they are optional capabilities (for packaging/release scenarios), not prerequisites for app typechecking or tests.
+- Performance optimizations (incremental caches, dist-first dependency contracts, extra declaration build steps) should be added only after a measured slowdown.
+
+Decision rule: prioritize clarity and predictable development flow over premature build optimizations.

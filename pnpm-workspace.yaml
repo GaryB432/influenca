@@ -1,27 +1,13 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - 'apps/cli'
+  - 'apps/web'
+  - 'libraries/core'
+  - 'libraries/shared'
+
+catalog:
+  vitest: ^4.1.10
+  '@vitest/browser-playwright': ^4.1.10
 
 allowBuilds:
   ffmpeg-static: true
   esbuild: true
-
-catalog:
-  '@clack/prompts': ^1.7.0
-  '@types/fluent-ffmpeg': ^2.1.28
-  openai: ^5.0.0
-  'fluent-ffmpeg': ^2.1.3
-  '@eslint/js': ^10.0.1
-  '@eslint/json': ^2.0.1
-  '@eslint/markdown': ^8.0.3
-  '@types/node': ^24.13.2
-  '@typescript-eslint/parser': latest
-  cac: ^7.0.0
-  cli-progress: "^3.12.0"
-  eslint-plugin-import: latest
-  eslint: latest
-  expect": ^30.4.1
-  globals: latest
-  tsdown: latest
-  typescript-eslint: latest
-  typescript: ^6

@@ -10,7 +10,7 @@ on:
     - cron: "45 21 * * 3"
 
 env:
-  INFLUENCA_MEDIA: ~/pictures-and-videos
+  INFLUENCA_MEDIA_DIR: ~/pictures-and-videos
   OTHER: false
 
 jobs:
@@ -26,8 +26,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 10
-          run_install: true
+          version: 11.9.0
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
@@ -35,8 +34,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "pnpm"
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @influenca/web exec playwright install --with-deps chromium
+
       - name: Run Lint
         run: pnpm run lint
 
       - name: Run Build/Test
-        run: pnpm test
+        run: pnpm run typecheck && pnpm test

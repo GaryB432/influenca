@@ -7,7 +7,12 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["**/dist/**", "**/node_modules/**", "**/.svelte-kit/**"],
+    ignores: [
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/.svelte-kit/**",
+      "**/build/**",
+    ],
   },
 
   {
@@ -17,6 +22,7 @@ export default tseslint.config(
       perfectionist.configs["recommended-alphabetical"],
     ],
     files: ["**/*.{js,mjs,ts}"],
+    ignores: ["**/eslint.config.{js,mjs,ts}"],
     rules: {
       "@typescript-eslint/no-restricted-imports": [
         "error",
@@ -37,7 +43,7 @@ export default tseslint.config(
   },
 
   {
-    files: ["packages/core/**/*.ts"],
+    files: ["libraries/core/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -49,7 +55,7 @@ export default tseslint.config(
             },
             {
               message:
-                "Core cannot depend on cac; keep CLI concerns in packages/cli.",
+                "Core cannot depend on cac; keep CLI concerns in apps/cli.",
               name: "cac",
             },
           ],
@@ -60,7 +66,7 @@ export default tseslint.config(
   },
 
   {
-    files: ["packages/cli/src/commands/**/*.ts"],
+    files: ["apps/core/src/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -68,7 +74,7 @@ export default tseslint.config(
           paths: [
             {
               message:
-                "Command files must stay UI-agnostic; use @clack/prompts in packages/cli/src/main.ts.",
+                "Command files must stay UI-agnostic; use @clack/prompts in apps/cli entry modules.",
               name: "@clack/prompts",
             },
           ],

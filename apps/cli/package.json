@@ -1,0 +1,32 @@
+{
+  "name": "@influenca/cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/bin.mjs",
+  "scripts": {
+    "build": "tsdown --config tsdown.config.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --max-warnings=0",
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "bin": {
+    "influenca": "./dist/bin.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.9.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "dependencies": {
+    "@clack/prompts": "^1.7.0",
+    "@influenca/core": "workspace:^",
+    "@influenca/shared": "workspace:^",
+    "cac": "^7.0.0"
+  }
+}

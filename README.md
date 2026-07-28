@@ -23,16 +23,51 @@ move `avi` files from your Windows `G:` drive to a time-stamped temporary folder
 pnpm install
 ```
 
-- Run the unit tests:
+### Source-first monorepo baseline
+
+The workspace is source-first for local development.
+
+- Typecheck and tests run from source across workspace packages.
+- Libraries (`core`, `shared`) are internal TypeScript packages first; `dist` output is optional and disposable.
+- Apps (`cli`, `web`) are build targets; app builds are the primary required artifacts.
+- Build speed optimizations (`dist`-first workflows, `.tsbuildinfo` tuning, declaration bundling requirements) are optional and should only be introduced after measuring a real bottleneck.
+
+In practice: use `pnpm run lint`, `pnpm run typecheck`, and `pnpm run test` as the default feedback loop. Run `pnpm run build` when you need runnable artifacts.
+
+- Run the full workspace checks:
 
 ```bash
-pnpm run test
+pnpm run check
 ```
 
-- Build the library:
+- Build apps and libraries to dist:
 
 ```bash
 pnpm run build
+```
+
+- Run CLI end-to-end smoke test:
+
+```bash
+pnpm run build && ./scripts/e2e-all.sh
+```
+
+- Typecheck all projects:
+
+```bash
+pnpm run typecheck
+```
+
+- Lint all projects:
+
+```bash
+pnpm run lint
+```
+
+- Test all projects:
+
+```bash
+pnpm run test
 ```
 
 ## Speech-to-Text Transcription

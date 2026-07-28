@@ -1,3 +1,5 @@
+apps/web/.svelte-kit
+apps/web/build
 fixtures/
 pnpm-*.yaml
 
