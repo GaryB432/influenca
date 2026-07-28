@@ -22,7 +22,7 @@ export default tseslint.config(
       perfectionist.configs["recommended-alphabetical"],
     ],
     files: ["**/*.{js,mjs,ts}"],
-    ignores: ["**/eslint.config.mjs"],
+    ignores: ["**/eslint.config.{js,mjs,ts}"],
     rules: {
       "@typescript-eslint/no-restricted-imports": [
         "error",

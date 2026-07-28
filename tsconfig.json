@@ -5,9 +5,6 @@
       "path": "./apps/cli"
     },
     {
-      "path": "./apps/web"
-    },
-    {
       "path": "./libraries/core"
     },
     {
