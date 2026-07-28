@@ -26,6 +26,7 @@
   "dependencies": {
     "@clack/prompts": "^1.7.0",
     "@influenca/core": "workspace:^",
+    "@influenca/shared": "workspace:^",
     "cac": "^7.0.0"
   }
 }
