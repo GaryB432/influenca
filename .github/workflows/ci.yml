@@ -10,7 +10,7 @@ on:
     - cron: "45 21 * * 3"
 
 env:
-  INFLUENCA_MEDIA: ~/pictures-and-videos
+  INFLUENCA_MEDIA_DIR: ~/pictures-and-videos
   OTHER: false
 
 jobs:

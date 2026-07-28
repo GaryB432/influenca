@@ -123,7 +123,7 @@ async function resolveAccessionOutDir(options: {
   interactive: boolean;
   outDir: string;
 }): Promise<string | symbol> {
-  const envOutDir = process.env.INFLUENCA_DIR;
+  const envOutDir = process.env.INFLUENCA_MEDIA_DIR;
   const candidate = options.outDir ?? envOutDir;
 
   if (candidate) {
@@ -192,7 +192,7 @@ async function runAccession(
 
   if (isCancel(finalOutDir)) {
     throwValidationError(
-      "outDir is required in --no-interactive mode. Provide --out-dir or INFLUENCA_DIR.",
+      "outDir is required in --no-interactive mode. Provide --out-dir or INFLUENCA_MEDIA_DIR.",
     );
   }
 

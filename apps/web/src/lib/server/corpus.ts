@@ -1,10 +1,16 @@
 import type { Manifest, VideoStatisticalBlock } from "@influenca/core";
 
-import { INFLUENCA_DIR } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const CORPUS_DIR = path.join(INFLUENCA_DIR, "20260727T203224Z");
+const corpusRoot = env.INFLUENCA_MEDIA_DIR;
+
+if (!corpusRoot) {
+  throw new Error("INFLUENCA_MEDIA_DIR is required.");
+}
+
+const CORPUS_DIR = path.join(corpusRoot, "20260727T203224Z");
 
 let cachedCorpus: Manifest;
 
