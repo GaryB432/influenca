@@ -8,9 +8,6 @@ export default defineConfig({
   plugins: [
     sveltekit({
       adapter: adapter(),
-      alias: {
-        "@influenca/core": "../../libraries/core/src/index.ts",
-      },
       compilerOptions: {
         runes: ({ filename }) =>
           filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
