@@ -4,6 +4,7 @@
   import { error } from "@sveltejs/kit";
   import { onMount } from "svelte";
   import type { TranscriptionResponse } from "../app";
+  import type { TranscriptionSegment } from "@influenca/core";
 
   let trackElement = $state<HTMLTrackElement | null>(null);
 
@@ -14,8 +15,9 @@
   let selectedVideoSrc = $derived(`cloud/videos/${selectedSlug}`);
   let selectedTrack = $derived(`cloud/transcripts/${selectedSlug}`);
 
-  async function slugSelected() {
+  let segments: TranscriptionSegment[] = $state([]);
 
+  async function slugSelected() {
     if (selectedTrack) {
       const response = await fetch(selectedTrack);
 
@@ -25,13 +27,11 @@
 
       const deets = (await response.json()) as TranscriptionResponse;
 
-      const cues = deets.vtt
+      segments = deets.vtt;
+
+      const cues = segments
         .map(segmentToCue)
         .map((c) => new VTTCue(c.startTime, c.endTime, c.text));
-
-      cues.forEach((cue) => {
-        console.log(cue);
-      });
 
       if (trackElement) {
         const textTrack = trackElement.track;
@@ -76,6 +76,12 @@
       <option value={slug}>{slug}</option>
     {/each}
   </select>
+
+  <ul>
+    {#each segments as segment}
+      <li>{segment.text}</li>
+    {/each}
+  </ul>
 {:else}
   <p>Video content is unavailable atm</p>
 {/if}
