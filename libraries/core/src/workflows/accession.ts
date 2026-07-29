@@ -1,18 +1,10 @@
 import type { FfprobeData, FfprobeStream } from "fluent-ffmpeg";
 
+import { console_wrapper as coolsole } from "@influenca/shared";
 import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import OpenAI from "openai";
-
-const console_wrapper = {
-  error(...s: string[]) {
-    console.error(s);
-  },
-  log(...s: string[]) {
-    console.log(s);
-  },
-};
 
 import type {
   Manifest,
@@ -68,7 +60,7 @@ export async function runAccessionWorkflow(
 
   const every_media_parts = files
     .map((f) => path.parse(f))
-    .filter((p) => p.ext.toLowerCase().match(/\.(avi|mp4)$/));
+    .filter((p) => p.ext.toLowerCase().match(/\.(avi|mp4|wav)$/));
 
   const media_parts = every_media_parts.slice(0, limit);
 
@@ -192,7 +184,7 @@ export async function runAccessionWorkflow(
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
-      console_wrapper.error(message);
+      coolsole.error(message);
       // progress.message('nope')
     }
     progress.advance(
@@ -225,7 +217,7 @@ async function probeVideo(
 ): Promise<FfprobeData> {
   return new Promise<FfprobeData>((resolve, reject) => {
     if (drier) {
-      console_wrapper.log("probeVideo");
+      coolsole.log("probeVideo");
       setTimeout(() => {
         resolve({
           chapters: [],
@@ -252,7 +244,7 @@ async function transcodeToMp4(
 ): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     if (drier) {
-      console_wrapper.log(
+      coolsole.log(
         JSON.stringify({
           inputPath,
           m: "transcodeToMp4",
@@ -295,7 +287,7 @@ async function transcribeAudio(
 
   await new Promise<void>((resolve, reject) => {
     if (drier) {
-      console_wrapper.log("transcribeAudio");
+      coolsole.log("transcribeAudio");
       setTimeout(() => {
         resolve();
       }, 100);

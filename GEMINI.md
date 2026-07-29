@@ -49,9 +49,16 @@ To prevent "missing argument" errors, commands should define arguments as option
 Use a source-first workflow by default.
 
 - `lint`, `typecheck`, and `test` should run against source across the workspace.
-- Library packages are internal-first and should not require `dist` outputs for local development.
-- App packages are the primary build targets; their build artifacts are the required outputs.
+- Library packages are internal-first for local checks; runtime package exports should target built JS artifacts.
+- App packages are the primary build targets; their build artifacts are the required runtime outputs.
 - Library build scripts may exist, but they are optional capabilities (for packaging/release scenarios), not prerequisites for app typechecking or tests.
 - Performance optimizations (incremental caches, dist-first dependency contracts, extra declaration build steps) should be added only after a measured slowdown.
+- Third-party dependencies should be treated as external runtime dependencies from `node_modules` unless there is a deliberate, documented bundling requirement.
+
+### Runtime vs Web Dev
+
+- Runtime (`cli`, CI, release builds): resolve workspace libraries through package exports to built JS.
+- Web dev (`apps/web` HMR): alias workspace libraries to source entrypoints for immediate feedback.
+- Keep dependency ownership strict: each package declares direct imports only.
 
 Decision rule: prioritize clarity and predictable development flow over premature build optimizations.

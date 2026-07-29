@@ -22,6 +22,7 @@ type AccessionOptions = {
 } & CommonInteractiveOptions;
 
 type AnalyzeOptions = {
+  language: string | undefined;
   minimal: boolean;
 };
 
@@ -65,8 +66,14 @@ export async function main(rawArguments: string[]): Promise<void> {
 
   cli
     .command("analyze [inDir]", "Summarize .influenca.json in a directory")
-    .option("--minimal", "Print only video-count summary", { default: true })
+    .option("--minimal", "Print only video-count summary", { default: false })
+    .option(
+      "-l, --language <value>",
+      "Highlight transcripts in your preferred language",
+      { default: "english" },
+    )
     .example("analyze ./tmp/processed")
+    .example("analyze ./tmp/processed --language spanish")
     .example("analyze ./tmp/processed --no-minimal")
     .action(async (inDir: string | undefined, options: AnalyzeOptions) => {
       await runAnalyze(inDir, options);
@@ -235,7 +242,9 @@ async function runAnalyze(
   const message = await analyzeCommand.execute({
     args: [inDir],
     options: {
+      language: options.language,
       minimal: options.minimal ?? true,
+
     },
   });
 

@@ -28,9 +28,16 @@ pnpm install
 The workspace is source-first for local development.
 
 - Typecheck and tests run from source across workspace packages.
-- Libraries (`core`, `shared`) are internal TypeScript packages first; `dist` output is optional and disposable.
+- Libraries (`core`, `shared`) are internal TypeScript packages first for local checks, and runtime package exports point to built JavaScript in `dist`.
 - Apps (`cli`, `web`) are build targets; app builds are the primary required artifacts.
-- Build speed optimizations (`dist`-first workflows, `.tsbuildinfo` tuning, declaration bundling requirements) are optional and should only be introduced after measuring a real bottleneck.
+- Third-party dependencies are consumed from `node_modules` (external), not bundled into app artifacts by default.
+- Build speed optimizations (`.tsbuildinfo`, incremental tuning, extra orchestration) are optional and should only be introduced after measuring a real bottleneck.
+
+### Two-mode contract
+
+- Runtime mode (`cli`/CI/prod): apps import library package runtime exports (`dist/*.mjs`).
+- Web dev mode (HMR): `apps/web` aliases workspace libs to `src/index.ts` for instant source edits.
+- Dependency ownership: each package declares only what it directly imports in source.
 
 In practice: use `pnpm run lint`, `pnpm run typecheck`, and `pnpm run test` as the default feedback loop. Run `pnpm run build` when you need runnable artifacts.
 

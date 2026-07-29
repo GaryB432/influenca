@@ -7,6 +7,7 @@ import {
 import { type CliCommand, type ParsedCommandArgs } from "../command-contract";
 
 export type AnalyzeCommandOptions = {
+  language: string | undefined;
   minimal: boolean;
 };
 
@@ -25,6 +26,7 @@ export class AnalyzeCommand implements CliCommand<AnalyzeCommandOptions> {
     const result = await runAnalyzeWorkflow({
       inDir,
       minimal: input.options.minimal,
+      primaryLanguage: input.options.language,
     });
 
     return formatAnalyzeSummary(result, input.options.minimal);

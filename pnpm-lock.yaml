@@ -74,9 +74,6 @@ importers:
       '@influenca/core':
         specifier: workspace:^
         version: link:../../libraries/core
-      '@influenca/shared':
-        specifier: workspace:^
-        version: link:../../libraries/shared
       cac:
         specifier: ^7.0.0
         version: 7.0.0

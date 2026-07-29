@@ -1,20 +1,20 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-import { greet } from "@influenca/shared";
+import { console_wrapper as coolsole } from "@influenca/shared";
 import fs from "node:fs";
 import path, { join } from "node:path";
 
+import { color256 } from "../color";
 import {
-  parseManifest,
+  type Manifest,
   type Transcription,
   type TranscriptionSegment,
-  type VideoEntry,
+  type VideoStatisticalBlock,
 } from "../index";
 import * as gbfs from "../shims/fs";
 
 export type AnalyzeWorkflowOptions = {
   inDir: string;
   minimal: boolean;
+  primaryLanguage: string | undefined;
 };
 
 export type AnalyzeWorkflowResult = {
@@ -41,17 +41,44 @@ export async function runAnalyzeWorkflow(
     throw new Error(`No manifest found at ${manifestPath}.`);
   }
 
-  const rawManifest = fs.readFileSync(manifestPath, "utf8");
-  const manifest = parseManifest(rawManifest);
-  const entries = Object.values(manifest);
+  const manifest = gbfs.readJSONSync<Manifest>(manifestPath, "utf-8");
+  const manifest_keys = Object.keys(manifest);
 
   let totalDurationSeconds = 0;
   let totalFrames = 0;
   let withStatsCount = 0;
   let totalWords = 0;
 
-  for (const entry of entries) {
-    if (entry.transcript) {
+  function languageConsoleLine(
+    lang: string,
+    primeLang: string | undefined,
+  ): string {
+    const ipl = options.primaryLanguage ? lang === primeLang : true;
+    return color256(ipl ? 2 : 241, "language")
+      .concat("  : ")
+      .concat(color256(ipl ? 10 : 241, lang));
+  }
+
+  for (const manifest_key of manifest_keys) {
+    const entry = manifest[manifest_key];
+    if (!entry) {
+      continue;
+    }
+
+    const [mp4name] = Object.keys(entry.video);
+
+    if (!mp4name) {
+      throw new Error("tbd");
+    }
+    const videoStats = entry.video[mp4name]!;
+
+    coolsole.log(logForVideoId(mp4name, videoStats));
+
+    // coolsole.log(
+    //   `${summaryTone.label(mp4name)}: ${summaryTone.number(JSON.stringify(videoStats))}`,
+    // );
+
+    if (entry.transcript && entry.transcript.meta.language) {
       if (entry.transcript.segments) {
         const segments = gbfs.readJSONSync<Array<TranscriptionSegment>>(
           join(options.inDir, entry.transcript.segments),
@@ -59,61 +86,54 @@ export async function runAnalyzeWorkflow(
         const text = segments.map((s) => s.text).join("\n");
         const words = text.split(/\s+/).length;
         totalWords += words;
-      }
-      // const segments = gbfs.readJSONSync<Array<TranscriptionSegment>>(
-      //       join(options.inDir, entry.transcript.segments),
-      //     );
-      //     const text = segments.map((s) => s.text).join("\n");
-      //     const words = text.split(/\s+/).length;
-    }
-    if (entry.video) {
-      const firstAndOnlyVideo = Object.values(entry.video).at(0);
 
-      if (firstAndOnlyVideo) {
-        withStatsCount += 1;
-        totalFrames += firstAndOnlyVideo.stats.frames;
-        totalDurationSeconds += firstAndOnlyVideo.stats.duration_seconds;
+        if (!options.minimal) {
+          const is_language_dim = options.primaryLanguage
+            ? entry.transcript.meta.language !== options.primaryLanguage
+            : false;
+
+          const mutedSegments = segments
+            .map((seg) => color256(is_language_dim ? 241 : 15, seg.text))
+            .join("\n");
+
+          console.log(
+            languageConsoleLine(
+              entry.transcript.meta.language,
+              options.primaryLanguage,
+            ),
+          );
+
+          // coolsole.log(labeledLan);
+          coolsole.log(mutedSegments);
+        }
       }
+    } else {
+      coolsole.log(logForNoTranscript());
     }
+
+    withStatsCount += 1;
+    totalFrames += videoStats.stats.frames;
+    totalDurationSeconds += videoStats.stats.duration_seconds;
   }
-
-  // for (const entry of entries) {
-  //   // const e: VideoEntry = {
-  //   //   transcript: undefined,
-  //   //   video: { adsf: { stats: {} } },
-  //   // };
-
-  //   // if (!e.video) {
-  //   //   continue;
-  //   // }
-
-  //   const e =
-
-  //   const statsBlock = Object.values(e.video).at(0);
-
-  //   if (!statsBlock || !statsBlock.stats) {
-  //     continue;
-  //   }
-
-  //   if (entry.transcript) {
-
-  //     totalWords += words;
-  //     console.log(text);
-  //     console.log("---");
-  //   }
-
-  //   withStatsCount += 1;
-  //   totalDurationSeconds += statsBlock.stats.duration_seconds ?? 0;
-  //   totalFrames += Math.trunc(statsBlock.stats.frames ?? 0);
-  // }
 
   return {
     manifestPath,
     totalDurationSeconds,
     totalFrames,
     totalWords,
-    videoCount: entries.length,
+    videoCount: manifest_keys.length,
     withStatsCount,
   };
 }
-export { type Transcription };
+function logForNoTranscript(): string {
+  return color256(241, "No Transcript");
+}
+
+function logForVideoId(
+  mp4name: string,
+  videoStats: { stats: VideoStatisticalBlock },
+) {
+  return color256(10, mp4name)
+    .concat("  : ")
+    .concat(color256(10, `${videoStats.stats.duration_seconds}s`));
+}
