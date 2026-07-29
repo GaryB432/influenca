@@ -60,7 +60,7 @@ export async function runAccessionWorkflow(
 
   const every_media_parts = files
     .map((f) => path.parse(f))
-    .filter((p) => p.ext.toLowerCase().match(/\.(avi|mp4)$/));
+    .filter((p) => p.ext.toLowerCase().match(/\.(avi|mp4|wav)$/));
 
   const media_parts = every_media_parts.slice(0, limit);
 
