@@ -64,30 +64,17 @@ TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 # 3. Your Rsync Command Pipeline
 # Customize your destination directory as needed
 
-DEST_DIR="$HOME/.local/state/influenca/$TIMESTAMP/videos/"
+DEST_DIR="$HOME/.local/state/influenca/$TIMESTAMP/intake/"
 mkdir -p "$DEST_DIR"
 
 echo "☕🔄 Starting rsync operations from ${MOUNT_POINT} to ${DEST_DIR}..."
 
-# Standard safe backup flags: archive, verbose, human-readable, compress, delete stale files
-#sudo rsync -avh --delete "${MOUNT_POINT}/" "$DEST_DIR/"
+rsync -rtv --progress --include="*/" --include="*.AVI" --include="*.avi" --include="*.WAV" --include="*.wav" --exclude="*" "$MOUNT_POINT/DCIMA/" "$MOUNT_POINT/AUDIO/" "$DEST_DIR/"
 
-
-# sudo -v
-
-
-# mkdir -p "$HOME/.local/state/influenca/$TIMESTAMP/videos"
-
-# sudo mkdir -p /mnt/rushmore
-# sudo mount -t drvfs G: /mnt/rushmore
-
-# echo "☕ Synchronizing media from G:\\"
-
-rsync -rtv --progress --include="*/" --include="*.AVI" --include="*.avi" --exclude="*" "$MOUNT_POINT/DCIMA/" "$DEST_DIR"
-
-rm -rf "$MOUNT_POINT/AUDIO" "$MOUNT_POINT/DCIMA"
+rm -rf "$MOUNT_POINT/AUDIO" "$MOUNT_POINT/DCIMA" "TIME.TXT"
 
 echo "2026-01-01 00:00:01 N" > "$MOUNT_POINT/TIME.TXT"
+
 # sudo umount /mnt/rushmore
 
 ls "$DEST_DIR"
@@ -95,7 +82,6 @@ ls "$DEST_DIR"
 echo "✅ Intake complete!"
 
 printf "✨ Next Steps: %s %s %s\n" \
-  "$(tput setaf 208)node" \
   "$(tput setaf 81)apps/cli/dist/bin.mjs accession" \
   "$(tput setaf 121)$DEST_DIR$(tput sgr0)"
 
