@@ -60,6 +60,22 @@
       });
     }
   }
+
+  function isActive(segment: TranscriptionSegment): boolean {
+    const v = trackElement?.parentElement as HTMLVideoElement;
+    const currentTime = v.currentTime;
+    const bef = segment.end < currentTime;
+    const aft = segment.start > currentTime;
+    return !(bef || aft);
+  }
+
+  function update() {
+    segments.forEach((segment) => {
+      if (isActive(segment)) {
+        console.log(segment.text);
+      }
+    });
+  }
 </script>
 
 {#if selectedSlug}
@@ -67,11 +83,7 @@
     controls
     src={selectedVideoSrc}
     width="400"
-    ontimeupdate={(e) => {
-      if (e.target instanceof HTMLVideoElement) {
-        console.log(e.target.currentTime);
-      }
-    }}
+    ontimeupdate={(e) => update()}
   >
     <track
       bind:this={trackElement}
@@ -89,7 +101,7 @@
 
   <ul>
     {#each segments as segment}
-      <li>{segment.text}</li>
+      <li class:active={isActive}>{segment.text}</li>
     {/each}
   </ul>
 {:else}
