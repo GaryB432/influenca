@@ -1,10 +1,12 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { segmentToCue } from "$lib";
+  import type { TranscriptionSegment } from "@influenca/core";
   import { error } from "@sveltejs/kit";
   import { onMount } from "svelte";
   import type { TranscriptionResponse } from "../app";
-  import type { TranscriptionSegment } from "@influenca/core";
+
+  type SegmentSource = TranscriptionSegment & { active: boolean };
 
   let trackElement = $state<HTMLTrackElement | null>(null);
 
@@ -15,7 +17,7 @@
   let selectedVideoSrc = $derived(`cloud/videos/${selectedSlug}`);
   let selectedTrack = $derived(`cloud/transcripts/${selectedSlug}`);
 
-  let segments: TranscriptionSegment[] = $state([]);
+  let segments: SegmentSource[] = $state([]);
   let cues: VTTCue[] = $derived(
     segments
       .map(segmentToCue)
@@ -32,7 +34,7 @@
 
       const response = (await track_response.json()) as TranscriptionResponse;
 
-      segments = response.vtt;
+      segments = response.vtt.map((s) => ({ ...s, active: false }));
 
       if (trackElement) {
         const textTrack = trackElement.track;
@@ -61,19 +63,17 @@
     }
   }
 
-  function isActive(segment: TranscriptionSegment): boolean {
-    const v = trackElement?.parentElement as HTMLVideoElement;
-    const currentTime = v.currentTime;
-    const bef = segment.end < currentTime;
-    const aft = segment.start > currentTime;
-    return !(bef || aft);
-  }
+  // function isActive(segment: TranscriptionSegment): boolean {
+
+  // }
 
   function update() {
     segments.forEach((segment) => {
-      if (isActive(segment)) {
-        console.log(segment.text);
-      }
+      const v = trackElement?.parentElement as HTMLVideoElement;
+      const currentTime = v.currentTime;
+      const bef = segment.end < currentTime;
+      const aft = segment.start > currentTime;
+      segment.active = !(bef || aft);
     });
   }
 </script>
@@ -100,8 +100,8 @@
   </select>
 
   <ul>
-    {#each segments as segment}
-      <li class:active={isActive}>{segment.text}</li>
+    {#each segments as segment (segment.id)}
+      <li class:active={segment.active}>{segment.text}</li>
     {/each}
   </ul>
 {:else}
@@ -123,3 +123,12 @@
     >
   </p>
 {/if}
+
+<style>
+  li {
+    display: none;
+  }
+  li.active {
+    display: block;
+  }
+</style>
