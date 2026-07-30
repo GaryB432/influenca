@@ -64,7 +64,7 @@ TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 # 3. Your Rsync Command Pipeline
 # Customize your destination directory as needed
 
-DEST_DIR="$HOME/.local/state/influenca/$TIMESTAMP/intake/"
+DEST_DIR="$HOME/.local/state/influenca/$TIMESTAMP/media"
 mkdir -p "$DEST_DIR"
 
 echo "☕🔄 Starting rsync operations from ${MOUNT_POINT} to ${DEST_DIR}..."
