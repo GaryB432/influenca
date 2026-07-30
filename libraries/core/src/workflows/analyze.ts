@@ -2,7 +2,8 @@ import { console_wrapper as coolsole } from "@influenca/shared";
 import fs from "node:fs";
 import path, { join } from "node:path";
 
-import { color256 } from "../color";
+import { ASCII_DIM, maybeColorize } from "../color";
+// import { maybeColorize } from "../color";
 import {
   type Manifest,
   type Transcription,
@@ -10,8 +11,6 @@ import {
   type VideoStatisticalBlock,
 } from "../index";
 import * as gbfs from "../shims/fs";
-
-const ASCII_DIM = 241;
 
 export type AnalyzeWorkflowOptions = {
   inDir: string;
@@ -56,9 +55,9 @@ export async function runAnalyzeWorkflow(
     primeLang: string | undefined,
   ): string {
     const ipl = options.primaryLanguage ? lang === primeLang : true;
-    return color256(ipl ? 2 : ASCII_DIM, "language")
+    return maybeColorize(ipl ? 2 : ASCII_DIM, "language")
       .concat("  : ")
-      .concat(color256(ipl ? 10 : ASCII_DIM, lang));
+      .concat(maybeColorize(ipl ? 10 : ASCII_DIM, lang));
   }
 
   for (const manifest_key of manifest_keys) {
@@ -95,7 +94,9 @@ export async function runAnalyzeWorkflow(
             : false;
 
           const mutedSegments = segments
-            .map((seg) => color256(is_language_dim ? ASCII_DIM : 15, seg.text))
+            .map((seg) =>
+              maybeColorize(is_language_dim ? ASCII_DIM : 15, seg.text),
+            )
             .join("\n");
 
           console.log(
@@ -128,14 +129,14 @@ export async function runAnalyzeWorkflow(
   };
 }
 function logForNoTranscript(): string {
-  return color256(ASCII_DIM, "No Transcript");
+  return maybeColorize(ASCII_DIM, "No Transcript");
 }
 
 function logForVideoId(
   mp4name: string,
   videoStats: { stats: VideoStatisticalBlock },
 ) {
-  return color256(10, mp4name)
+  return maybeColorize(10, mp4name)
     .concat("  : ")
-    .concat(color256(10, `${videoStats.stats.duration_seconds}s`));
+    .concat(maybeColorize(10, `${videoStats.stats.duration_seconds}s`));
 }
