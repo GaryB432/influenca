@@ -16,22 +16,23 @@
   let selectedTrack = $derived(`cloud/transcripts/${selectedSlug}`);
 
   let segments: TranscriptionSegment[] = $state([]);
+  let cues: VTTCue[] = $derived(
+    segments
+      .map(segmentToCue)
+      .map((c) => new VTTCue(c.startTime, c.endTime, c.text)),
+  );
 
   async function slugSelected() {
     if (selectedTrack) {
-      const response = await fetch(selectedTrack);
+      const track_response = await fetch(selectedTrack);
 
-      if (!response.ok) {
+      if (!track_response.ok) {
         error(501, "no tracks");
       }
 
-      const deets = (await response.json()) as TranscriptionResponse;
+      const response = (await track_response.json()) as TranscriptionResponse;
 
-      segments = deets.vtt;
-
-      const cues = segments
-        .map(segmentToCue)
-        .map((c) => new VTTCue(c.startTime, c.endTime, c.text));
+      segments = response.vtt;
 
       if (trackElement) {
         const textTrack = trackElement.track;
@@ -62,7 +63,16 @@
 </script>
 
 {#if selectedSlug}
-  <video controls src={selectedVideoSrc} width="400">
+  <video
+    controls
+    src={selectedVideoSrc}
+    width="400"
+    ontimeupdate={(e) => {
+      if (e.target instanceof HTMLVideoElement) {
+        console.log(e.target.currentTime);
+      }
+    }}
+  >
     <track
       bind:this={trackElement}
       kind="captions"
