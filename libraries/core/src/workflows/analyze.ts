@@ -11,6 +11,8 @@ import {
 } from "../index";
 import * as gbfs from "../shims/fs";
 
+const ASCII_DIM = 241;
+
 export type AnalyzeWorkflowOptions = {
   inDir: string;
   minimal: boolean;
@@ -54,9 +56,9 @@ export async function runAnalyzeWorkflow(
     primeLang: string | undefined,
   ): string {
     const ipl = options.primaryLanguage ? lang === primeLang : true;
-    return color256(ipl ? 2 : 241, "language")
+    return color256(ipl ? 2 : ASCII_DIM, "language")
       .concat("  : ")
-      .concat(color256(ipl ? 10 : 241, lang));
+      .concat(color256(ipl ? 10 : ASCII_DIM, lang));
   }
 
   for (const manifest_key of manifest_keys) {
@@ -93,7 +95,7 @@ export async function runAnalyzeWorkflow(
             : false;
 
           const mutedSegments = segments
-            .map((seg) => color256(is_language_dim ? 241 : 15, seg.text))
+            .map((seg) => color256(is_language_dim ? ASCII_DIM : 15, seg.text))
             .join("\n");
 
           console.log(
@@ -126,7 +128,7 @@ export async function runAnalyzeWorkflow(
   };
 }
 function logForNoTranscript(): string {
-  return color256(241, "No Transcript");
+  return color256(ASCII_DIM, "No Transcript");
 }
 
 function logForVideoId(
