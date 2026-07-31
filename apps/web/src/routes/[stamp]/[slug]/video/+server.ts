@@ -1,17 +1,10 @@
 import { error } from "@sveltejs/kit";
-import { env } from "$env/dynamic/private";
-import { getVideoCorpus } from "$lib/server/corpus";
+import { corpusRoot, getVideoCorpus } from "$lib/server/corpus";
 import { createReadStream, statSync } from "node:fs";
 import path from "node:path";
 import { Readable } from "node:stream";
 
 import type { RequestHandler } from "./$types";
-
-const corpusRoot = env.INFLUENCA_MEDIA_DIR;
-
-if (!corpusRoot) {
-  throw new Error("INFLUENCA_MEDIA_DIR is required.");
-}
 
 export const GET: RequestHandler = async ({ params, request }) => {
   const manifest = await getVideoCorpus(params.stamp);

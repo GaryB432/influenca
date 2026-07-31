@@ -1,14 +1,7 @@
 import { fs as gfs, type TranscriptionSegment } from "@influenca/core";
 import { json } from "@sveltejs/kit";
-import { env } from "$env/dynamic/private";
-import { getVideoCorpus } from "$lib/server/corpus";
+import { corpusRoot, getVideoCorpus } from "$lib/server/corpus";
 import path from "path";
-
-const corpusRoot = env.INFLUENCA_MEDIA_DIR;
-
-if (!corpusRoot) {
-  throw new Error("INFLUENCA_MEDIA_DIR is required.");
-}
 
 export async function GET({ params }) {
   const { slug } = params;

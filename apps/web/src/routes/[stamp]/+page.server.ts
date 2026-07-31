@@ -1,17 +1,11 @@
 import { type Manifest, fs as shims } from "@influenca/core";
 import { error } from "@sveltejs/kit";
-import { env } from "$env/dynamic/private";
+import { corpusRoot } from "$lib/server/corpus";
 import path from "path";
 
 import type { PageServerLoad } from "./$types";
 
 const { existsSync, readJSONSync } = shims;
-
-const corpusRoot = env.INFLUENCA_MEDIA_DIR;
-
-if (!corpusRoot) {
-  throw new Error("INFLUENCA_MEDIA_DIR is required.");
-}
 
 export const load = (async ({ params }) => {
   const { stamp } = params;
