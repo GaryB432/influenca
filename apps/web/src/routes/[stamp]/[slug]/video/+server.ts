@@ -1,24 +1,31 @@
 import { error } from "@sveltejs/kit";
+import { env } from "$env/dynamic/private";
 import { getVideoCorpus } from "$lib/server/corpus";
 import { createReadStream, statSync } from "node:fs";
+import path from "node:path";
 import { Readable } from "node:stream";
 
 import type { RequestHandler } from "./$types";
-import type { Manifest } from "@influenca/core";
+
+const corpusRoot = env.INFLUENCA_MEDIA_DIR;
+
+if (!corpusRoot) {
+  throw new Error("INFLUENCA_MEDIA_DIR is required.");
+}
 
 export const GET: RequestHandler = async ({ params, request }) => {
-  //   const manifest = await getVideoCorpus();
-  const manifest: Manifest = {};
-  const { slug } = params;
-  const videoEntry = manifest[slug];
-  const videoEntryKeys = Object.keys(videoEntry.video ?? {});
-  const mp4name = videoEntryKeys.at(0);
+  const manifest = await getVideoCorpus(params.stamp);
+  // console.log(params)
+  const { slug, stamp } = params;
+  const videoEntry = manifest[slug] ?? {};
+  const shortMP4JustName = Object.keys(videoEntry.video ?? {}).at(0);
 
-  if (!mp4name) {
+  if (!shortMP4JustName) {
     error(502, `86 on the ${slug}`);
   }
 
-  const filePath = mp4name;
+  // const filePath = shortMP4JustName;
+  const filePath = path.resolve(corpusRoot, stamp, shortMP4JustName);
 
   try {
     const stats = statSync(filePath);
@@ -82,6 +89,6 @@ export const GET: RequestHandler = async ({ params, request }) => {
       statusText: "Partial Content",
     });
   } catch {
-    error(404, "Video not found");
+    error(404, filePath);
   }
 };
