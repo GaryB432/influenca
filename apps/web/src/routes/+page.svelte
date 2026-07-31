@@ -1,11 +1,9 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
 
-
   let { data } = $props();
 
   let selectedStamp = $state<string>();
-
 </script>
 
 <select bind:value={selectedStamp}>

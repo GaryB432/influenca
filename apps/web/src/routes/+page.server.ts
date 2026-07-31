@@ -1,9 +1,9 @@
 import { corpusRoot } from "$lib/server/corpus";
 import { statSync } from "node:fs";
 import { readdir } from "node:fs/promises";
+import path from "node:path";
 
 import type { PageServerLoad } from "./$types";
-import path from "node:path";
 
 export const load = (async () => {
   const entries = await readdir(corpusRoot, { withFileTypes: true });
