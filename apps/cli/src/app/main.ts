@@ -1,12 +1,11 @@
 import { cancel, isCancel, outro, text } from "@clack/prompts";
-import { color } from "@influenca/core";
-import { progress } from "@influenca/core";
+import { color, progress } from "@influenca/core";
 import { cac } from "cac";
 import path from "node:path";
 
 import { AccessionCommand } from "./commands/accession-command";
 import { AnalyzeCommand } from "./commands/analyze-command";
-import { setupEnvironment } from "./environment";
+import { corpusRoot, setupEnvironment, webAppOrigin } from "./environment";
 
 const accessionCommand = new AccessionCommand();
 const analyzeCommand = new AnalyzeCommand();
@@ -131,7 +130,7 @@ async function resolveAccessionOutDir(options: {
   interactive: boolean;
   outDir: string;
 }): Promise<string | symbol> {
-  const envOutDir = process.env.INFLUENCA_MEDIA_DIR;
+  const envOutDir = corpusRoot;
   const candidate = options.outDir ?? envOutDir;
 
   if (candidate) {
@@ -234,10 +233,9 @@ async function runAccession(
   outro(
     [
       message,
-      [
-        color.color256(4, "http://localhost:5173"),
-        color.color256(12, modernTime),
-      ].join("/"),
+      [color.color256(4, webAppOrigin), color.color256(12, modernTime)].join(
+        "/",
+      ),
     ].join("\n"),
   );
 }

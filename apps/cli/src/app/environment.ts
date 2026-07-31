@@ -8,3 +8,7 @@ export function setupEnvironment() {
     process.loadEnvFile(envFilePath);
   }
 }
+
+export const webAppOrigin = "http://localhost:5173";
+
+export const corpusRoot = "tbd"
