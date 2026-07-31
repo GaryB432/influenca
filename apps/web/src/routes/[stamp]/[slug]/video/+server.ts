@@ -8,17 +8,17 @@ import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ params, request }) => {
   const manifest = await getVideoCorpus(params.stamp);
-  // console.log(params)
   const { slug, stamp } = params;
   const videoEntry = manifest[slug] ?? {};
-  const shortMP4JustName = Object.keys(videoEntry.video ?? {}).at(0);
 
-  if (!shortMP4JustName) {
+  const [mp4name] = Object.keys(videoEntry.video ?? {});
+
+  if (!mp4name) {
     error(502, `86 on the ${slug}`);
   }
 
   // const filePath = shortMP4JustName;
-  const filePath = path.resolve(corpusRoot, stamp, shortMP4JustName);
+  const filePath = path.resolve(corpusRoot, stamp, mp4name);
 
   try {
     const stats = statSync(filePath);
@@ -81,7 +81,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
       status: 206,
       statusText: "Partial Content",
     });
-  } catch {
-    error(404, filePath);
+  } catch (sitch) {
+    error(404, sitch instanceof Error ? sitch : new Error(String(sitch)));
   }
 };

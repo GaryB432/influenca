@@ -9,7 +9,7 @@ const { existsSync, readJSONSync } = shims;
 
 export const load = (async ({ params }) => {
   const { stamp } = params;
-  const stampDirectory = path.resolve(corpusRoot, params.stamp);
+  const stampDirectory = path.resolve(corpusRoot, stamp);
 
   const manifestFilePath = path.join(stampDirectory, ".influenca.json");
   if (!existsSync(manifestFilePath)) {
