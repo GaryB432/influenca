@@ -2,6 +2,10 @@ import type { PathOrFileDescriptor, WriteFileOptions } from "fs";
 
 import * as fs from "fs";
 
+export function existsSync(path: fs.PathLike): boolean {
+  return fs.existsSync(path);
+}
+
 export function readJSONSync<T>(
   path: PathOrFileDescriptor,
   encoding = "utf-8",

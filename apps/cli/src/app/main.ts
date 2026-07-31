@@ -1,11 +1,11 @@
 import { cancel, isCancel, outro, text } from "@clack/prompts";
-import { progress } from "@influenca/core";
+import { color, progress } from "@influenca/core";
 import { cac } from "cac";
 import path from "node:path";
 
 import { AccessionCommand } from "./commands/accession-command";
 import { AnalyzeCommand } from "./commands/analyze-command";
-import { setupEnvironment } from "./environment";
+import { corpusRoot, setupEnvironment, webAppOrigin } from "./environment";
 
 const accessionCommand = new AccessionCommand();
 const analyzeCommand = new AnalyzeCommand();
@@ -96,6 +96,8 @@ function isoTimestampNow(): string {
   return new Date().toISOString().replace(/[-:]|\.\d{3}/g, "");
 }
 
+let modernTime = isoTimestampNow();
+
 async function resolveAccessionInDir(options: {
   inDir: string | undefined;
 }): Promise<string | symbol> {
@@ -128,7 +130,7 @@ async function resolveAccessionOutDir(options: {
   interactive: boolean;
   outDir: string;
 }): Promise<string | symbol> {
-  const envOutDir = process.env.INFLUENCA_MEDIA_DIR;
+  const envOutDir = corpusRoot;
   const candidate = options.outDir ?? envOutDir;
 
   if (candidate) {
@@ -169,7 +171,7 @@ function resolveFinalOutDir(
     return outDir;
   }
 
-  return path.join(outDir, isoTimestampNow());
+  return path.join(outDir, modernTime);
 }
 
 async function runAccession(
@@ -179,6 +181,8 @@ async function runAccession(
   // const proper_progress_meter: null | ReturnType<typeof progress> = null;
 
   const interactive = options.interactive !== false;
+
+  modernTime = isoTimestampNow();
 
   const resolvedInDir = await resolveAccessionInDir({
     inDir,
@@ -221,12 +225,19 @@ async function runAccession(
     {
       meter: progress,
       onProgress() {
-        throw new Error("use the other one!");
+        throw new Error("progress meter in progress");
       },
     },
   );
 
-  outro(message);
+  outro(
+    [
+      message,
+      [color.color256(4, webAppOrigin), color.color256(12, modernTime)].join(
+        "/",
+      ),
+    ].join("\n"),
+  );
 }
 
 async function runAnalyze(

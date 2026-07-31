@@ -1,22 +1,24 @@
 import { error } from "@sveltejs/kit";
-import { getVideoCorpus } from "$lib/server/corpus";
+import { corpusRoot, getVideoCorpus } from "$lib/server/corpus";
 import { createReadStream, statSync } from "node:fs";
+import path from "node:path";
 import { Readable } from "node:stream";
 
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ params, request }) => {
-  const manifest = await getVideoCorpus();
-  const { slug } = params;
-  const videoEntry = manifest[slug];
-  const videoEntryKeys = Object.keys(videoEntry.video ?? {});
-  const mp4name = videoEntryKeys.at(0);
+  const manifest = await getVideoCorpus(params.stamp);
+  const { slug, stamp } = params;
+  const videoEntry = manifest[slug] ?? {};
+
+  const [mp4name] = Object.keys(videoEntry.video ?? {});
 
   if (!mp4name) {
     error(502, `86 on the ${slug}`);
   }
 
-  const filePath = mp4name;
+  // const filePath = shortMP4JustName;
+  const filePath = path.resolve(corpusRoot, stamp, mp4name);
 
   try {
     const stats = statSync(filePath);
@@ -79,7 +81,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
       status: 206,
       statusText: "Partial Content",
     });
-  } catch {
-    error(404, "Video not found");
+  } catch (sitch) {
+    error(404, sitch instanceof Error ? sitch : new Error(String(sitch)));
   }
 };
