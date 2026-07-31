@@ -1,9 +1,12 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { segmentToCue } from "$lib";
+  import type { TranscriptionSegment } from "@influenca/core";
   import { error } from "@sveltejs/kit";
   import { onMount } from "svelte";
   import type { TranscriptionResponse } from "../app";
+
+  type SegmentSource = TranscriptionSegment & { active: boolean };
 
   let trackElement = $state<HTMLTrackElement | null>(null);
 
@@ -14,24 +17,24 @@
   let selectedVideoSrc = $derived(`cloud/videos/${selectedSlug}`);
   let selectedTrack = $derived(`cloud/transcripts/${selectedSlug}`);
 
+  let segments: SegmentSource[] = $state([]);
+  let cues: VTTCue[] = $derived(
+    segments
+      .map(segmentToCue)
+      .map((c) => new VTTCue(c.startTime, c.endTime, c.text)),
+  );
+
   async function slugSelected() {
-
     if (selectedTrack) {
-      const response = await fetch(selectedTrack);
+      const track_response = await fetch(selectedTrack);
 
-      if (!response.ok) {
+      if (!track_response.ok) {
         error(501, "no tracks");
       }
 
-      const deets = (await response.json()) as TranscriptionResponse;
+      const response = (await track_response.json()) as TranscriptionResponse;
 
-      const cues = deets.vtt
-        .map(segmentToCue)
-        .map((c) => new VTTCue(c.startTime, c.endTime, c.text));
-
-      cues.forEach((cue) => {
-        console.log(cue);
-      });
+      segments = response.vtt.map((s) => ({ ...s, active: false }));
 
       if (trackElement) {
         const textTrack = trackElement.track;
@@ -59,10 +62,29 @@
       });
     }
   }
+
+  // function isActive(segment: TranscriptionSegment): boolean {
+
+  // }
+
+  function update() {
+    segments.forEach((segment) => {
+      const v = trackElement?.parentElement as HTMLVideoElement;
+      const currentTime = v.currentTime;
+      const bef = segment.end < currentTime;
+      const aft = segment.start > currentTime;
+      segment.active = !(bef || aft);
+    });
+  }
 </script>
 
 {#if selectedSlug}
-  <video controls src={selectedVideoSrc} width="400">
+  <video
+    controls
+    src={selectedVideoSrc}
+    width="400"
+    ontimeupdate={(e) => update()}
+  >
     <track
       bind:this={trackElement}
       kind="captions"
@@ -76,6 +98,12 @@
       <option value={slug}>{slug}</option>
     {/each}
   </select>
+
+  <ul>
+    {#each segments as segment (segment.id)}
+      <li class:active={segment.active}>{segment.text}</li>
+    {/each}
+  </ul>
 {:else}
   <p>Video content is unavailable atm</p>
 {/if}
@@ -95,3 +123,12 @@
     >
   </p>
 {/if}
+
+<style>
+  li {
+    display: none;
+  }
+  li.active {
+    display: block;
+  }
+</style>

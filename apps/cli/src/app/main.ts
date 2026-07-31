@@ -1,5 +1,3 @@
-// import type { ProgressOptions, ProgressResult } from "@influenca/core";
-
 import { cancel, isCancel, outro, text } from "@clack/prompts";
 import { progress } from "@influenca/core";
 import { cac } from "cac";
@@ -244,7 +242,6 @@ async function runAnalyze(
     options: {
       language: options.language,
       minimal: options.minimal ?? true,
-
     },
   });
 

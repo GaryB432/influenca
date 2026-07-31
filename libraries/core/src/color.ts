@@ -62,9 +62,11 @@ export const summaryTone: SummaryTone = {
   accent: (value) => maybeColorize(147, value),
   heading: (value) =>
     supportsModernColors()
-      ? `${ansiBold()}${color256(177, value)}${ansiReset()}`
+      ? `${ansiBold()}${maybeColorize(177, value)}${ansiReset()}`
       : value,
   label: (value) => maybeColorize(81, value),
   number: (value) => maybeColorize(221, value),
   path: (value) => maybeColorize(121, value),
 };
+
+export const ASCII_DIM = 241;

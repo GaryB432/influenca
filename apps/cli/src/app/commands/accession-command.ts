@@ -61,12 +61,11 @@ export function formatSummary(
   const tone = { ...color.summaryTone };
 
   const rows: Array<[label: string, value: string]> = [
-    ["failedFiles", String(result.failedFiles)],
-    ["manifest", result.manifestPath],
-    ["matched files", String(result.matchedFiles)],
-    ["output dir", result.outDir],
     ["processed files", String(result.processedFiles)],
+    ["matched files", String(result.matchedFiles)],
+    ["failedFiles", String(result.failedFiles)],
     ["transcribed files", String(result.transcribedFiles)],
+    ["output dir", result.outDir],
   ];
   const labelWidth = rows.reduce(
     (max, [label]) => Math.max(max, label.length),
@@ -86,5 +85,11 @@ export function formatSummary(
     tone.heading("Accession stats"),
     tone.accent("-----------------------------"),
     ...prettyRows,
+    tone.heading("Next step"),
+    [
+      process.argv[1],
+      color.maybeColorize(6, "analyze"),
+      tone.path(result.outDir),
+    ].join(" "),
   ].join("\n");
 }
