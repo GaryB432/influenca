@@ -21,8 +21,6 @@
     [data.stamp, selectedSlug, "transcript"].join("/"),
   );
 
-  
-
   //   let selectedVideoSrc = $derived(`cloud/videos/${selectedSlug}`);
   //   let selectedTrack = $derived(`cloud/transcripts/${selectedSlug}`);
 
