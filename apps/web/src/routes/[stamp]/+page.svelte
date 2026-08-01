@@ -21,9 +21,6 @@
     [data.stamp, selectedSlug, "transcript"].join("/"),
   );
 
-  //   let selectedVideoSrc = $derived(`cloud/videos/${selectedSlug}`);
-  //   let selectedTrack = $derived(`cloud/transcripts/${selectedSlug}`);
-
   let segments: SegmentSource[] = $state([]);
   let cues: VTTCue[] = $derived(
     segments
@@ -69,10 +66,6 @@
       });
     }
   }
-
-  // function isActive(segment: TranscriptionSegment): boolean {
-
-  // }
 
   function update() {
     segments.forEach((segment) => {
