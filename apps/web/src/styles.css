@@ -10,6 +10,7 @@ select {
 
 /* Style the dropdown picker container (the popup box) */
 select::picker(select) {
+  appearance: base-select;
   border: 2px solid #3b82f6;
   border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
@@ -33,3 +34,4 @@ select::picker-icon {
   fill: #3b82f6;
   right: 15px;
 }
+
