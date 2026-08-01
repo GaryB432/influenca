@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { segmentToCue } from "$lib";
+  import { ArrayStepper } from "$lib/array-stepper";
   import type { TranscriptionSegment } from "@influenca/core";
   import { error } from "@sveltejs/kit";
   import { onMount } from "svelte";
@@ -29,6 +30,7 @@
   );
 
   async function slugSelected() {
+    slugJum.select(selectedSlug);
     if (selectedTrack) {
       const track_response = await fetch(selectedTrack);
 
@@ -77,9 +79,7 @@
     });
   }
 
-  function jumpSlug(direction: number) {
-    console.log(direction);
-  }
+  let slugJum = $derived(new ArrayStepper(Object.keys(data.manifest), 0));
 </script>
 
 {#snippet nextButton()}
@@ -112,7 +112,13 @@
     </video>
 
     <div class="controls">
-      <button aria-label="prev" onclick={() => jumpSlug(-1)}>
+      <button
+        aria-label="prev"
+        onclick={() => {
+          const m = slugJum.go(-1);
+          selectedSlug = m;
+        }}
+      >
         {@render nextButton()}
       </button>
       <select
@@ -124,7 +130,13 @@
           <option value={slug}>{slug}</option>
         {/each}
       </select>
-      <button aria-label="next" onclick={() => jumpSlug(1)}>
+      <button
+        aria-label="next"
+        onclick={() => {
+          const m = slugJum.go(1);
+          selectedSlug = m;
+        }}
+      >
         {@render nextButton()}
       </button>
     </div>
