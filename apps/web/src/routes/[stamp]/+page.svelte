@@ -85,59 +85,54 @@
   }
 </script>
 
-{#if selectedSlug}
-  <video
-    controls
-    src={selectedVideoSrc}
-    width="400"
-    ontimeupdate={(e) => update()}
-  >
-    <track
-      bind:this={trackElement}
-      kind="captions"
-      label="Custom Cue Track"
-      default
-    />
-  </video>
+<section class="vp">
+  {#if selectedSlug}
+    <video controls src={selectedVideoSrc} ontimeupdate={(e) => update()}>
+      <track
+        bind:this={trackElement}
+        kind="captions"
+        label="Custom Cue Track"
+        default
+      />
+    </video>
 
-  <select bind:value={selectedSlug} onchange={slugSelected}>
-    {#each Object.keys(data.manifest) as slug (slug)}
-      <option value={slug}>{slug}</option>
-    {/each}
-  </select>
-
-  <ul>
-    {#each segments as segment (segment.id)}
-      <li class:active={segment.active}>{segment.text}</li>
-    {/each}
-  </ul>
-{:else}
-  <p>Video content is unavailable atm</p>
-{/if}
-
-<p>
-  {selectedVideoSrc}
-</p>
-{#if selectedSlug}
-  <p>
-    {selectedSlug}
-  </p>
-  <p>
-    <a
-      target="_blank"
-      href={resolve("/[stamp]/[slug]/transcript", {
-        slug: selectedSlug,
-        stamp: data.stamp,
-      })}>selected track</a
+    <select
+      name="select-slug"
+      bind:value={selectedSlug}
+      onchange={slugSelected}
     >
-  </p>
-{/if}
+      {#each Object.keys(data.manifest) as slug (slug)}
+        <option value={slug}>{slug}</option>
+      {/each}
+    </select>
+
+    <ul>
+      {#each segments as segment (segment.id)}
+        <li class:active={segment.active}>{segment.text}</li>
+      {/each}
+    </ul>
+  {:else}
+    <p>Video content is unavailable atm</p>
+  {/if}
+  <a href="/">&#127910; Back</a>
+</section>
 
 <style>
+  .vp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
   li {
     display: none;
   }
   li.active {
     display: block;
+  }
+
+  video {
+    width: 60dvw;
   }
 </style>
