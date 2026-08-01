@@ -114,7 +114,7 @@
   {:else}
     <p>Video content is unavailable atm</p>
   {/if}
-  <a href="/">&#127910; Back</a>
+  <a href={resolve("/")}>&#127910; Back</a>
 </section>
 
 <style>
