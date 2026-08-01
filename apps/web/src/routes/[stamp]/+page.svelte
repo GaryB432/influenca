@@ -76,7 +76,29 @@
       segment.active = !(bef || aft);
     });
   }
+
+  function jumpSlug(direction: number) {
+    console.log(direction);
+  }
 </script>
+
+{#snippet nextButton()}
+  <svg
+    viewBox="0 0 36 36"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    aria-hidden="true"
+    role="img"
+    preserveAspectRatio="xMidYMid meet"
+  >
+    <path
+      d="M36 32a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4h28a4 4 0 0 1 4 4v28z"
+    >
+    </path>
+    <path fill="#FFF" d="M27 18L15 7v9.166L5 7v22l10-9.167V29zm0-11h4v22h-4z">
+    </path>
+  </svg>
+{/snippet}
 
 <section class="vp">
   {#if selectedSlug}
@@ -90,7 +112,9 @@
     </video>
 
     <div class="controls">
-      <button>&lt;</button>
+      <button aria-label="prev" onclick={() => jumpSlug(-1)}>
+        {@render nextButton()}
+      </button>
       <select
         name="select-slug"
         bind:value={selectedSlug}
@@ -100,7 +124,9 @@
           <option value={slug}>{slug}</option>
         {/each}
       </select>
-      <button>&gt;</button>
+      <button aria-label="next" onclick={() => jumpSlug(1)}>
+        {@render nextButton()}
+      </button>
     </div>
 
     <ul>
@@ -135,5 +161,25 @@
 
   video {
     width: 60dvw;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .controls button {
+    all: initial;
+    display: flex;
+    svg {
+      fill: var(--ablue);
+      height: 2rem;
+      width: 2rem;
+    }
+  }
+
+  button[aria-label="prev"] {
+    transform: scaleX(-1);
   }
 </style>

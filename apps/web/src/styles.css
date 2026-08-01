@@ -2,6 +2,7 @@
   --ablue: #3b82f6;
   --hovbg: #eff6ff;
   --hovc: #1d4ed8;
+  --br: 8px;
 }
 
 body {
@@ -22,19 +23,13 @@ select {
   font-family: inherit;
   padding: 10px 40px 10px 15px;
   border: 2px solid var(--ablue);
-  border-radius: 8px;
+  border-radius: var(--br);
   background-color: #ffffff;
 }
 
 /* Style the dropdown picker container (the popup box) */
 select::picker(select) {
   appearance: base-select;
-}
-
-/* Style individual options inside the dropdown */
-select option {
-  padding: 10px;
-  border-radius: 4px;
 }
 
 /* Style the option when hovered or selected */
@@ -52,7 +47,13 @@ select::picker-icon {
 select::picker(select),
 button {
   border: 2px solid var(--ablue);
-  border-radius: 8px;
+  border-radius: var(--br);
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   padding: 5px;
+}
+
+select option,
+button {
+  padding: 10px;
+  border-radius: calc(var(--br) / 2);
 }
