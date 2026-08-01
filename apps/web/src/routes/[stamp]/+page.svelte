@@ -118,11 +118,15 @@
     justify-content: center;
     gap: 1rem;
   }
+  ul {
+    list-style: none;
+  }
   li {
-    display: none;
+    padding: 2px;
+    font-weight: 200;
   }
   li.active {
-    display: block;
+    font-weight: 600;
   }
 
   video {
