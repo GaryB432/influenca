@@ -89,15 +89,19 @@
       />
     </video>
 
-    <select
-      name="select-slug"
-      bind:value={selectedSlug}
-      onchange={slugSelected}
-    >
-      {#each Object.keys(data.manifest) as slug (slug)}
-        <option value={slug}>{slug}</option>
-      {/each}
-    </select>
+    <div class="controls">
+      <button>&lt;</button>
+      <select
+        name="select-slug"
+        bind:value={selectedSlug}
+        onchange={slugSelected}
+      >
+        {#each Object.keys(data.manifest) as slug (slug)}
+          <option value={slug}>{slug}</option>
+        {/each}
+      </select>
+      <button>&gt;</button>
+    </div>
 
     <ul>
       {#each segments as segment (segment.id)}
