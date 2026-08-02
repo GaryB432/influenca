@@ -1,11 +1,12 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { segmentToCue } from "$lib";
-  import { ArrayStepper } from "$lib/array-stepper";
+  // import { ArrayStepper } from "$lib/array-stepper";
   import type { TranscriptionSegment } from "@influenca/core";
   import { error } from "@sveltejs/kit";
   import { onMount } from "svelte";
   import type { TranscriptionResponse } from "../../app";
+  import { slugSelect } from "$lib/selector.svelte.js";
 
   type SegmentSource = TranscriptionSegment & { active: boolean };
 
@@ -13,13 +14,15 @@
 
   let { data } = $props();
 
-  let selectedSlug = $state<string>();
+  // let selectedSlug = $state<string>();
+
+  // let slugJum = $derived(new ArrayStepper(Object.keys(data.manifest), 0));
 
   const selectedVideoSrc = $derived(
-    [data.stamp, selectedSlug, "video"].join("/"),
+    [data.stamp, slugSelect.selected, "video"].join("/"),
   );
   const selectedTrack = $derived(
-    [data.stamp, selectedSlug, "transcript"].join("/"),
+    [data.stamp, slugSelect.selected, "transcript"].join("/"),
   );
 
   let segments: SegmentSource[] = $state([]);
@@ -30,7 +33,7 @@
   );
 
   async function slugSelected() {
-    slugJum.select(selectedSlug);
+    // slugJum.select(selectedSlug);
     if (selectedTrack) {
       const track_response = await fetch(selectedTrack);
 
@@ -54,7 +57,8 @@
   }
 
   onMount(() => {
-    selectedSlug = Object.keys(data.manifest).at(0);
+    // selectedSlug = Object.keys(data.manifest).at(0);
+    slugSelect.selected = Object.keys(data.manifest).at(0);
     setTimeout(() => {
       slugSelected();
     }, 0);
@@ -78,8 +82,6 @@
       segment.active = !(bef || aft);
     });
   }
-
-  let slugJum = $derived(new ArrayStepper(Object.keys(data.manifest), 0));
 </script>
 
 {#snippet nextButton()}
@@ -101,7 +103,7 @@
 {/snippet}
 
 <section class="vp">
-  {#if selectedSlug}
+  {#if slugSelect.selected}
     <video controls src={selectedVideoSrc} ontimeupdate={(e) => update()}>
       <track
         bind:this={trackElement}
@@ -115,15 +117,16 @@
       <button
         aria-label="prev"
         onclick={() => {
-          const m = slugJum.go(-1);
-          selectedSlug = m;
+          console.log(-1);
+          // const m = slugJum.go(-1);
+          // slugSelect.selected = m;
         }}
       >
         {@render nextButton()}
       </button>
       <select
         name="select-slug"
-        bind:value={selectedSlug}
+        bind:value={slugSelect.selected}
         onchange={slugSelected}
       >
         {#each Object.keys(data.manifest) as slug (slug)}
@@ -133,8 +136,9 @@
       <button
         aria-label="next"
         onclick={() => {
-          const m = slugJum.go(1);
-          selectedSlug = m;
+          console.log(1);
+          // const m = slugJum.go(1);
+          // selectedSlug = m;
         }}
       >
         {@render nextButton()}
