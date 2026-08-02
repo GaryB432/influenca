@@ -1,12 +1,11 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { segmentToCue } from "$lib";
-  // import { ArrayStepper } from "$lib/array-stepper";
+  import { slugSelect } from "$lib/selector.svelte.js";
   import type { TranscriptionSegment } from "@influenca/core";
   import { error } from "@sveltejs/kit";
   import { onMount } from "svelte";
   import type { TranscriptionResponse } from "../../app";
-  import { slugSelect } from "$lib/selector.svelte.js";
 
   type SegmentSource = TranscriptionSegment & { active: boolean };
 
@@ -24,6 +23,8 @@
   const selectedTrack = $derived(
     [data.stamp, slugSelect.selected, "transcript"].join("/"),
   );
+
+  let slugKeys = $derived(Object.keys(data.manifest));
 
   let segments: SegmentSource[] = $state([]);
   let cues: VTTCue[] = $derived(
@@ -57,8 +58,7 @@
   }
 
   onMount(() => {
-    // selectedSlug = Object.keys(data.manifest).at(0);
-    slugSelect.selected = Object.keys(data.manifest).at(0);
+    slugSelect.selected = slugKeys.at(0);
     setTimeout(() => {
       slugSelected();
     }, 0);
@@ -116,10 +116,15 @@
     <div class="controls">
       <button
         aria-label="prev"
+        disabled={slugKeys.indexOf(slugSelect.selected) === 0}
         onclick={() => {
-          console.log(-1);
-          // const m = slugJum.go(-1);
-          // slugSelect.selected = m;
+          if (slugSelect.selected) {
+            const l = slugKeys.indexOf(slugSelect.selected);
+            if (l > 0) {
+              slugSelect.selected = slugKeys.at(l - 1);
+            }
+          }
+          slugSelected();
         }}
       >
         {@render nextButton()}
@@ -129,16 +134,26 @@
         bind:value={slugSelect.selected}
         onchange={slugSelected}
       >
-        {#each Object.keys(data.manifest) as slug (slug)}
+        {#each slugKeys as slug (slug)}
           <option value={slug}>{slug}</option>
         {/each}
       </select>
       <button
         aria-label="next"
+        disabled={slugKeys.indexOf(slugSelect.selected) + 1 === slugKeys.length}
         onclick={() => {
-          console.log(1);
-          // const m = slugJum.go(1);
-          // selectedSlug = m;
+          if (slugSelect.selected) {
+            const l = slugKeys.indexOf(slugSelect.selected);
+
+            if (l < slugKeys.length) {
+              slugSelect.selected = slugKeys.at(l + 1);
+            }
+
+            // if (slugSelect.selected !== slugKeys.at(-1)) {
+            //   slugSelect.selected = slugKeys.at(l + 1);
+            // }
+          }
+          slugSelected();
         }}
       >
         {@render nextButton()}
@@ -197,5 +212,11 @@
 
   button[aria-label="prev"] {
     transform: scaleX(-1);
+  }
+
+  .controls button:disabled {
+    svg {
+      fill: silver;
+    }
   }
 </style>
