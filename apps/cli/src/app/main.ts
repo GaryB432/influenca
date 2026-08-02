@@ -5,7 +5,7 @@ import path from "node:path";
 
 import { AccessionCommand } from "./commands/accession-command";
 import { AnalyzeCommand } from "./commands/analyze-command";
-import { corpusRoot, setupEnvironment, webAppOrigin } from "./environment";
+import { setupEnvironment, webAppOrigin } from "./environment";
 
 const accessionCommand = new AccessionCommand();
 const analyzeCommand = new AnalyzeCommand();
@@ -130,7 +130,7 @@ async function resolveAccessionOutDir(options: {
   interactive: boolean;
   outDir: string;
 }): Promise<string | symbol> {
-  const envOutDir = corpusRoot;
+  const envOutDir = process.env.INFLUENCA_MEDIA_DIR;
   const candidate = options.outDir ?? envOutDir;
 
   if (candidate) {
