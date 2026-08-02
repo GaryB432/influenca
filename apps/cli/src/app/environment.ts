@@ -10,5 +10,3 @@ export function setupEnvironment() {
 }
 
 export const webAppOrigin = "http://localhost:5173";
-
-export const corpusRoot = process.env.INFLUENCA_MEDIA_DIR;

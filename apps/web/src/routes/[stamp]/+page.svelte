@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { segmentToCue } from "$lib";
+  import { slugSelect } from "$lib/selector.svelte.js";
   import type { TranscriptionSegment } from "@influenca/core";
   import { error } from "@sveltejs/kit";
   import { onMount } from "svelte";
@@ -12,17 +13,18 @@
 
   let { data } = $props();
 
-  let selectedSlug = $state<string>();
+  // let selectedSlug = $state<string>();
+
+  // let slugJum = $derived(new ArrayStepper(Object.keys(data.manifest), 0));
 
   const selectedVideoSrc = $derived(
-    [data.stamp, selectedSlug, "video"].join("/"),
+    [data.stamp, slugSelect.selected, "video"].join("/"),
   );
   const selectedTrack = $derived(
-    [data.stamp, selectedSlug, "transcript"].join("/"),
+    [data.stamp, slugSelect.selected, "transcript"].join("/"),
   );
 
-  //   let selectedVideoSrc = $derived(`cloud/videos/${selectedSlug}`);
-  //   let selectedTrack = $derived(`cloud/transcripts/${selectedSlug}`);
+  let slugKeys = $derived(Object.keys(data.manifest));
 
   let segments: SegmentSource[] = $state([]);
   let cues: VTTCue[] = $derived(
@@ -32,6 +34,7 @@
   );
 
   async function slugSelected() {
+    // slugJum.select(selectedSlug);
     if (selectedTrack) {
       const track_response = await fetch(selectedTrack);
 
@@ -55,7 +58,7 @@
   }
 
   onMount(() => {
-    selectedSlug = Object.keys(data.manifest).at(0);
+    slugSelect.selected = slugKeys.at(0);
     setTimeout(() => {
       slugSelected();
     }, 0);
@@ -70,10 +73,6 @@
     }
   }
 
-  // function isActive(segment: TranscriptionSegment): boolean {
-
-  // }
-
   function update() {
     segments.forEach((segment) => {
       const v = trackElement?.parentElement as HTMLVideoElement;
@@ -85,59 +84,139 @@
   }
 </script>
 
-{#if selectedSlug}
-  <video
-    controls
-    src={selectedVideoSrc}
-    width="400"
-    ontimeupdate={(e) => update()}
+{#snippet nextButton()}
+  <svg
+    viewBox="0 0 36 36"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    aria-hidden="true"
+    role="img"
+    preserveAspectRatio="xMidYMid meet"
   >
-    <track
-      bind:this={trackElement}
-      kind="captions"
-      label="Custom Cue Track"
-      default
-    />
-  </video>
-
-  <select bind:value={selectedSlug} onchange={slugSelected}>
-    {#each Object.keys(data.manifest) as slug (slug)}
-      <option value={slug}>{slug}</option>
-    {/each}
-  </select>
-
-  <ul>
-    {#each segments as segment (segment.id)}
-      <li class:active={segment.active}>{segment.text}</li>
-    {/each}
-  </ul>
-{:else}
-  <p>Video content is unavailable atm</p>
-{/if}
-
-<p>
-  {selectedVideoSrc}
-</p>
-{#if selectedSlug}
-  <p>
-    {selectedSlug}
-  </p>
-  <p>
-    <a
-      target="_blank"
-      href={resolve("/[stamp]/[slug]/transcript", {
-        slug: selectedSlug,
-        stamp: data.stamp,
-      })}>selected track</a
+    <path
+      d="M36 32a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4h28a4 4 0 0 1 4 4v28z"
     >
-  </p>
-{/if}
+    </path>
+    <path fill="#FFF" d="M27 18L15 7v9.166L5 7v22l10-9.167V29zm0-11h4v22h-4z">
+    </path>
+  </svg>
+{/snippet}
+
+<section class="vp">
+  {#if slugSelect.selected}
+    <video controls src={selectedVideoSrc} ontimeupdate={(e) => update()}>
+      <track
+        bind:this={trackElement}
+        kind="captions"
+        label="Custom Cue Track"
+        default
+      />
+    </video>
+
+    <div class="controls">
+      <button
+        aria-label="prev"
+        disabled={slugKeys.indexOf(slugSelect.selected) === 0}
+        onclick={() => {
+          if (slugSelect.selected) {
+            const l = slugKeys.indexOf(slugSelect.selected);
+            if (l > 0) {
+              slugSelect.selected = slugKeys.at(l - 1);
+            }
+          }
+          slugSelected();
+        }}
+      >
+        {@render nextButton()}
+      </button>
+      <select
+        name="select-slug"
+        bind:value={slugSelect.selected}
+        onchange={slugSelected}
+      >
+        {#each slugKeys as slug (slug)}
+          <option value={slug}>{slug}</option>
+        {/each}
+      </select>
+      <button
+        aria-label="next"
+        disabled={slugKeys.indexOf(slugSelect.selected) + 1 === slugKeys.length}
+        onclick={() => {
+          if (slugSelect.selected) {
+            const l = slugKeys.indexOf(slugSelect.selected);
+
+            if (l < slugKeys.length) {
+              slugSelect.selected = slugKeys.at(l + 1);
+            }
+
+            // if (slugSelect.selected !== slugKeys.at(-1)) {
+            //   slugSelect.selected = slugKeys.at(l + 1);
+            // }
+          }
+          slugSelected();
+        }}
+      >
+        {@render nextButton()}
+      </button>
+    </div>
+
+    <ul>
+      {#each segments as segment (segment.id)}
+        <li class:active={segment.active}>{segment.text}</li>
+      {/each}
+    </ul>
+  {:else}
+    <p>Video content is unavailable atm</p>
+  {/if}
+  <a href={resolve("/")}>&#127910; Back</a>
+</section>
 
 <style>
+  .vp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+  ul {
+    list-style: none;
+  }
   li {
-    display: none;
+    padding: 2px;
+    font-weight: 200;
   }
   li.active {
-    display: block;
+    font-weight: 600;
+  }
+
+  video {
+    width: 60dvw;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .controls button {
+    all: initial;
+    display: flex;
+    svg {
+      fill: var(--ablue);
+      height: 2rem;
+      width: 2rem;
+    }
+  }
+
+  button[aria-label="prev"] {
+    transform: scaleX(-1);
+  }
+
+  .controls button:disabled {
+    svg {
+      fill: silver;
+    }
   }
 </style>

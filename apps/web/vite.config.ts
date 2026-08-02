@@ -20,7 +20,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@influenca/core": "../../libraries/core/src/index.ts",
-      "@influenca/shared": "../../libraries/shared/src/index.ts",
     },
   },
 });
