@@ -21,7 +21,7 @@ body {
 select {
   appearance: base-select;
   font-family: inherit;
-  padding: 10px 40px 10px 15px;
+  padding: 10px;
   border: 2px solid var(--ablue);
   border-radius: var(--br);
   background-color: #ffffff;
