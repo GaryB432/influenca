@@ -5,6 +5,7 @@ import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import OpenAI from "openai";
+import sharp from "sharp";
 
 import type {
   Manifest,
@@ -132,7 +133,9 @@ async function create_wav_vid_return_not_justslug(
 
   const seconds = duration ?? 0;
 
-  fs.writeFileSync(blank_mp4_FP, "not a real video yet", "utf-8");
+  await generatePlaceholderVideo(blank_mp4_FP, seconds, !really_call_ffmpeg);
+
+  // fs.writeFileSync(blank_mp4_FP, "not a real video yet", "utf-8");
   return mp4name;
 }
 
@@ -287,6 +290,70 @@ async function createVideoEntry(
   };
 }
 
+async function generatePlaceholderVideo(
+  outputMp4Path: string,
+  duration: number,
+  drier: boolean,
+) {
+  const SINGLE_FRAME_PATH = path.join(
+    temporary_for_wav_work,
+    "static_frame.png",
+  );
+
+  const FPS = 10; // Simple baseline frame rate to minimize encoding size output
+
+  // console.log(
+  //   "Converting source SVG layout template to a sharp PNG frame image target...",
+  // );
+
+  // 1. Convert your crisp SVG source structural code asset into a single flat PNG file target
+  await sharp("./assets/no-video.svg")
+    .resize(1080, 1080)
+    .png()
+    .toFile(SINGLE_FRAME_PATH);
+
+  // console.log(
+  //   `Starting FFmpeg stream builder workflow. Generating a ${DURATION_SECONDS}s MP4 loop file...`,
+  // );
+
+  // 2. Feed the single static image file directly into your application execution framework pipeline
+  await new Promise<void>((resolve, reject) => {
+    if (drier) {
+      resolve();
+    }
+    ffmpeg()
+      // Provide the single file path directly
+      .input(SINGLE_FRAME_PATH)
+      // CRITICAL FLAG 1: Tells FFmpeg to infinitely read/loop the single input image asset file reference
+      .loop()
+      // CRITICAL FLAG 2: Explicitly limits the input runtime stream loop duration match limit target
+      .duration(duration)
+      // Match input frame render delivery standard configurations rate pacing properties
+      .inputFps(FPS)
+      .output(outputMp4Path)
+      // Apply scale target video filter mapping parameters directly matching size inputs
+      .videoFilter(`scale=${1080}:${1080}`)
+      // High efficiency modern web compliant H.264 video codec system mapping profile choice
+      .videoCodec("libx264")
+      // Apply constant rate quality balancing parameters (CRF 18 is visually completely lossless)
+      .addOutputOption("-crf", "18")
+      // Optimizes pixel depth structure arrays format configuration for universal mobile/web browser play support profiles
+      .addOutputOption("-pix_fmt", "yuv420p")
+      .addOutputOption("-y")
+      .on("end", () => {
+        // console.log("Video rendering complete successfully!");
+        // Cleanup the temporary image asset frame file from the directory footprint space cleanly
+        if (fs.existsSync(SINGLE_FRAME_PATH)) fs.unlinkSync(SINGLE_FRAME_PATH);
+        resolve();
+      })
+      .on("error", (err) => {
+        console.error("FFmpeg compilation process run execution failed:", err);
+        reject(err);
+      })
+      .run();
+  });
+}
+
 async function probeVideo(
   videoPath: string,
   drier: boolean,
@@ -312,7 +379,6 @@ async function probeVideo(
     }
   });
 }
-
 async function transcodeToMp4(
   inputPath: string,
   outputVideoPath: string,
@@ -342,6 +408,7 @@ async function transcodeToMp4(
     }
   });
 }
+
 async function transcribeAudio(
   options: AccessionWorkflowOptions,
   parts: path.ParsedPath,
