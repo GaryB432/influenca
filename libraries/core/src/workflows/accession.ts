@@ -1,4 +1,4 @@
-import type { FfprobeData, FfprobeStream } from "fluent-ffmpeg";
+import type { FfprobeData } from "fluent-ffmpeg";
 
 import { console_wrapper as coolsole } from "@influenca/shared";
 import ffmpeg from "fluent-ffmpeg";
@@ -13,6 +13,7 @@ import type {
   Transcription,
   TranscriptionSegment,
   VideoEntry,
+  VideoStatisticalBlock,
 } from "../index";
 
 import * as color from "../color";
@@ -43,11 +44,16 @@ export type AccessionWorkflowResult = {
   transcribedFiles: number;
 };
 
+const temporary_for_wav_work = "/tmp/wav";
+
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
 ): Promise<AccessionWorkflowResult> {
   if (options.verbose) {
     throw new Error("verbosity is a matter for the terminal layer");
+  }
+  if (options.dryRun) {
+    throw new Error("revisit what that means");
   }
   if (!options.outDir) {
     throw new Error("outDir is required.");
@@ -55,7 +61,6 @@ export async function runAccessionWorkflow(
 
   const outDir = options.outDir;
   const manifestPath = path.join(outDir, ".influenca.json");
-  const apiKey = options.openAiKey;
   const files = fs.readdirSync(options.inDir);
 
   const every_media_parts = files
@@ -66,115 +71,21 @@ export async function runAccessionWorkflow(
 
   const manifest: Manifest = {};
 
-  if (!options.dryRun && !fs.existsSync(outDir)) {
+  if (!options.dryRun) {
     fs.mkdirSync(outDir, { recursive: true });
+    fs.mkdirSync(temporary_for_wav_work, { recursive: true });
   }
 
   let failedFiles = 0;
   const matchedFiles = media_parts.length;
   let processedFiles = 0;
-  let transcribedFiles = 0;
+  const transcribedFiles = 0;
 
   const progress = options.meter({ max: matchedFiles });
   progress.start(color.summaryTone.path(options.outDir));
 
   for (const path_part of media_parts) {
-    // const f = {
-    //   filename: "VID00000.AVI",
-    //   partThepart: {
-    //     base: "VID00000.AVI",
-    //     dir: "",
-    //     ext: ".AVI",
-    //     name: "VID00000",
-    //     root: "",
-    //   },
-    // };
-
-    const inputPath = path.join(options.inDir, path.format(path_part));
-    const tmp4 = path_part.name.concat(".mp4");
-    const ovp = path.join(options.outDir, tmp4);
-
-    await transcodeToMp4(inputPath, ovp, !really_call_ffmpeg);
-
-    const metadata = await probeVideo(ovp, !really_call_ffmpeg);
-    const videoStream = metadata.streams.find(
-      (stream: FfprobeStream) => stream.codec_type === "video",
-    );
-    // TODO are we duplicating audio? for whisper later?
-    const audioStream = metadata.streams.find(
-      (stream: FfprobeStream) => stream.codec_type === "audio",
-    );
-    const frames = parseInt(videoStream?.nb_frames || "0", 10);
-    const duration = parseFloat(metadata.format.duration?.toString() || "0");
-
-    let whisperTranscription: Transcription | undefined;
-    if (!really_call_ffmpeg || (options.transcribe && audioStream && apiKey)) {
-      whisperTranscription = await transcribeAudio(
-        {
-          apiKey,
-          baseName: path_part.name,
-          outDir,
-          outputVideoPath: ovp,
-        },
-        !really_call_ffmpeg,
-      );
-      transcribedFiles += 1;
-    } else if (options.verbose) {
-      // if (!options.transcribe) {
-      //   dont_use_the_console.log("  Skipping transcription (--transcribe not set)");
-      // } else if (!audioStream) {
-      //   dont_use_the_console.log("  No audio stream, skipping transcription");
-      // } else {
-      //   dont_use_the_console.log("  OPENAI_API_KEY not set, skipping transcription");
-      // }
-    }
-
-    const videoEntry: VideoEntry = {
-      transcript: undefined,
-
-      video: {
-        [tmp4]: {
-          stats: {
-            duration_seconds: duration,
-            frames,
-          },
-        },
-      },
-    };
-
-    if (whisperTranscription) {
-      const segmentJsonPath = path_part.name.concat(".vtt");
-      const outputSegmentsPath = path.join(outDir, segmentJsonPath);
-
-      const blank_segment_for_fun: TranscriptionSegment = {
-        avg_logprob: 0,
-        compression_ratio: 0,
-        end: 5,
-        id: 0,
-        no_speech_prob: 0,
-        seek: 0,
-        start: 0,
-        temperature: 0,
-        text: "NOTHING TO HEAR HERE",
-        tokens: [3, 5, 7, 9],
-      };
-
-      writeJSONSync<TranscriptionSegment[]>(
-        outputSegmentsPath,
-        whisperTranscription.segments ?? [blank_segment_for_fun],
-        {
-          stringify: { replacer: null, space: 2 },
-        },
-      );
-
-      videoEntry.transcript = {
-        meta: {
-          duration: whisperTranscription.duration,
-          language: whisperTranscription.language,
-        },
-        segments: segmentJsonPath,
-      };
-    }
+    const videoEntry = await createVideoEntry(options, path_part);
 
     manifest[path_part.name] = videoEntry;
 
@@ -189,7 +100,7 @@ export async function runAccessionWorkflow(
     }
     progress.advance(
       processedFiles + failedFiles,
-      `${path_part.base} was just completed`,
+      `${path_part.base} complete`,
     );
   }
 
@@ -197,7 +108,6 @@ export async function runAccessionWorkflow(
     writeJSONSync<Manifest>(manifestPath, manifest, {
       stringify: { replacer: null, space: 2 },
     });
-    // finny.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   }
   progress.stop();
 
@@ -208,6 +118,172 @@ export async function runAccessionWorkflow(
     outDir,
     processedFiles,
     transcribedFiles,
+  };
+}
+
+async function create_wav_vid_return_not_justslug(
+  path_part: path.ParsedPath,
+  options: AccessionWorkflowOptions,
+  duration: number | undefined,
+): Promise<string> {
+  const mp4name = path.format({ ext: ".mp4", name: path_part.name });
+
+  const blank_mp4_FP = path.resolve(options.outDir, mp4name);
+
+  const seconds = duration ?? 0;
+
+  fs.writeFileSync(blank_mp4_FP, "not a real video yet", "utf-8");
+  return mp4name;
+}
+
+async function createVideoEntry(
+  options: AccessionWorkflowOptions,
+  path_part: path.ParsedPath,
+): Promise<VideoEntry> {
+  const video_stats_to_finally_return = {
+    duration_seconds: 0,
+    frames: 0,
+  };
+
+  let segments = "tbd";
+
+  const meta = {
+    duration: 0,
+    language: "",
+  };
+
+  let video_slug = path_part.base;
+
+  const temporary_for_wav_work = "tmp/dudio";
+
+  let audio_fp_for_whisper: string | undefined;
+
+  const mp4base = path.format({ ext: ".mp4", name: path_part.name });
+
+  switch (path_part.ext.toLowerCase()) {
+    case ".avi": {
+      const full_avi_path = path.resolve(options.inDir, path_part.base);
+
+      const mp4_name_we_gonna_trascode_up = path.resolve(
+        options.outDir,
+        mp4base,
+      );
+      await transcodeToMp4(
+        full_avi_path,
+        mp4_name_we_gonna_trascode_up,
+        !really_call_ffmpeg,
+      );
+      const pv: FfprobeData = await probeVideo(
+        mp4_name_we_gonna_trascode_up,
+        !really_call_ffmpeg,
+      );
+      audio_fp_for_whisper = mp4_name_we_gonna_trascode_up;
+
+      video_slug = mp4base;
+
+      for (const stream of pv.streams) {
+        switch (stream.codec_type) {
+          case "audio": {
+            // audio_stream_for_whisper = stream;
+            console.log("hmmmm do we need this audio stream?");
+            break;
+          }
+          case "video": {
+            meta.duration = parseInt(stream.duration ?? "0", 10);
+            // meta.language = "df";
+            video_stats_to_finally_return.duration_seconds = meta.duration;
+            video_stats_to_finally_return.frames = parseInt(
+              stream.nb_frames ?? "0",
+              10,
+            );
+            break;
+          }
+          default: {
+            throw new Error("unknown codec".concat(stream.codec_type!));
+          }
+        }
+      }
+
+      break;
+    }
+    case ".mp4": {
+      throw new Error("cannot do mp4s yet");
+    }
+    case ".wav": {
+      const mp4ForAudio = path.resolve(temporary_for_wav_work, mp4base);
+      await transcodeToMp4(
+        path.resolve(options.inDir, path_part.base),
+        mp4ForAudio,
+        !really_call_ffmpeg,
+      );
+
+      const audioProbe = await probeVideo(mp4ForAudio, !really_call_ffmpeg);
+
+      for (const wav_audio_stream of audioProbe.streams.filter(
+        (s) => s.codec_type === "audio",
+      )) {
+        video_stats_to_finally_return.duration_seconds = parseInt(
+          wav_audio_stream.duration ?? "0",
+          10,
+        );
+        video_slug = await create_wav_vid_return_not_justslug(
+          path_part,
+          options,
+          video_stats_to_finally_return.duration_seconds,
+        );
+        audio_fp_for_whisper = mp4ForAudio;
+      }
+
+      break;
+    }
+    default: {
+      throw new Error("unsupported media extension");
+    }
+  }
+
+  if (audio_fp_for_whisper) {
+    if (really_call_ffmpeg && options.transcribe) {
+      const whisperTranscription: Transcription = await transcribeAudio(
+        options,
+        path_part,
+        audio_fp_for_whisper,
+      );
+
+      const segmentJsonPath = path_part.name.concat(".vtt");
+      const outputSegmentsPath = path.join(options.outDir, segmentJsonPath);
+
+      segments = segmentJsonPath;
+      meta.language = whisperTranscription.language;
+      meta.duration = whisperTranscription.duration;
+
+      writeJSONSync<TranscriptionSegment[]>(
+        outputSegmentsPath,
+        whisperTranscription.segments ?? [],
+        {
+          stringify: { replacer: null, space: 2 },
+        },
+      );
+    } else {
+      coolsole.log(
+        JSON.stringify({ ff: audio_fp_for_whisper, m: "got audio" }),
+      );
+    }
+  }
+
+  const video: Record<string, { stats: VideoStatisticalBlock }> = {};
+
+  const transcript = {
+    meta,
+    segments,
+  };
+
+  video[video_slug] = {
+    stats: video_stats_to_finally_return,
+  };
+
+  return {
+    transcript,
+    video,
   };
 }
 
@@ -266,50 +342,42 @@ async function transcodeToMp4(
     }
   });
 }
-
 async function transcribeAudio(
-  options: {
-    apiKey: string;
-    baseName: string;
-    outDir: string;
-    outputVideoPath: string;
-  },
-  drier: boolean,
+  options: AccessionWorkflowOptions,
+  parts: path.ParsedPath,
+  giant_source_of_audio: string,
 ): Promise<Transcription> {
-  const openai = new OpenAI({ apiKey: options.apiKey });
-  const audioPath = path.join(options.outDir, `${options.baseName}.m4a`);
-
-  let result: Transcription = {
-    duration: 2.4,
-    language: "english",
-    text: "I WAS SKIPPED",
-  };
+  const audioPath = path.resolve(
+    temporary_for_wav_work,
+    parts.name.concat(".mp3"),
+  );
 
   await new Promise<void>((resolve, reject) => {
-    if (drier) {
-      coolsole.log("transcribeAudio");
-      setTimeout(() => {
-        resolve();
-      }, 100);
-    } else {
-      ffmpeg(options.outputVideoPath)
-        .noVideo()
-        .audioCodec("aac")
-        .output(audioPath)
-        .on("end", () => resolve())
-        .on("error", reject)
-        .run();
-    }
+    ffmpeg(giant_source_of_audio)
+      .noVideo() // 1. Completely strip the video track
+      .audioCodec("libmp3lame") // 2. Use native MP3 encoding
+      .audioChannels(1) // 3. Drop to mono (saves 50% file size)
+      .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
+      .outputOptions("-map_metadata -1") // 5. Strip metadata tags
+      .output(audioPath)
+      .on("end", () => resolve())
+      .on("error", (err) => {
+        const e = err instanceof Error ? err.message : String(err);
+        coolsole.error("FFmpeg Error details: ".concat(e));
+        reject(err);
+      })
+      .run();
   });
 
-  if (!drier) {
-    result = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(audioPath),
-      model: "whisper-1",
-      response_format: "verbose_json",
-    });
-    fs.unlinkSync(audioPath);
-  }
+  const openai = new OpenAI({ apiKey: options.openAiKey });
+
+  const result = await openai.audio.transcriptions.create({
+    file: fs.createReadStream(audioPath),
+    model: "whisper-1",
+    response_format: "verbose_json",
+  });
+
+  fs.unlinkSync(audioPath);
   return result;
 }
 
