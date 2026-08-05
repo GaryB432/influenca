@@ -5,8 +5,7 @@ import sharp from "sharp";
 
 const svgStringOrPath = path.resolve(
   import.meta.dirname,
-  "../../..",
-  "assets/no-video.svg",
+  "../../../assets/no-video.svg",
 );
 
 export async function generateMissingVideo(

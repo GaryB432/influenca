@@ -123,12 +123,12 @@ async function createVideoEntry(
   options: AccessionWorkflowOptions,
   path_part: path.ParsedPath,
 ): Promise<VideoEntry> {
-  const video_stats_to_finally_return = {
+  const finalized_stats = {
     duration_seconds: 0,
     frames: 0,
   };
 
-  let segments = "";
+  let segments = "coming later";
 
   const meta = {
     duration: 0,
@@ -139,135 +139,73 @@ async function createVideoEntry(
 
   const temporary_for_wav_work = "tmp/dudio";
 
-  let audio_fp_for_whisper: string | undefined;
-
   const mp4base = path.format({ ext: ".mp4", name: path_part.name });
 
-  switch (path_part.ext.toLowerCase()) {
-    case ".avi": {
-      const avi_FP = path.resolve(options.inDir, path.format(path_part));
+  let mp4_FP = path.resolve(options.outDir, mp4base);
 
-      const mp4_FP = path.resolve(options.outDir, mp4base);
-      await transcodeToMp4(avi_FP, mp4_FP, !really_call_ffmpeg);
-
-      const mp4: FfprobeData = await probeVideo(mp4_FP, !really_call_ffmpeg);
-
-      const [vid] = mp4.streams.filter((s) => s.codec_type === "video");
-
-      video_stats_to_finally_return.frames = parseInt(
-        vid?.nb_frames ?? "0",
-        10,
-      );
-      video_stats_to_finally_return.duration_seconds = parseInt(
-        vid?.duration ?? "0",
-        10,
-      );
-
-      audio_fp_for_whisper = mp4_FP;
-
-      video_slug = mp4base;
-
-      // for (const stream of pv.streams) {
-      //   switch (stream.codec_type) {
-      //     case "audio": {
-      //       // audio_stream_for_whisper = stream;
-      //       console.log("hmmmm do we need this audio stream?");
-      //       break;
-      //     }
-      //     case "video": {
-      //       meta.duration = parseInt(stream.duration ?? "0", 10);
-      //       // meta.language = "df";
-      //       video_stats_to_finally_return.duration_seconds = meta.duration;
-      //       video_stats_to_finally_return.frames = parseInt(
-      //         stream.nb_frames ?? "0",
-      //         10,
-      //       );
-      //       break;
-      //     }
-      //     default: {
-      //       throw new Error("unknown codec".concat(stream.codec_type!));
-      //     }
-      //   }
-      // }
-
-      break;
-    }
-    case ".mp4": {
-      throw new Error("cannot do mp4s yet");
-    }
-    case ".wav": {
-      const wav_FP = path.resolve(options.inDir, path.format(path_part));
-
-      const mp4_FP = path.resolve(options.outDir, mp4base);
-
-      await generateMissingVideo(wav_FP, mp4_FP);
-
-      const mp4: FfprobeData = await probeVideo(mp4_FP, !really_call_ffmpeg);
-
-      const [vid] = mp4.streams.filter((s) => s.codec_type === "video");
-
-      video_stats_to_finally_return.frames = parseInt(
-        vid?.nb_frames ?? "0",
-        10,
-      );
-      video_stats_to_finally_return.duration_seconds = parseInt(
-        vid?.duration ?? "0",
-        10,
-      );
-
-      audio_fp_for_whisper = mp4_FP;
-
-      video_slug = mp4base;
-
-      break;
-    }
-    default: {
-      throw new Error("unsupported media extension");
-    }
+  if (path_part.ext.toLowerCase() === ".wav") {
+    const wav_fp = path.resolve(options.inDir, path.format(path_part));
+    await generateMissingVideo(wav_fp, mp4_FP);
+  } else if (path_part.ext.toLowerCase() === ".avi") {
+    await transcodeToMp4(
+      path.resolve(options.inDir, path.format(path_part)),
+      mp4_FP,
+      !really_call_ffmpeg,
+    );
+  } else if (path_part.ext.toLowerCase() === ".mp4") {
+    mp4_FP = path.resolve(options.inDir, path.format(path_part));
   }
 
-  if (audio_fp_for_whisper) {
-    if (really_call_ffmpeg && options.transcribe) {
-      const whisperTranscription: Transcription = await transcribeAudio(
-        options,
-        audio_fp_for_whisper,
-        path.join(temporary_for_wav_work, mp4base),
-      );
+  const probeResult = await probeVideo(mp4_FP, !really_call_ffmpeg);
+  const vid = probeResult.streams.find(
+    (stream) => stream.codec_type === "video",
+  );
+  finalized_stats.duration_seconds = parseInt(vid?.duration ?? "0", 10);
+  video_slug = path.parse(mp4_FP).base;
 
-      const segmentJsonPath = path.format({ ...path_part, ext: ".vtt" });
-      const outputSegmentsPath = path.join(options.outDir, segmentJsonPath);
+  finalized_stats.frames = parseInt(vid?.nb_frames ?? "0", 10);
 
-      segments = segmentJsonPath;
-      meta.language = whisperTranscription.language;
-      meta.duration = whisperTranscription.duration;
+  if (really_call_ffmpeg && options.transcribe) {
+    const whisperTranscription: Transcription = await transcribeAudio(
+      options,
+      mp4_FP,
+      path.join(temporary_for_wav_work, mp4base),
+    );
 
-      writeJSONSync<TranscriptionSegment[]>(
-        outputSegmentsPath,
-        whisperTranscription.segments ?? [],
-        {
-          stringify: { replacer: null, space: 2 },
-        },
-      );
-    } else {
-      coolsole.log(
-        JSON.stringify({ ff: audio_fp_for_whisper, m: "got audio" }),
-      );
-    }
+    const segmentJsonPath = path.format({ ext: ".vtt", name: path_part.name });
+    const outputSegmentsPath = path.join(options.outDir, segmentJsonPath);
+
+    segments = segmentJsonPath;
+    meta.language = whisperTranscription.language;
+    meta.duration = whisperTranscription.duration;
+
+    writeJSONSync<TranscriptionSegment[]>(
+      outputSegmentsPath,
+      whisperTranscription.segments ?? [],
+      {
+        stringify: { replacer: null, space: 2 },
+      },
+    );
+  } else {
+    coolsole.log(
+      JSON.stringify({
+        a: mp4_FP,
+        m: "got audio",
+      }),
+    );
   }
 
   const video: Record<string, { stats: VideoStatisticalBlock }> = {};
 
-  const transcript = {
-    meta,
-    segments,
-  };
-
   video[video_slug] = {
-    stats: video_stats_to_finally_return,
+    stats: finalized_stats,
   };
 
   return {
-    transcript,
+    transcript: {
+      meta,
+      segments,
+    },
     video,
   };
 }
@@ -327,6 +265,7 @@ async function transcodeToMp4(
     }
   });
 }
+
 async function transcribeAudio(
   options: AccessionWorkflowOptions,
   soundPath: string,
