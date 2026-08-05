@@ -3,6 +3,7 @@ import type { FfprobeData } from "fluent-ffmpeg";
 import { console_wrapper as coolsole } from "@influenca/shared";
 import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
+import os from "node:os";
 import * as path from "node:path";
 import OpenAI from "openai";
 
@@ -45,6 +46,12 @@ export type AccessionWorkflowResult = {
   transcribedFiles: number;
 };
 
+const baseTempDir = fs.realpathSync(os.tmpdir());
+
+let temporary_for_wav_work = fs.mkdtempDisposableSync(
+  path.join(baseTempDir, "influenca-"),
+);
+
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
 ): Promise<AccessionWorkflowResult> {
@@ -62,6 +69,8 @@ export async function runAccessionWorkflow(
   const manifestPath = path.join(outDir, ".influenca.json");
   const files = fs.readdirSync(options.inDir);
 
+  // const temporary_for_wav_work = fs.mkdtempDisposableSync();
+
   const every_media_parts = files
     .map((f) => path.parse(f))
     .filter((p) => p.ext.toLowerCase().match(/\.(avi|mp4|wav)$/));
@@ -72,24 +81,27 @@ export async function runAccessionWorkflow(
 
   if (!options.dryRun) {
     fs.mkdirSync(outDir, { recursive: true });
+    temporary_for_wav_work = fs.mkdtempDisposableSync(
+      path.join(baseTempDir, "influenca-"),
+    );
   }
 
   let failedFiles = 0;
   const matchedFiles = media_parts.length;
   let processedFiles = 0;
-  const transcribedFiles = 0;
+  let transcribedFiles = 0;
 
   const progress = options.meter({ max: matchedFiles });
   progress.start(color.summaryTone.path(options.outDir));
 
   for (const path_part of media_parts) {
-    const videoEntry = await createVideoEntry(options, path_part);
-
-    manifest[path_part.name] = videoEntry;
-
     try {
-      // all the stuff above
+      const videoEntry = await createVideoEntry(options, path_part);
+      manifest[path_part.name] = videoEntry;
       processedFiles += 1;
+      if (videoEntry.transcript) {
+        transcribedFiles += 1;
+      }
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
@@ -108,6 +120,7 @@ export async function runAccessionWorkflow(
     });
   }
   progress.stop();
+  temporary_for_wav_work.remove();
 
   return {
     failedFiles,
@@ -136,8 +149,6 @@ async function createVideoEntry(
   };
 
   let video_slug = path_part.base;
-
-  const temporary_for_wav_work = "tmp/dudio";
 
   const mp4base = path.format({ ext: ".mp4", name: path_part.name });
 
@@ -169,7 +180,7 @@ async function createVideoEntry(
     const whisperTranscription: Transcription = await transcribeAudio(
       options,
       mp4_FP,
-      path.join(temporary_for_wav_work, mp4base),
+      path.join(temporary_for_wav_work.path, mp4base),
     );
 
     const segmentJsonPath = path.format({ ext: ".vtt", name: path_part.name });
