@@ -48,9 +48,7 @@ export type AccessionWorkflowResult = {
 
 const baseTempDir = fs.realpathSync(os.tmpdir());
 
-let temporary_for_wav_work = fs.mkdtempDisposableSync(
-  path.join(baseTempDir, "influenca-"),
-);
+let temporary_for_wav_work: fs.DisposableTempDir | undefined;
 
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
@@ -68,8 +66,6 @@ export async function runAccessionWorkflow(
   const outDir = options.outDir;
   const manifestPath = path.join(outDir, ".influenca.json");
   const files = fs.readdirSync(options.inDir);
-
-  // const temporary_for_wav_work = fs.mkdtempDisposableSync();
 
   const every_media_parts = files
     .map((f) => path.parse(f))
@@ -118,9 +114,11 @@ export async function runAccessionWorkflow(
     writeJSONSync<Manifest>(manifestPath, manifest, {
       stringify: { replacer: null, space: 2 },
     });
+    if (temporary_for_wav_work) {
+      temporary_for_wav_work.remove();
+    }
   }
   progress.stop();
-  temporary_for_wav_work.remove();
 
   return {
     failedFiles,
@@ -176,7 +174,7 @@ async function createVideoEntry(
 
   finalized_stats.frames = parseInt(vid?.nb_frames ?? "0", 10);
 
-  if (really_call_ffmpeg && options.transcribe) {
+  if (really_call_ffmpeg && temporary_for_wav_work && options.transcribe) {
     const whisperTranscription: Transcription = await transcribeAudio(
       options,
       mp4_FP,
