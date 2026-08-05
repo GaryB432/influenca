@@ -5,7 +5,6 @@ import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import OpenAI from "openai";
-import sharp from "sharp";
 
 import type {
   Manifest,
@@ -19,6 +18,7 @@ import type {
 
 import * as color from "../color";
 import { writeJSONSync } from "../shims/fs";
+import { generateMissingVideo } from "./video-fill";
 
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
@@ -44,8 +44,6 @@ export type AccessionWorkflowResult = {
   processedFiles: number;
   transcribedFiles: number;
 };
-
-const temporary_for_wav_work = "/tmp/wav";
 
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
@@ -74,7 +72,6 @@ export async function runAccessionWorkflow(
 
   if (!options.dryRun) {
     fs.mkdirSync(outDir, { recursive: true });
-    fs.mkdirSync(temporary_for_wav_work, { recursive: true });
   }
 
   let failedFiles = 0;
@@ -122,23 +119,6 @@ export async function runAccessionWorkflow(
   };
 }
 
-async function create_wav_vid_return_not_justslug(
-  path_part: path.ParsedPath,
-  options: AccessionWorkflowOptions,
-  duration: number | undefined,
-): Promise<string> {
-  const mp4name = path.format({ ext: ".mp4", name: path_part.name });
-
-  const blank_mp4_FP = path.resolve(options.outDir, mp4name);
-
-  const seconds = duration ?? 0;
-
-  await generatePlaceholderVideo(blank_mp4_FP, seconds, !really_call_ffmpeg);
-
-  // fs.writeFileSync(blank_mp4_FP, "not a real video yet", "utf-8");
-  return mp4name;
-}
-
 async function createVideoEntry(
   options: AccessionWorkflowOptions,
   path_part: path.ParsedPath,
@@ -148,7 +128,7 @@ async function createVideoEntry(
     frames: 0,
   };
 
-  let segments = "tbd";
+  let segments = "";
 
   const meta = {
     duration: 0,
@@ -165,47 +145,50 @@ async function createVideoEntry(
 
   switch (path_part.ext.toLowerCase()) {
     case ".avi": {
-      const full_avi_path = path.resolve(options.inDir, path_part.base);
+      const avi_FP = path.resolve(options.inDir, path.format(path_part));
 
-      const mp4_name_we_gonna_trascode_up = path.resolve(
-        options.outDir,
-        mp4base,
+      const mp4_FP = path.resolve(options.outDir, mp4base);
+      await transcodeToMp4(avi_FP, mp4_FP, !really_call_ffmpeg);
+
+      const mp4: FfprobeData = await probeVideo(mp4_FP, !really_call_ffmpeg);
+
+      const [vid] = mp4.streams.filter((s) => s.codec_type === "video");
+
+      video_stats_to_finally_return.frames = parseInt(
+        vid?.nb_frames ?? "0",
+        10,
       );
-      await transcodeToMp4(
-        full_avi_path,
-        mp4_name_we_gonna_trascode_up,
-        !really_call_ffmpeg,
+      video_stats_to_finally_return.duration_seconds = parseInt(
+        vid?.duration ?? "0",
+        10,
       );
-      const pv: FfprobeData = await probeVideo(
-        mp4_name_we_gonna_trascode_up,
-        !really_call_ffmpeg,
-      );
-      audio_fp_for_whisper = mp4_name_we_gonna_trascode_up;
+
+      audio_fp_for_whisper = mp4_FP;
 
       video_slug = mp4base;
 
-      for (const stream of pv.streams) {
-        switch (stream.codec_type) {
-          case "audio": {
-            // audio_stream_for_whisper = stream;
-            console.log("hmmmm do we need this audio stream?");
-            break;
-          }
-          case "video": {
-            meta.duration = parseInt(stream.duration ?? "0", 10);
-            // meta.language = "df";
-            video_stats_to_finally_return.duration_seconds = meta.duration;
-            video_stats_to_finally_return.frames = parseInt(
-              stream.nb_frames ?? "0",
-              10,
-            );
-            break;
-          }
-          default: {
-            throw new Error("unknown codec".concat(stream.codec_type!));
-          }
-        }
-      }
+      // for (const stream of pv.streams) {
+      //   switch (stream.codec_type) {
+      //     case "audio": {
+      //       // audio_stream_for_whisper = stream;
+      //       console.log("hmmmm do we need this audio stream?");
+      //       break;
+      //     }
+      //     case "video": {
+      //       meta.duration = parseInt(stream.duration ?? "0", 10);
+      //       // meta.language = "df";
+      //       video_stats_to_finally_return.duration_seconds = meta.duration;
+      //       video_stats_to_finally_return.frames = parseInt(
+      //         stream.nb_frames ?? "0",
+      //         10,
+      //       );
+      //       break;
+      //     }
+      //     default: {
+      //       throw new Error("unknown codec".concat(stream.codec_type!));
+      //     }
+      //   }
+      // }
 
       break;
     }
@@ -213,29 +196,28 @@ async function createVideoEntry(
       throw new Error("cannot do mp4s yet");
     }
     case ".wav": {
-      const mp4ForAudio = path.resolve(temporary_for_wav_work, mp4base);
-      await transcodeToMp4(
-        path.resolve(options.inDir, path_part.base),
-        mp4ForAudio,
-        !really_call_ffmpeg,
+      const wav_FP = path.resolve(options.inDir, path.format(path_part));
+
+      const mp4_FP = path.resolve(options.outDir, mp4base);
+
+      await generateMissingVideo(wav_FP, mp4_FP);
+
+      const mp4: FfprobeData = await probeVideo(mp4_FP, !really_call_ffmpeg);
+
+      const [vid] = mp4.streams.filter((s) => s.codec_type === "video");
+
+      video_stats_to_finally_return.frames = parseInt(
+        vid?.nb_frames ?? "0",
+        10,
+      );
+      video_stats_to_finally_return.duration_seconds = parseInt(
+        vid?.duration ?? "0",
+        10,
       );
 
-      const audioProbe = await probeVideo(mp4ForAudio, !really_call_ffmpeg);
+      audio_fp_for_whisper = mp4_FP;
 
-      for (const wav_audio_stream of audioProbe.streams.filter(
-        (s) => s.codec_type === "audio",
-      )) {
-        video_stats_to_finally_return.duration_seconds = parseInt(
-          wav_audio_stream.duration ?? "0",
-          10,
-        );
-        video_slug = await create_wav_vid_return_not_justslug(
-          path_part,
-          options,
-          video_stats_to_finally_return.duration_seconds,
-        );
-        audio_fp_for_whisper = mp4ForAudio;
-      }
+      video_slug = mp4base;
 
       break;
     }
@@ -248,11 +230,11 @@ async function createVideoEntry(
     if (really_call_ffmpeg && options.transcribe) {
       const whisperTranscription: Transcription = await transcribeAudio(
         options,
-        path_part,
         audio_fp_for_whisper,
+        path.join(temporary_for_wav_work, mp4base),
       );
 
-      const segmentJsonPath = path_part.name.concat(".vtt");
+      const segmentJsonPath = path.format({ ...path_part, ext: ".vtt" });
       const outputSegmentsPath = path.join(options.outDir, segmentJsonPath);
 
       segments = segmentJsonPath;
@@ -290,70 +272,6 @@ async function createVideoEntry(
   };
 }
 
-async function generatePlaceholderVideo(
-  outputMp4Path: string,
-  duration: number,
-  drier: boolean,
-) {
-  const SINGLE_FRAME_PATH = path.join(
-    temporary_for_wav_work,
-    "static_frame.png",
-  );
-
-  const FPS = 10; // Simple baseline frame rate to minimize encoding size output
-
-  // console.log(
-  //   "Converting source SVG layout template to a sharp PNG frame image target...",
-  // );
-
-  // 1. Convert your crisp SVG source structural code asset into a single flat PNG file target
-  await sharp("./assets/no-video.svg")
-    .resize(1080, 1080)
-    .png()
-    .toFile(SINGLE_FRAME_PATH);
-
-  // console.log(
-  //   `Starting FFmpeg stream builder workflow. Generating a ${DURATION_SECONDS}s MP4 loop file...`,
-  // );
-
-  // 2. Feed the single static image file directly into your application execution framework pipeline
-  await new Promise<void>((resolve, reject) => {
-    if (drier) {
-      resolve();
-    }
-    ffmpeg()
-      // Provide the single file path directly
-      .input(SINGLE_FRAME_PATH)
-      // CRITICAL FLAG 1: Tells FFmpeg to infinitely read/loop the single input image asset file reference
-      .loop()
-      // CRITICAL FLAG 2: Explicitly limits the input runtime stream loop duration match limit target
-      .duration(duration)
-      // Match input frame render delivery standard configurations rate pacing properties
-      .inputFps(FPS)
-      .output(outputMp4Path)
-      // Apply scale target video filter mapping parameters directly matching size inputs
-      .videoFilter(`scale=${1080}:${1080}`)
-      // High efficiency modern web compliant H.264 video codec system mapping profile choice
-      .videoCodec("libx264")
-      // Apply constant rate quality balancing parameters (CRF 18 is visually completely lossless)
-      .addOutputOption("-crf", "18")
-      // Optimizes pixel depth structure arrays format configuration for universal mobile/web browser play support profiles
-      .addOutputOption("-pix_fmt", "yuv420p")
-      .addOutputOption("-y")
-      .on("end", () => {
-        // console.log("Video rendering complete successfully!");
-        // Cleanup the temporary image asset frame file from the directory footprint space cleanly
-        if (fs.existsSync(SINGLE_FRAME_PATH)) fs.unlinkSync(SINGLE_FRAME_PATH);
-        resolve();
-      })
-      .on("error", (err) => {
-        console.error("FFmpeg compilation process run execution failed:", err);
-        reject(err);
-      })
-      .run();
-  });
-}
-
 async function probeVideo(
   videoPath: string,
   drier: boolean,
@@ -379,6 +297,7 @@ async function probeVideo(
     }
   });
 }
+
 async function transcodeToMp4(
   inputPath: string,
   outputVideoPath: string,
@@ -408,25 +327,19 @@ async function transcodeToMp4(
     }
   });
 }
-
 async function transcribeAudio(
   options: AccessionWorkflowOptions,
-  parts: path.ParsedPath,
-  giant_source_of_audio: string,
+  soundPath: string,
+  outputPath: string,
 ): Promise<Transcription> {
-  const audioPath = path.resolve(
-    temporary_for_wav_work,
-    parts.name.concat(".mp3"),
-  );
-
   await new Promise<void>((resolve, reject) => {
-    ffmpeg(giant_source_of_audio)
+    ffmpeg(soundPath)
       .noVideo() // 1. Completely strip the video track
       .audioCodec("libmp3lame") // 2. Use native MP3 encoding
       .audioChannels(1) // 3. Drop to mono (saves 50% file size)
       .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
       .outputOptions("-map_metadata -1") // 5. Strip metadata tags
-      .output(audioPath)
+      .output(outputPath)
       .on("end", () => resolve())
       .on("error", (err) => {
         const e = err instanceof Error ? err.message : String(err);
@@ -439,12 +352,12 @@ async function transcribeAudio(
   const openai = new OpenAI({ apiKey: options.openAiKey });
 
   const result = await openai.audio.transcriptions.create({
-    file: fs.createReadStream(audioPath),
+    file: fs.createReadStream(outputPath),
     model: "whisper-1",
     response_format: "verbose_json",
   });
 
-  fs.unlinkSync(audioPath);
+  fs.unlinkSync(outputPath);
   return result;
 }
 
