@@ -153,11 +153,6 @@ async function createVideoEntry(
   let mp4_FP = path.resolve(options.outDir, mp4base);
 
   switch (path_part.ext.toLowerCase()) {
-    case ".wav": {
-      const wav_fp = path.resolve(options.inDir, path.format(path_part));
-      await generateMissingVideo(wav_fp, mp4_FP);
-      break;
-    }
     case ".avi": {
       await transcodeToMp4(
         path.resolve(options.inDir, path.format(path_part)),
@@ -168,6 +163,11 @@ async function createVideoEntry(
     }
     case ".mp4": {
       mp4_FP = path.resolve(options.inDir, path.format(path_part));
+      break;
+    }
+    case ".wav": {
+      const wav_fp = path.resolve(options.inDir, path.format(path_part));
+      await generateMissingVideo(wav_fp, mp4_FP);
       break;
     }
   }
