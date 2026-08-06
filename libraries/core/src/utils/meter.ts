@@ -47,3 +47,21 @@ export function progress({
     },
   };
 }
+
+export function verbose_progress(): ProgressResult {
+  return {
+    advance: (currentValue: number, msg?: string): void => {
+      // Explicitly sets the absolute current value (0 to max) directly
+      console.log(`${currentValue} ${msg}`);
+    },
+
+    start: (msg: string = "Processing"): void => {
+      // bar.start(max, 0, { msg });
+      console.log(`start ${msg}`);
+    },
+
+    stop: (): void => {
+      console.log("stop it!");
+    },
+  };
+}

@@ -33,7 +33,6 @@ import {
   mkdirSync,
   readFileSync,
   statSync,
-  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
@@ -53,7 +52,8 @@ if (!process.env["FFMPEG_PATH"]) {
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const SVG_PATH = resolve("assets/brand-500x500.svg");
-const FRAMES_DIR = resolve("/tmp/gen-avi-square/frames");
+const HTML_DIR = resolve("tmp/gen-avi-square/html");
+const FRAMES_DIR = resolve("tmp/gen-avi-square/frames");
 const OUTPUT_AVI = resolve("fixtures/micro-specimen.avi");
 
 const FRAME_COUNT = 24; // how many frames to sample
@@ -65,6 +65,7 @@ const FPS = 8; // 24 frames @ 8 fps = 3s clip
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
 
+if (!existsSync(HTML_DIR)) mkdirSync(HTML_DIR, { recursive: true });
 if (!existsSync(FRAMES_DIR)) mkdirSync(FRAMES_DIR, { recursive: true });
 
 const svgContent = readFileSync(SVG_PATH, "utf8");
@@ -102,7 +103,7 @@ ${svgContent}
 </body>
 </html>`;
 
-  const htmlPath = `/tmp/gen-avi-square/frame_${i}.html`;
+  const htmlPath = join(HTML_DIR, `frame_${String(i).padStart(4, "0")}.html`);
   writeFileSync(htmlPath, html);
 
   // Launch Chromium in headless mode, take a screenshot, exit
@@ -129,8 +130,6 @@ ${svgContent}
     process.exit(1);
   }
 
-  unlinkSync(htmlPath);
-
   if (i % 4 === 0 || i === FRAME_COUNT - 1) {
     process.stdout.write(
       `  frame ${i + 1}/${FRAME_COUNT}  (t=${t.toFixed(2)}s)\n`,
@@ -149,7 +148,7 @@ console.log(
 // the repo root (not from inside scripts/).
 //
 // Equivalent raw ffmpeg command:
-//   ffmpeg -y -framerate 8 -i /tmp/gen-avi-square/frames/frame_%04d.png \
+//   ffmpeg -y -framerate 8 -i tmp/gen-avi-square/frames/frame_%04d.png \
 //          -vf scale=24:24 -vcodec msmpeg4v3 -q:v 4 fixtures/micro-specimen.avi
 //
 // Codec notes:

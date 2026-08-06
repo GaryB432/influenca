@@ -8,6 +8,7 @@ import * as path from "node:path";
 import OpenAI from "openai";
 
 import type {
+  AbbreviatedTranscriptionMetadata,
   Manifest,
   ProgressOptions,
   ProgressResult,
@@ -138,31 +139,27 @@ async function createVideoEntry(
     duration_seconds: 0,
     frames: 0,
   };
-
-  let segments = "coming later";
-
-  const meta = {
-    duration: 0,
-    language: "",
-  };
-
   let video_slug = path_part.base;
+
+  let transcript:
+    | {
+        meta: AbbreviatedTranscriptionMetadata;
+        segments: string;
+      }
+    | undefined;
 
   const mp4base = path.format({ ext: ".mp4", name: path_part.name });
 
-  let mp4_FP = path.resolve(options.outDir, mp4base);
+  const mp4_FP = path.resolve(options.outDir, mp4base);
 
   switch (path_part.ext.toLowerCase()) {
-    case ".avi": {
+    case ".avi":
+    case ".mp4": {
       await transcodeToMp4(
         path.resolve(options.inDir, path.format(path_part)),
         mp4_FP,
         !really_call_ffmpeg,
       );
-      break;
-    }
-    case ".mp4": {
-      mp4_FP = path.resolve(options.inDir, path.format(path_part));
       break;
     }
     case ".wav": {
@@ -182,33 +179,35 @@ async function createVideoEntry(
   finalized_stats.frames = parseInt(vid?.nb_frames ?? "0", 10);
 
   if (really_call_ffmpeg && temporary_for_wav_work && options.transcribe) {
-    const whisperTranscription: Transcription = await transcribeAudio(
+    const whisperTranscription = await transcribeAudio(
       options,
       mp4_FP,
       path.join(temporary_for_wav_work.path, mp4base),
     );
 
-    const segmentJsonPath = path.format({ ext: ".vtt", name: path_part.name });
-    const outputSegmentsPath = path.join(options.outDir, segmentJsonPath);
+    if (whisperTranscription) {
+      const segmentJsonPath = path.format({
+        ext: ".vtt",
+        name: path_part.name,
+      });
+      const outputSegmentsPath = path.join(options.outDir, segmentJsonPath);
 
-    segments = segmentJsonPath;
-    meta.language = whisperTranscription.language;
-    meta.duration = whisperTranscription.duration;
+      transcript = {
+        meta: {
+          duration: whisperTranscription.duration,
+          language: whisperTranscription.language,
+        },
+        segments: segmentJsonPath,
+      };
 
-    writeJSONSync<TranscriptionSegment[]>(
-      outputSegmentsPath,
-      whisperTranscription.segments ?? [],
-      {
-        stringify: { replacer: null, space: 2 },
-      },
-    );
-  } else {
-    coolsole.log(
-      JSON.stringify({
-        a: mp4_FP,
-        m: "got audio",
-      }),
-    );
+      writeJSONSync<TranscriptionSegment[]>(
+        outputSegmentsPath,
+        whisperTranscription.segments ?? [],
+        {
+          stringify: { replacer: null, space: 2 },
+        },
+      );
+    }
   }
 
   const video: Record<string, { stats: VideoStatisticalBlock }> = {};
@@ -218,10 +217,7 @@ async function createVideoEntry(
   };
 
   return {
-    transcript: {
-      meta,
-      segments,
-    },
+    transcript,
     video,
   };
 }
@@ -285,35 +281,61 @@ async function transcodeToMp4(
 async function transcribeAudio(
   options: AccessionWorkflowOptions,
   soundPath: string,
-  outputPath: string,
-): Promise<Transcription> {
-  await new Promise<void>((resolve, reject) => {
-    ffmpeg(soundPath)
-      .noVideo() // 1. Completely strip the video track
-      .audioCodec("libmp3lame") // 2. Use native MP3 encoding
-      .audioChannels(1) // 3. Drop to mono (saves 50% file size)
-      .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
-      .outputOptions("-map_metadata -1") // 5. Strip metadata tags
-      .output(outputPath)
-      .on("end", () => resolve())
-      .on("error", (err) => {
-        const e = err instanceof Error ? err.message : String(err);
-        coolsole.error("FFmpeg Error details: ".concat(e));
-        reject(err);
-      })
-      .run();
-  });
+  scratchPath: string,
+): Promise<Transcription | undefined> {
+  const getAudioPathFromSoundPath = () =>
+    new Promise<string | undefined>((resolve) => {
+      ffmpeg(soundPath)
+        .noVideo() // 1. Completely strip the video track
+        .audioCodec("libmp3lame") // 2. Use native MP3 encoding
+        .audioChannels(1) // 3. Drop to mono (saves 50% file size)
+        .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
+        .outputOptions("-map_metadata -1") // 5. Strip metadata tags
+        .output(scratchPath)
+        .on("end", () => {
+          resolve(scratchPath);
+        })
+        .on("error", () => {
+          // const e = _err instanceof Error ? _err.message : String(_err);
+          // coolsole.error("Ffmpeg Error details: ".concat(e));
+          resolve(undefined);
+        })
+        .run();
+    });
 
-  const openai = new OpenAI({ apiKey: options.openAiKey });
+  const transcribeThisAudio = (the_audio: string) =>
+    new Promise<Transcription>((resolve) => {
+      if (!the_audio) throw new Error("just temporary i think");
 
-  const result = await openai.audio.transcriptions.create({
-    file: fs.createReadStream(outputPath),
-    model: "whisper-1",
-    response_format: "verbose_json",
-  });
+      const openai = new OpenAI({ apiKey: options.openAiKey });
 
-  fs.unlinkSync(outputPath);
-  return result;
+      openai.audio.transcriptions
+        .create({
+          file: fs.createReadStream(the_audio),
+          model: "whisper-1",
+          response_format: "verbose_json",
+        })
+        .then((verbose_transcription) => {
+          resolve(verbose_transcription);
+        }, logError);
+    });
+  const logError = (err: unknown) => {
+    const e = err instanceof Error ? err.message : String(err);
+    coolsole.error("Error details: ".concat(e));
+  };
+
+  const audio_scratch = await getAudioPathFromSoundPath();
+  if (!audio_scratch) {
+    return undefined;
+  }
+  if (audio_scratch !== scratchPath) throw new Error("not scratch");
+
+  try {
+    return await transcribeThisAudio(audio_scratch);
+  } catch (err) {
+    logError(err);
+    return undefined;
+  }
 }
 
 const really_call_ffmpeg = true;
