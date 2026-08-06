@@ -150,19 +150,16 @@ async function createVideoEntry(
 
   const mp4base = path.format({ ext: ".mp4", name: path_part.name });
 
-  let mp4_FP = path.resolve(options.outDir, mp4base);
+  const mp4_FP = path.resolve(options.outDir, mp4base);
 
   switch (path_part.ext.toLowerCase()) {
-    case ".avi": {
+    case ".avi":
+    case ".mp4": {
       await transcodeToMp4(
         path.resolve(options.inDir, path.format(path_part)),
         mp4_FP,
         !really_call_ffmpeg,
       );
-      break;
-    }
-    case ".mp4": {
-      mp4_FP = path.resolve(options.inDir, path.format(path_part));
       break;
     }
     case ".wav": {
