@@ -179,26 +179,32 @@ async function createVideoEntry(
   finalized_stats.frames = parseInt(vid?.nb_frames ?? "0", 10);
 
   if (really_call_ffmpeg && temporary_for_wav_work && options.transcribe) {
-    const whisperTranscription: Transcription = await transcribeAudio(
-      options,
-      mp4_FP,
-      path.join(temporary_for_wav_work.path, mp4base),
-    );
+    const whisperTranscription: Transcription | undefined =
+      await transcribeAudio(
+        options,
+        mp4_FP,
+        path.join(temporary_for_wav_work.path, mp4base),
+      );
 
-    const segmentJsonPath = path.format({ ext: ".vtt", name: path_part.name });
-    const outputSegmentsPath = path.join(options.outDir, segmentJsonPath);
+    if (whisperTranscription) {
+      const segmentJsonPath = path.format({
+        ext: ".vtt",
+        name: path_part.name,
+      });
+      const outputSegmentsPath = path.join(options.outDir, segmentJsonPath);
 
-    segments = segmentJsonPath;
-    meta.language = whisperTranscription.language;
-    meta.duration = whisperTranscription.duration;
+      segments = segmentJsonPath;
+      meta.language = whisperTranscription.language;
+      meta.duration = whisperTranscription.duration;
 
-    writeJSONSync<TranscriptionSegment[]>(
-      outputSegmentsPath,
-      whisperTranscription.segments ?? [],
-      {
-        stringify: { replacer: null, space: 2 },
-      },
-    );
+      writeJSONSync<TranscriptionSegment[]>(
+        outputSegmentsPath,
+        whisperTranscription.segments ?? [],
+        {
+          stringify: { replacer: null, space: 2 },
+        },
+      );
+    }
   } else {
     coolsole.log(
       JSON.stringify({
@@ -282,35 +288,112 @@ async function transcodeToMp4(
 async function transcribeAudio(
   options: AccessionWorkflowOptions,
   soundPath: string,
+  scratchPath: string,
+): Promise<Transcription | undefined> {
+  const ft: Transcription = {
+    duration: 0,
+    language: "",
+    text: "",
+  };
+
+  const fakeGetAudio = (soundPath: string) => Promise.resolve("asdf");
+  const fakeTranscribeIt = (mp3Path: string) => Promise.resolve(ft);
+
+  const reportIt = (err: unknown) => {
+    const e = err instanceof Error ? err.message : String(err);
+    coolsole.error("Error details: ".concat(e));
+  };
+
+  try {
+    await fakeGetAudio(soundPath);
+    try {
+      console.log(soundPath);
+      const tx = await fakeTranscribeIt(soundPath);
+      return tx;
+    } catch (err) {
+      reportIt(err);
+    }
+  } catch (err) {
+    reportIt(err);
+    return undefined;
+  }
+
+  // fakeGetAudio(soundPath).then(
+  //   (p) => {
+  //     console.log(p);
+  //     fakeTranscribeIt(p).then(
+  //       (tr) => {
+  //         return tr;
+  //       },
+  //       (err) => {
+  //         reportIt(err);
+  //         return undefined
+  //       },
+  //     );
+  //     return t;
+  //   },
+  //   (err) => {
+  //     reportIt(err);
+  //     return undefined;
+  //   },
+  // );
+
+  // const p = new Promise<string>((a, b) => {
+  //   a(soundPath);
+  // });
+  // p.then(
+  //   (s) => {
+  //     console.log(s);
+  //     return t;
+  //   },
+  //   (err) => {
+  //     return undefined;
+  //   },
+  // );
+
+  // // try {} catch {}
+
+  // // ffmpeg(soundPath).output(scratchPath).run();
+
+  // return undefined;
+}
+
+async function ΘtranscribeAudio(
+  options: AccessionWorkflowOptions,
+  soundPath: string,
   outputPath: string,
-): Promise<Transcription> {
-  await new Promise<void>((resolve, reject) => {
-    ffmpeg(soundPath)
-      .noVideo() // 1. Completely strip the video track
-      .audioCodec("libmp3lame") // 2. Use native MP3 encoding
-      .audioChannels(1) // 3. Drop to mono (saves 50% file size)
-      .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
-      .outputOptions("-map_metadata -1") // 5. Strip metadata tags
-      .output(outputPath)
-      .on("end", () => resolve())
-      .on("error", (err) => {
-        const e = err instanceof Error ? err.message : String(err);
-        coolsole.error("FFmpeg Error details: ".concat(e));
-        reject(err);
-      })
-      .run();
-  });
+): Promise<Transcription | undefined> {
+  try {
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg(soundPath)
+        .noVideo() // 1. Completely strip the video track
+        .audioCodec("libmp3lame") // 2. Use native MP3 encoding
+        .audioChannels(1) // 3. Drop to mono (saves 50% file size)
+        .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
+        .outputOptions("-map_metadata -1") // 5. Strip metadata tags
+        .output(outputPath)
+        .on("end", () => resolve())
+        .on("error", (err) => {
+          const e = err instanceof Error ? err.message : String(err);
+          coolsole.error("FFmpeg Error details: ".concat(e));
+          reject(err);
+        })
+        .run();
+    });
+    const openai = new OpenAI({ apiKey: options.openAiKey });
 
-  const openai = new OpenAI({ apiKey: options.openAiKey });
+    const result = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(outputPath),
+      model: "whisper-1",
+      response_format: "verbose_json",
+    });
 
-  const result = await openai.audio.transcriptions.create({
-    file: fs.createReadStream(outputPath),
-    model: "whisper-1",
-    response_format: "verbose_json",
-  });
-
-  fs.unlinkSync(outputPath);
-  return result;
+    fs.unlinkSync(outputPath);
+    return result;
+  } catch {
+    coolsole.error("just so you know there was an arror");
+    return undefined;
+  }
 }
 
 const really_call_ffmpeg = true;
