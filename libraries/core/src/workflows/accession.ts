@@ -139,14 +139,6 @@ async function createVideoEntry(
     duration_seconds: 0,
     frames: 0,
   };
-
-  // let segments = "coming later";
-
-  // const meta = {
-  //   duration: 0,
-  //   language: "",
-  // };
-
   let video_slug = path_part.base;
 
   let transcript:
@@ -216,13 +208,6 @@ async function createVideoEntry(
         },
       );
     }
-  } else {
-    coolsole.log(
-      JSON.stringify({
-        a: mp4_FP,
-        m: "got audio",
-      }),
-    );
   }
 
   const video: Record<string, { stats: VideoStatisticalBlock }> = {};
