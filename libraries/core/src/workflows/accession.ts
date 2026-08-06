@@ -8,6 +8,7 @@ import * as path from "node:path";
 import OpenAI from "openai";
 
 import type {
+  AbbreviatedTranscriptionMetadata,
   Manifest,
   ProgressOptions,
   ProgressResult,
@@ -139,14 +140,21 @@ async function createVideoEntry(
     frames: 0,
   };
 
-  let segments = "coming later";
+  // let segments = "coming later";
 
-  const meta = {
-    duration: 0,
-    language: "",
-  };
+  // const meta = {
+  //   duration: 0,
+  //   language: "",
+  // };
 
   let video_slug = path_part.base;
+
+  let transcript:
+    | {
+        meta: AbbreviatedTranscriptionMetadata;
+        segments: string;
+      }
+    | undefined;
 
   const mp4base = path.format({ ext: ".mp4", name: path_part.name });
 
@@ -179,12 +187,11 @@ async function createVideoEntry(
   finalized_stats.frames = parseInt(vid?.nb_frames ?? "0", 10);
 
   if (really_call_ffmpeg && temporary_for_wav_work && options.transcribe) {
-    const whisperTranscription: Transcription | undefined =
-      await transcribeAudio(
-        options,
-        mp4_FP,
-        path.join(temporary_for_wav_work.path, mp4base),
-      );
+    const whisperTranscription = await transcribeAudio(
+      options,
+      mp4_FP,
+      path.join(temporary_for_wav_work.path, mp4base),
+    );
 
     if (whisperTranscription) {
       const segmentJsonPath = path.format({
@@ -193,9 +200,13 @@ async function createVideoEntry(
       });
       const outputSegmentsPath = path.join(options.outDir, segmentJsonPath);
 
-      segments = segmentJsonPath;
-      meta.language = whisperTranscription.language;
-      meta.duration = whisperTranscription.duration;
+      transcript = {
+        meta: {
+          duration: whisperTranscription.duration,
+          language: whisperTranscription.language,
+        },
+        segments: segmentJsonPath,
+      };
 
       writeJSONSync<TranscriptionSegment[]>(
         outputSegmentsPath,
@@ -221,10 +232,7 @@ async function createVideoEntry(
   };
 
   return {
-    transcript: {
-      meta,
-      segments,
-    },
+    transcript,
     video,
   };
 }
@@ -290,33 +298,65 @@ async function transcribeAudio(
   soundPath: string,
   scratchPath: string,
 ): Promise<Transcription | undefined> {
-  const ft: Transcription = {
-    duration: 0,
-    language: "",
-    text: "",
-  };
+  const moreGetAudio = () =>
+    new Promise<string | undefined>((resolve) => {
+      ffmpeg(soundPath)
+        .noVideo() // 1. Completely strip the video track
+        .audioCodec("libmp3lame") // 2. Use native MP3 encoding
+        .audioChannels(1) // 3. Drop to mono (saves 50% file size)
+        .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
+        .outputOptions("-map_metadata -1") // 5. Strip metadata tags
+        .output(scratchPath)
+        .on("end", () => {
+          resolve(scratchPath);
+        })
+        .on("error", () => {
+          // const e = _err instanceof Error ? _err.message : String(_err);
+          // coolsole.error("Ffmpeg Error details: ".concat(e));
+          resolve(undefined);
+        })
+        .run();
+    });
 
-  const fakeGetAudio = (soundPath: string) => Promise.resolve("asdf");
-  const fakeTranscribeIt = (mp3Path: string) => Promise.resolve(ft);
+  const moreTranscribeIt = (the_audio: string) =>
+    new Promise<Transcription>((resolve) => {
+      if (!the_audio) throw new Error("just temporary i think");
 
+      const openai = new OpenAI({ apiKey: options.openAiKey });
+
+      openai.audio.transcriptions
+        .create({
+          file: fs.createReadStream(the_audio),
+          model: "whisper-1",
+          response_format: "verbose_json",
+        })
+        .then((verbose_transcription) => {
+          resolve(verbose_transcription);
+        }, reportIt);
+    });
   const reportIt = (err: unknown) => {
     const e = err instanceof Error ? err.message : String(err);
     coolsole.error("Error details: ".concat(e));
   };
 
+  const audio_scratch = await moreGetAudio();
+  if (!audio_scratch) {
+    return undefined;
+  }
+  if (audio_scratch !== scratchPath) throw new Error("not scratch");
   try {
-    await fakeGetAudio(soundPath);
-    try {
-      console.log(soundPath);
-      const tx = await fakeTranscribeIt(soundPath);
-      return tx;
-    } catch (err) {
-      reportIt(err);
-    }
+    return await moreTranscribeIt(audio_scratch);
   } catch (err) {
     reportIt(err);
     return undefined;
   }
+
+  // try {
+  // } catch (err) {
+  //   coolsole.error(`could not get audio for ${soundPath}`);
+  //   reportIt(err);
+  //   return undefined;
+  // }
 
   // fakeGetAudio(soundPath).then(
   //   (p) => {
@@ -358,43 +398,43 @@ async function transcribeAudio(
   // return undefined;
 }
 
-async function ΘtranscribeAudio(
-  options: AccessionWorkflowOptions,
-  soundPath: string,
-  outputPath: string,
-): Promise<Transcription | undefined> {
-  try {
-    await new Promise<void>((resolve, reject) => {
-      ffmpeg(soundPath)
-        .noVideo() // 1. Completely strip the video track
-        .audioCodec("libmp3lame") // 2. Use native MP3 encoding
-        .audioChannels(1) // 3. Drop to mono (saves 50% file size)
-        .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
-        .outputOptions("-map_metadata -1") // 5. Strip metadata tags
-        .output(outputPath)
-        .on("end", () => resolve())
-        .on("error", (err) => {
-          const e = err instanceof Error ? err.message : String(err);
-          coolsole.error("FFmpeg Error details: ".concat(e));
-          reject(err);
-        })
-        .run();
-    });
-    const openai = new OpenAI({ apiKey: options.openAiKey });
+// async function ΘtranscribeAudio(
+//   options: AccessionWorkflowOptions,
+//   soundPath: string,
+//   outputPath: string,
+// ): Promise<Transcription | undefined> {
+//   try {
+//     await new Promise<void>((resolve, reject) => {
+//       ffmpeg(soundPath)
+//         .noVideo() // 1. Completely strip the video track
+//         .audioCodec("libmp3lame") // 2. Use native MP3 encoding
+//         .audioChannels(1) // 3. Drop to mono (saves 50% file size)
+//         .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
+//         .outputOptions("-map_metadata -1") // 5. Strip metadata tags
+//         .output(outputPath)
+//         .on("end", () => resolve())
+//         .on("error", (err) => {
+//           const e = err instanceof Error ? err.message : String(err);
+//           coolsole.error("FFmpeg Error details: ".concat(e));
+//           reject(err);
+//         })
+//         .run();
+//     });
+//     const openai = new OpenAI({ apiKey: options.openAiKey });
 
-    const result = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(outputPath),
-      model: "whisper-1",
-      response_format: "verbose_json",
-    });
+//     const result = await openai.audio.transcriptions.create({
+//       file: fs.createReadStream(outputPath),
+//       model: "whisper-1",
+//       response_format: "verbose_json",
+//     });
 
-    fs.unlinkSync(outputPath);
-    return result;
-  } catch {
-    coolsole.error("just so you know there was an arror");
-    return undefined;
-  }
-}
+//     fs.unlinkSync(outputPath);
+//     return result;
+//   } catch {
+//     coolsole.error("just so you know there was an arror");
+//     return undefined;
+//   }
+// }
 
 const really_call_ffmpeg = true;
 const limit = Infinity;

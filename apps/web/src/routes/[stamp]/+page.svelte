@@ -34,25 +34,33 @@
   );
 
   async function slugSelected() {
-    // slugJum.select(selectedSlug);
-    if (selectedTrack) {
-      const track_response = await fetch(selectedTrack);
+    segments = [];
+    if (slugSelect.selected) {
+      const v = data.manifest[slugSelect.selected];
+      if (v.transcript) {
+        // slugJum.select(selectedSlug);
+        if (selectedTrack) {
+          console.log(selectedTrack, "here we go");
+          const track_response = await fetch(selectedTrack);
 
-      if (!track_response.ok) {
-        error(501, "no tracks");
-      }
+          if (!track_response.ok) {
+            error(501, "no tracks");
+          }
 
-      const response = (await track_response.json()) as TranscriptionResponse;
+          const response =
+            (await track_response.json()) as TranscriptionResponse;
 
-      segments = response.vtt.map((s) => ({ ...s, active: false }));
+          segments = response.vtt.map((s) => ({ ...s, active: false }));
 
-      if (trackElement) {
-        const textTrack = trackElement.track;
-        clearCues(textTrack);
-        textTrack.mode = "showing";
-        cues.forEach((cue) => {
-          textTrack.addCue(cue);
-        });
+          if (trackElement) {
+            const textTrack = trackElement.track;
+            clearCues(textTrack);
+            textTrack.mode = "showing";
+            cues.forEach((cue) => {
+              textTrack.addCue(cue);
+            });
+          }
+        }
       }
     }
   }
