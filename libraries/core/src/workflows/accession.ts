@@ -152,17 +152,24 @@ async function createVideoEntry(
 
   let mp4_FP = path.resolve(options.outDir, mp4base);
 
-  if (path_part.ext.toLowerCase() === ".wav") {
-    const wav_fp = path.resolve(options.inDir, path.format(path_part));
-    await generateMissingVideo(wav_fp, mp4_FP);
-  } else if (path_part.ext.toLowerCase() === ".avi") {
-    await transcodeToMp4(
-      path.resolve(options.inDir, path.format(path_part)),
-      mp4_FP,
-      !really_call_ffmpeg,
-    );
-  } else if (path_part.ext.toLowerCase() === ".mp4") {
-    mp4_FP = path.resolve(options.inDir, path.format(path_part));
+  switch (path_part.ext.toLowerCase()) {
+    case ".avi": {
+      await transcodeToMp4(
+        path.resolve(options.inDir, path.format(path_part)),
+        mp4_FP,
+        !really_call_ffmpeg,
+      );
+      break;
+    }
+    case ".mp4": {
+      mp4_FP = path.resolve(options.inDir, path.format(path_part));
+      break;
+    }
+    case ".wav": {
+      const wav_fp = path.resolve(options.inDir, path.format(path_part));
+      await generateMissingVideo(wav_fp, mp4_FP);
+      break;
+    }
   }
 
   const probeResult = await probeVideo(mp4_FP, !really_call_ffmpeg);
