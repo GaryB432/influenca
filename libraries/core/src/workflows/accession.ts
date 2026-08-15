@@ -166,16 +166,10 @@ async function createVideoEntry(
     }
   }
 
-  const probeResult = await probeVideo(mp4_FP, !really_call_ffmpeg);
-  const vid = probeResult.streams.find(
-    (stream) => stream.codec_type === "video",
-  );
-  // finalized_stats.duration_seconds = parseInt(vid?.duration ?? "0", 10);
   video_slug = path.parse(mp4_FP).base;
 
   const stats: VideoStatisticalBlock = await getVideoStatisticalBlock(
     mp4_FP,
-    vid,
     !really_call_ffmpeg,
   );
 
@@ -225,9 +219,13 @@ async function createVideoEntry(
 
 async function getVideoStatisticalBlock(
   videoPath: string,
-  videoStream: ffmpeg.FfprobeStream | undefined,
   drier: boolean,
 ): Promise<VideoStatisticalBlock> {
+  const probeResult = await probeVideo(videoPath, drier);
+  const videoStream = probeResult.streams.find(
+    (stream) => stream.codec_type === "video",
+  );
+
   const arbitraryFutureMetric = "tbd";
   const duration_seconds = parseInt(videoStream?.duration ?? "0", 10);
   const frames = parseInt(videoStream?.nb_frames ?? "0", 10);
