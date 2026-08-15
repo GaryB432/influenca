@@ -19,6 +19,7 @@ import type {
 } from "../index";
 
 import * as color from "../color";
+import { analyzeMotion, calculateActivityScore } from "../motion";
 import { writeJSONSync } from "../shims/fs";
 import { generateMissingVideo } from "./video-fill";
 
@@ -172,7 +173,11 @@ async function createVideoEntry(
   // finalized_stats.duration_seconds = parseInt(vid?.duration ?? "0", 10);
   video_slug = path.parse(mp4_FP).base;
 
-  const stats: VideoStatisticalBlock = getVideoStatisticalBlock(mp4_FP, vid);
+  const stats: VideoStatisticalBlock = await getVideoStatisticalBlock(
+    mp4_FP,
+    vid,
+    !really_call_ffmpeg,
+  );
 
   if (really_call_ffmpeg && temporary_for_wav_work && options.transcribe) {
     const whisperTranscription = await transcribeAudio(
@@ -218,17 +223,23 @@ async function createVideoEntry(
   };
 }
 
-function getVideoStatisticalBlock(
+async function getVideoStatisticalBlock(
   videoPath: string,
   videoStream: ffmpeg.FfprobeStream | undefined,
-): VideoStatisticalBlock {
-  console.log(videoPath, "if needed");
-  console.log(videoStream, "if needed");
-
+  drier: boolean,
+): Promise<VideoStatisticalBlock> {
   const arbitraryFutureMetric = "tbd";
   const duration_seconds = parseInt(videoStream?.duration ?? "0", 10);
   const frames = parseInt(videoStream?.nb_frames ?? "0", 10);
-  const interestScore = 0;
+
+  // theoretical max stdev of an 8-bit luma signal, used to normalize detail ratio
+  const globalMaxStdev = 128;
+  const interestScore = drier
+    ? 0
+    : calculateActivityScore(
+        (await analyzeMotion(videoPath)).frames,
+        globalMaxStdev,
+      );
 
   return { arbitraryFutureMetric, duration_seconds, frames, interestScore };
 }

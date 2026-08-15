@@ -1,6 +1,5 @@
 import { spawn } from "child_process";
 
-// TODO reimplement
 type FrameStats = {
   checksum: string;
   mean: number[];
