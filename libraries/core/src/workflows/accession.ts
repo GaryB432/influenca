@@ -226,7 +226,7 @@ async function getVideoStatisticalBlock(
     (stream) => stream.codec_type === "video",
   );
 
-  const arbitraryFutureMetric = "tbd";
+  // const arbitraryFutureMetric = "tbd";
   const duration_seconds = parseInt(videoStream?.duration ?? "0", 10);
   const frames = parseInt(videoStream?.nb_frames ?? "0", 10);
 
@@ -239,7 +239,7 @@ async function getVideoStatisticalBlock(
         globalMaxStdev,
       );
 
-  return { arbitraryFutureMetric, duration_seconds, frames, interestScore };
+  return { duration_seconds, frames, interestScore };
 }
 
 async function probeVideo(
