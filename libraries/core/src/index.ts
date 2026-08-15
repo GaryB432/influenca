@@ -53,8 +53,8 @@ export type VideoEntry = {
 };
 
 export type VideoStatisticalBlock = {
-  arbitraryFutureMetric?: string;
+  arbitraryFutureMetric: string;
   duration_seconds: number;
   frames: number;
-  interestScore?: number;
+  interestScore: number;
 };
