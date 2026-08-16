@@ -19,6 +19,7 @@ import type {
 } from "../index";
 
 import * as color from "../color";
+import { analyzeMotion, calculateActivityScore } from "../motion";
 import { writeJSONSync } from "../shims/fs";
 import { generateMissingVideo } from "./video-fill";
 
@@ -135,10 +136,6 @@ async function createVideoEntry(
   options: AccessionWorkflowOptions,
   path_part: path.ParsedPath,
 ): Promise<VideoEntry> {
-  const finalized_stats = {
-    duration_seconds: 0,
-    frames: 0,
-  };
   let video_slug = path_part.base;
 
   let transcript:
@@ -169,14 +166,12 @@ async function createVideoEntry(
     }
   }
 
-  const probeResult = await probeVideo(mp4_FP, !really_call_ffmpeg);
-  const vid = probeResult.streams.find(
-    (stream) => stream.codec_type === "video",
-  );
-  finalized_stats.duration_seconds = parseInt(vid?.duration ?? "0", 10);
   video_slug = path.parse(mp4_FP).base;
 
-  finalized_stats.frames = parseInt(vid?.nb_frames ?? "0", 10);
+  const stats: VideoStatisticalBlock = await getVideoStatisticalBlock(
+    mp4_FP,
+    !really_call_ffmpeg,
+  );
 
   if (really_call_ffmpeg && temporary_for_wav_work && options.transcribe) {
     const whisperTranscription = await transcribeAudio(
@@ -213,13 +208,38 @@ async function createVideoEntry(
   const video: Record<string, { stats: VideoStatisticalBlock }> = {};
 
   video[video_slug] = {
-    stats: finalized_stats,
+    stats,
   };
 
   return {
     transcript,
     video,
   };
+}
+
+async function getVideoStatisticalBlock(
+  videoPath: string,
+  drier: boolean,
+): Promise<VideoStatisticalBlock> {
+  const probeResult = await probeVideo(videoPath, drier);
+  const videoStream = probeResult.streams.find(
+    (stream) => stream.codec_type === "video",
+  );
+
+  // const arbitraryFutureMetric = "tbd";
+  const duration_seconds = parseInt(videoStream?.duration ?? "0", 10);
+  const frames = parseInt(videoStream?.nb_frames ?? "0", 10);
+
+  // theoretical max stdev of an 8-bit luma signal, used to normalize detail ratio
+  const globalMaxStdev = 128;
+  const interestScore = drier
+    ? 0
+    : calculateActivityScore(
+        (await analyzeMotion(videoPath)).frames,
+        globalMaxStdev,
+      );
+
+  return { duration_seconds, frames, interestScore };
 }
 
 async function probeVideo(
