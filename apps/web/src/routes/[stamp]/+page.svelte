@@ -199,7 +199,7 @@
   }
 
   video {
-    width: 60dvw;
+    max-height: 80dvh;
   }
 
   .controls {
