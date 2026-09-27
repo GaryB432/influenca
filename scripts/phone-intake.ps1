@@ -16,7 +16,27 @@ if ([string]::IsNullOrWhiteSpace($DestinationRoot)) {
     }
 }
 
-function Get-ShellItemDate {
+function Get-PxlTimestamp {
+    param([string]$FileName)
+
+    if ([string]::IsNullOrWhiteSpace($FileName)) {
+        return $null
+    }
+
+    $match = [regex]::Match($FileName, '^PXL_(\d{8})_(\d{6,9})')
+    if (-not $match.Success) {
+        throw "[phone-intake] Unsupported filename format for Android camera item: '$FileName'. Expected patterns like 'PXL_20260423_233742242.jpg'."
+    }
+
+    $datePart = $match.Groups[1].Value
+    $timePart = $match.Groups[2].Value
+    $dateText = [string]::Format('{0}-{1}-{2}', $datePart.Substring(0,4), $datePart.Substring(4,2), $datePart.Substring(6,2))
+    $timeText = [string]::Format('{0}:{1}:{2}', $timePart.Substring(0,2), $timePart.Substring(2,2), $timePart.Substring(4,2))
+
+    return [datetime]::ParseExact("$dateText $timeText", 'yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture)
+}
+
+function Get-SortKey {
     param([object]$Item)
 
     if ($null -eq $Item) {
@@ -24,10 +44,9 @@ function Get-ShellItemDate {
     }
 
     try {
-        return [datetime]$Item.ModifyDate
+        return Get-PxlTimestamp $Item.Name
     } catch {
-        Write-Warning "[phone-intake] Item '$($Item.Name)' has no usable ModifyDate; sorting it last."
-        return [datetime]::MinValue
+        throw "[phone-intake] Cannot sort item '$($Item.Name)' because it does not match the expected Google Camera naming pattern."
     }
 }
 
@@ -102,11 +121,26 @@ Write-Host "[phone-intake] Destination folder exists: $(Test-Path $destination)"
 
 $destShell = $shell.NameSpace($destination)
 $items = @($cameraFolder.GetFolder.Items())
-Write-Host "[phone-intake] Camera folder contents: $($items.Count) item(s)" -ForegroundColor DarkGray
+$items = $items | Where-Object {
+    $name = $_.Name
+    $ext = [System.IO.Path]::GetExtension($name)
+    $isSupportedType = @('.avi', '.mp4', '.wav') -contains $ext.ToLowerInvariant()
+    if (-not $isSupportedType) {
+        return $false
+    }
 
-# Sort newest first using the shell item's modified date if available
+    try {
+        $null = Get-PxlTimestamp $name
+        return $true
+    } catch {
+        return $false
+    }
+}
+Write-Host "[phone-intake] Camera folder contents after filtering: $($items.Count) item(s)" -ForegroundColor DarkGray
+
+# Sort newest first using the Android PXL filename timestamp.
 $items = $items | Sort-Object {
-    Get-ShellItemDate $_
+    Get-SortKey $_
 } -Descending
 
 if ($Count -gt 0) {
