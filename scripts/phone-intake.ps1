@@ -8,8 +8,8 @@ if ([string]::IsNullOrWhiteSpace($DestinationRoot)) {
     $DestinationRoot = "\\wsl.localhost\Ubuntu\home\$env:USERNAME"
     try {
         $wslHome = (& wsl.exe bash -lc 'printf "%s" "$HOME"' 2>$null).Trim()
-        if (-not [string]::IsNullOrWhiteSpace($wslHome)) {
-            $DestinationRoot = $wslHome
+        if (-not [string]::IsNullOrWhiteSpace($wslHome) -and $wslHome.StartsWith('/')) {
+            $DestinationRoot = "\\wsl.localhost\Ubuntu$($wslHome.Replace('/', '\'))"
         }
     } catch {
         # Fall through to the Windows username-based WSL path.
