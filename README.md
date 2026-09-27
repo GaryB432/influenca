@@ -15,6 +15,10 @@ move `avi` files from your Windows `G:` drive to a time-stamped temporary folder
 ./scripts/intake.sh g
 ```
 
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File scripts/phone-intake.ps1
+```
+
 ## Development
 
 - Install dependencies:
