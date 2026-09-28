@@ -1,26 +1,25 @@
 import * as fs from "node:fs";
-
 import { describe, expect, it, vi } from "vitest";
 
 const openAiCreate = vi.fn();
 
 const ffmpegMockInstance = {
-  noVideo: vi.fn().mockReturnThis(),
-  audioCodec: vi.fn().mockReturnThis(),
-  audioChannels: vi.fn().mockReturnThis(),
   audioBitrate: vi.fn().mockReturnThis(),
-  outputOptions: vi.fn().mockReturnThis(),
-  output: vi.fn().mockReturnThis(),
+  audioChannels: vi.fn().mockReturnThis(),
+  audioCodec: vi.fn().mockReturnThis(),
+  noVideo: vi.fn().mockReturnThis(),
   on: vi.fn(function (
-    this: any,
+    this: unknown,
     event: string,
-    handler: (...args: any[]) => void,
+    handler: (...args: unknown[]) => void,
   ) {
     if (event === "end") {
       queueMicrotask(() => handler());
     }
     return this;
   }),
+  output: vi.fn().mockReturnThis(),
+  outputOptions: vi.fn().mockReturnThis(),
   run: vi.fn(),
 };
 
