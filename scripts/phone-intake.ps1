@@ -4,16 +4,26 @@ param(
     [string]$DestinationRoot = ""
 )
 
+# WSL-first workflow: this script runs from WSL, so the command we print at the end
+# should use the native Linux path. The Windows UNC path is only needed for the
+# Shell namespace copy step when the phone is enumerated.
+$wslHome = ""
+try {
+    $wslHome = (& wsl.exe bash -lc 'printf "%s" "$HOME"' 2>$null).Trim()
+} catch {
+    # Fall back to the standard WSL home if the shell lookup fails.
+}
+
+if ([string]::IsNullOrWhiteSpace($wslHome)) {
+    $wslHome = "/home/$env:USERNAME"
+}
+
+$WslRoot = $wslHome.TrimEnd('/')
 if ([string]::IsNullOrWhiteSpace($DestinationRoot)) {
-    $DestinationRoot = "\\wsl.localhost\Ubuntu\home\$env:USERNAME"
-    try {
-        $wslHome = (& wsl.exe bash -lc 'printf "%s" "$HOME"' 2>$null).Trim()
-        if (-not [string]::IsNullOrWhiteSpace($wslHome) -and $wslHome.StartsWith('/')) {
-            $DestinationRoot = "\\wsl.localhost\Ubuntu$($wslHome.Replace('/', '\'))"
-        }
-    } catch {
-        # Fall through to the Windows username-based WSL path.
-    }
+    $DestinationRoot = $WslRoot
+} else {
+    $DestinationRoot = ConvertTo-WslPath $DestinationRoot
+    $WslRoot = $DestinationRoot.TrimEnd('/')
 }
 
 function Get-PxlTimestamp {
@@ -48,6 +58,24 @@ function Get-SortKey {
     } catch {
         throw "[phone-intake] Cannot sort item '$($Item.Name)' because it does not match the expected Google Camera naming pattern."
     }
+}
+
+function ConvertTo-WslPath {
+    param(
+        [string]$WindowsPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($WindowsPath)) {
+        return ""
+    }
+
+    $normalized = $WindowsPath.Trim()
+    if ($normalized -match '^\\wsl\.localhost\\Ubuntu') {
+        $relative = $normalized.Substring("\\\\wsl.localhost\\Ubuntu".Length)
+        return "/$($relative.Replace('\\', '/'))"
+    }
+
+    return $normalized
 }
 
 function Wait-ForCopiedItem {
@@ -110,11 +138,21 @@ Write-Host "[phone-intake] Camera folder path: $($cameraFolder.Path)" -Foregroun
 Write-Host "[phone-intake] This is a shell namespace path, not a normal filesystem path. CopyHere is more reliable when passed the shell item object itself." -ForegroundColor Yellow
 
 $timestamp = Get-Date -Format 'yyyy-MM-ddTHH-mm-ss'
-$destinationBase = Join-Path $DestinationRoot '.local'
-$stateRoot = Join-Path $destinationBase 'state'
-$destination = Join-Path $stateRoot "$($phone.Name)"
+$wslDestinationBase = Join-Path $WslRoot '.local'
+$wslStateRoot = Join-Path $wslDestinationBase 'state'
+$wslDestinationPath = Join-Path $wslStateRoot "$($phone.Name)"
+$wslDestinationPath = Join-Path $wslDestinationPath $timestamp
+
+# The shell namespace API needs a Windows UNC path, but the command we hand off to WSL
+# should stay in native Linux form so it can be pasted into the same terminal session.
+$windowsDestinationRoot = "\\wsl.localhost\Ubuntu$($WslRoot.Replace('/', '\'))"
+$windowsDestinationBase = Join-Path $windowsDestinationRoot '.local'
+$windowsStateRoot = Join-Path $windowsDestinationBase 'state'
+$destination = Join-Path $windowsStateRoot "$($phone.Name)"
 $destination = Join-Path $destination $timestamp
+
 Write-Host "[phone-intake] Destination: $destination" -ForegroundColor DarkGray
+Write-Host "[phone-intake] WSL destination path: $wslDestinationPath" -ForegroundColor DarkGray
 Write-Host "[phone-intake] Creating destination folder..." -ForegroundColor Yellow
 New-Item -ItemType Directory -Path $destination -Force | Out-Null
 Write-Host "[phone-intake] Destination folder exists: $(Test-Path $destination)" -ForegroundColor Green
@@ -169,3 +207,9 @@ foreach ($item in $items) {
 
 Write-Host "[phone-intake] Finished. Successfully copied $copied item(s) into $destination" -ForegroundColor Green
 Write-Host "[phone-intake] Final destination count: $(if (Test-Path $destination) { (Get-ChildItem -Force $destination | Measure-Object).Count } else { 0 })" -ForegroundColor DarkGray
+Write-Host
+Write-Host "[phone-intake] Next Steps:" -ForegroundColor Cyan
+Write-Host " influenca" -NoNewline
+Write-Host " accession " -ForegroundColor Cyan  -NoNewline
+Write-Host "`"$wslDestinationPath`"" -ForegroundColor Green -NoNewline
+Write-Host " --transcribe true"
