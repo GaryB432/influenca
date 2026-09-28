@@ -298,7 +298,7 @@ async function transcodeToMp4(
   });
 }
 
-async function transcribeAudio(
+export async function transcribeAudio(
   options: AccessionWorkflowOptions,
   soundPath: string,
   scratchPath: string,
@@ -315,17 +315,20 @@ async function transcribeAudio(
         .on("end", () => {
           resolve(scratchPath);
         })
-        .on("error", () => {
-          // const e = _err instanceof Error ? _err.message : String(_err);
-          // coolsole.error("Ffmpeg Error details: ".concat(e));
+        .on("error", (err: unknown) => {
+          const e = err instanceof Error ? err.message : String(err);
+          coolsole.error("Ffmpeg Error details: ".concat(e));
           resolve(undefined);
         })
         .run();
     });
 
   const transcribeThisAudio = (the_audio: string) =>
-    new Promise<Transcription>((resolve) => {
-      if (!the_audio) throw new Error("just temporary i think");
+    new Promise<Transcription | undefined>((resolve) => {
+      if (!the_audio) {
+        resolve(undefined);
+        return;
+      }
 
       const openai = new OpenAI({ apiKey: options.openAiKey });
 
@@ -337,12 +340,13 @@ async function transcribeAudio(
         })
         .then((verbose_transcription) => {
           resolve(verbose_transcription);
-        }, logError);
+        })
+        .catch((err: unknown) => {
+          const e = err instanceof Error ? err.message : String(err);
+          coolsole.error("Error details: ".concat(e));
+          resolve(undefined);
+        });
     });
-  const logError = (err: unknown) => {
-    const e = err instanceof Error ? err.message : String(err);
-    coolsole.error("Error details: ".concat(e));
-  };
 
   const audio_scratch = await getAudioPathFromSoundPath();
   if (!audio_scratch) {
@@ -350,12 +354,7 @@ async function transcribeAudio(
   }
   if (audio_scratch !== scratchPath) throw new Error("not scratch");
 
-  try {
-    return await transcribeThisAudio(audio_scratch);
-  } catch (err) {
-    logError(err);
-    return undefined;
-  }
+  return await transcribeThisAudio(audio_scratch);
 }
 
 const really_call_ffmpeg = true;
