@@ -185,7 +185,7 @@ function Collect-MediaItems ([object]$folder, [ref]$results) {
 
             # ModifyDate is detail column 3 for most Shell namespaces
             $modStr = $folder.GetDetailsOf($item, 3)
-            $modDate = $null
+            [datetime]$modDate = [datetime]::MinValue
             if ($modStr -and [datetime]::TryParse($modStr, [ref]$modDate)) {
                 if ($null -ne $cutoffDate -and $modDate -lt $cutoffDate) { continue }
             }
@@ -218,16 +218,15 @@ Write-Ok "Found $($mediaItems.Count) file(s) to copy"
 # 4. Build the Windows destination path
 # ---------------------------------------------------------------------------
 
-$timestamp   = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-# Resolve to the Windows path of the WSL home directory
-$wslHomeRaw  = wsl.exe wsl echo '$HOME' 2>&1
-$wslHome     = $wslHomeRaw.Trim()
+$timestamp    = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+# Resolve both the Windows and POSIX forms of WSL $HOME in one shot each
+$wslHomeWin   = (wsl.exe -- wslpath -w '$HOME' 2>&1).Trim()
+if ($LASTEXITCODE -ne 0) { throw "wsl.exe wslpath -w failed: $wslHomeWin" }
+$wslHomePosix = (wsl.exe -- sh -c 'echo $HOME' 2>&1).Trim()
+if ($LASTEXITCODE -ne 0) { throw "wsl.exe sh -c echo HOME failed: $wslHomePosix" }
 
-# Convert WSL $HOME to a Windows path
-$wslHomeWin  = wsl.exe wslpath -w $wslHome 2>&1
-$wslHomeWin  = $wslHomeWin.Trim()
-
-$destWin     = Join-Path $wslHomeWin ".local\state\influenca\$timestamp\$phoneSlug"
+$destWin      = Join-Path $wslHomeWin ".local\state\influenca\$timestamp\$phoneSlug"
+$destPosix    = "$wslHomePosix/.local/state/influenca/$timestamp/$phoneSlug"
 
 Write-Step "Destination (Windows) : $destWin"
 
@@ -296,9 +295,6 @@ Write-Host "Files in intake directory:" -ForegroundColor DarkGray
 foreach ($f in $copiedFiles) {
     Write-Host "  $($f.Name)" -ForegroundColor DarkGray
 }
-
-# Translate the Windows destination path into a WSL POSIX path.
-$destPosix = Get-WslPath $destWin
 
 Write-Host ""
 Write-Host "✨ Next step — paste into your WSL terminal:" -ForegroundColor White
