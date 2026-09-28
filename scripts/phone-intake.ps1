@@ -205,11 +205,12 @@ foreach ($item in $items) {
     }
 }
 
+$nextStepCommand = "influenca accession `"$wslDestinationPath`" --transcribe true"
+
 Write-Host "[phone-intake] Finished. Successfully copied $copied item(s) into $destination" -ForegroundColor Green
 Write-Host "[phone-intake] Final destination count: $(if (Test-Path $destination) { (Get-ChildItem -Force $destination | Measure-Object).Count } else { 0 })" -ForegroundColor DarkGray
 Write-Host
 Write-Host "[phone-intake] Next Steps:" -ForegroundColor Cyan
-Write-Host " influenca" -NoNewline
-Write-Host " accession " -ForegroundColor Cyan  -NoNewline
-Write-Host "`"$wslDestinationPath`"" -ForegroundColor Green -NoNewline
-Write-Host " --transcribe true"
+Write-Host $nextStepCommand -ForegroundColor Green
+Write-Host "[phone-intake] Copy/paste this command in your WSL terminal:" -ForegroundColor DarkGray
+Write-Host $nextStepCommand -ForegroundColor Cyan
