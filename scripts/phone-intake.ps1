@@ -1,3 +1,21 @@
+<#
+    .SYNOPSIS
+    Copies the newest photos/videos from a connected Android phone into a timestamped
+    WSL-native intake folder and prints the next `influenca accession` command.
+
+    .DESCRIPTION
+    This script is intentionally a Windows bridge. It enumerates the phone through the
+    Windows Shell COM API, copies selected media into a WSL-visible location, and then
+    prints a Linux-safe command for the rest of the workflow.
+
+    Run it from Windows PowerShell, or from WSL via `powershell.exe`, not from the Linux
+    `pwsh` binary inside WSL.
+
+    Examples:
+        powershell.exe -ExecutionPolicy Bypass -File scripts/phone-intake.ps1
+        powershell.exe -ExecutionPolicy Bypass -File scripts/phone-intake.ps1 -DeviceName "Pixel 11" -Count 25
+#>
+
 param(
     [string]$DeviceName = "Pixel 11",
     [int]$Count = 20,

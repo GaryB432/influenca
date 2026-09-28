@@ -16,13 +16,20 @@ move `avi` files from your Windows `G:` drive to a time-stamped temporary folder
 ```
 
 ```sh
+# get media from your android phone
 powershell.exe -ExecutionPolicy Bypass -File scripts/phone-intake.ps1
 
 # default
 powershell.exe -ExecutionPolicy Bypass -File scripts/phone-intake.ps1 -DeviceName "Pixel 11" -Count 25
 ```
 
-Note: `scripts/phone-intake.ps1` is intentionally a tiny Windows adapter. It uses the Windows Shell COM API to enumerate the connected phone and copy selected camera media, but it prints a WSL-native destination path for the final `influenca accession ...` command. In other words: Windows handles the device bridge; WSL keeps the terminal output and downstream workflow native and pasteable.
+For the regular local intake flow, the bash script is the simpler option:
+
+```sh
+./scripts/intake.sh g
+```
+
+When you want to pull the newest media off a connected Android phone, run the PowerShell script above from Windows PowerShell. It copies the selected files to a timestamped destination and prints the WSL-friendly command to continue with `influenca accession`.
 
 ## Development
 
