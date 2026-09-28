@@ -71,7 +71,7 @@ echo "☕🔄 Starting rsync operations from ${MOUNT_POINT} to ${DEST_DIR}..."
 
 rsync -rtv --progress --include="*/" --include="*.AVI" --include="*.avi" --include="*.WAV" --include="*.wav" --exclude="*" "$MOUNT_POINT/DCIMA/" "$MOUNT_POINT/AUDIO/" "$DEST_DIR/"
 
-rm -rf "$MOUNT_POINT/AUDIO" "$MOUNT_POINT/DCIMA" "TIME.TXT"
+rm -rf "$MOUNT_POINT/AUDIO" "$MOUNT_POINT/DCIMA" "$MOUNT_POINT/TIME.TXT"
 
 echo "2026-01-01 00:00:01 N" > "$MOUNT_POINT/TIME.TXT"
 
