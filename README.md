@@ -22,6 +22,8 @@ powershell.exe -ExecutionPolicy Bypass -File scripts/phone-intake.ps1
 powershell.exe -ExecutionPolicy Bypass -File scripts/phone-intake.ps1 -DeviceName "Pixel 11" -Count 25
 ```
 
+Note: `scripts/phone-intake.ps1` is intentionally a tiny Windows adapter. It uses the Windows Shell COM API to enumerate the connected phone and copy selected camera media, but it prints a WSL-native destination path for the final `influenca accession ...` command. In other words: Windows handles the device bridge; WSL keeps the terminal output and downstream workflow native and pasteable.
+
 ## Development
 
 - Install dependencies:

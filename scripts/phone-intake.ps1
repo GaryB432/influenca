@@ -109,9 +109,9 @@ function Get-WindowsPhoneCopyPath {
 
     $windowsRoot = "\\wsl.localhost\Ubuntu$($WslRoot.Replace('/', '\'))"
     $windowsBase = Join-Path $windowsRoot '.local'
-    $windowsInfluencaRoot = Join-Path $windowsBase 'state/influenca'
-    $destination = Join-Path $windowsInfluencaRoot $PhoneName
-    return Join-Path $destination $Timestamp
+    $windowsShareRoot = Join-Path $windowsBase 'share/influenca'
+    $destination = Join-Path $windowsShareRoot $Timestamp
+    return Join-Path $destination $PhoneName
 }
 
 function Wait-ForCopiedItem {
@@ -176,9 +176,9 @@ Write-Host "[phone-intake] This is a shell namespace path, not a normal filesyst
 $timestamp = Get-Date -Format 'yyyy-MM-ddTHH-mm-ss'
 $phoneSlug = ConvertTo-KebabCase $phone.Name
 
-# Keep the user-facing and terminal path in WSL-native form: /home/.../.local/state/influenca/<phone-slug>/<timestamp>
-$wslDestinationRoot = "$WslRoot/.local/state/influenca/$phoneSlug"
-$wslDestinationPath = "$wslDestinationRoot/$timestamp"
+# Keep the user-facing and terminal path in WSL-native form: /home/.../.local/share/influence/<timestamp>/<phone-slug>
+$wslDestinationRoot = "$WslRoot/.local/share/influenca/$timestamp"
+$wslDestinationPath = "$wslDestinationRoot/$phoneSlug"
 
 # The shell namespace API needs a Windows UNC path, but the command we hand off to WSL
 # should stay in native Linux form so it can be pasted into the same terminal session.
