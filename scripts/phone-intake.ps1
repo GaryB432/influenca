@@ -4,6 +4,13 @@ param(
     [string]$DestinationRoot = ""
 )
 
+# PowerShell 7 is supported; this script still depends on Windows-only Shell COM APIs
+# for phone enumeration. If this is run from WSL/Linux, it should be started via
+# `powershell.exe` on Windows rather than `pwsh` directly.
+if (-not $IsWindows) {
+    throw "[phone-intake] This script requires Windows PowerShell 7+ (pwsh) on Windows because it calls the Windows Shell COM API to enumerate the phone. Run it via `powershell.exe` from WSL if needed."
+}
+
 # WSL-first workflow: this script runs from WSL, so the command we print at the end
 # should use the native Linux path. The Windows UNC path is only needed for the
 # Shell namespace copy step when the phone is enumerated.
@@ -138,10 +145,11 @@ Write-Host "[phone-intake] Camera folder path: $($cameraFolder.Path)" -Foregroun
 Write-Host "[phone-intake] This is a shell namespace path, not a normal filesystem path. CopyHere is more reliable when passed the shell item object itself." -ForegroundColor Yellow
 
 $timestamp = Get-Date -Format 'yyyy-MM-ddTHH-mm-ss'
-$wslDestinationBase = Join-Path $WslRoot '.local'
-$wslStateRoot = Join-Path $wslDestinationBase 'state'
-$wslDestinationPath = Join-Path $wslStateRoot "$($phone.Name)"
-$wslDestinationPath = Join-Path $wslDestinationPath $timestamp
+# These are WSL-native paths and must remain slash-based; Join-Path would use Windows
+# path semantics and reintroduce backslashes into the command we want to paste into bash.
+$wslDestinationBase = "$WslRoot/.local"
+$wslStateRoot = "$wslDestinationBase/state"
+$wslDestinationPath = "$wslStateRoot/$($phone.Name)/$timestamp"
 
 # The shell namespace API needs a Windows UNC path, but the command we hand off to WSL
 # should stay in native Linux form so it can be pasted into the same terminal session.
