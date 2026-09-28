@@ -11,16 +11,15 @@ influenca ~/my-media --exif
 
 move `avi` files from your Windows `G:` drive to a time-stamped temporary folder
 
-```bash
+```sh
 ./scripts/intake.sh g
 ```
 
-```powershell
+```sh
 powershell.exe -ExecutionPolicy Bypass -File scripts/phone-intake.ps1
 
+# default
 powershell.exe -ExecutionPolicy Bypass -File scripts/phone-intake.ps1 -DeviceName "Pixel 11" -Count 25
-
-powershell.exe -ExecutionPolicy Bypass -File scripts/phone-intake.ps1 -DestinationRoot "\\wsl.localhost\Ubuntu\home\gary\.local\state"
 ```
 
 ## Development

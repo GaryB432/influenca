@@ -85,6 +85,35 @@ function ConvertTo-WslPath {
     return $normalized
 }
 
+function ConvertTo-KebabCase {
+    param(
+        [string]$Value
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return ""
+    }
+
+    $normalized = $Value.Trim()
+    $normalized = $normalized -replace '[^A-Za-z0-9]+', '-'
+    $normalized = $normalized.Trim('-')
+    return $normalized.ToLowerInvariant()
+}
+
+function Get-WindowsPhoneCopyPath {
+    param(
+        [string]$WslRoot,
+        [string]$PhoneName,
+        [string]$Timestamp
+    )
+
+    $windowsRoot = "\\wsl.localhost\Ubuntu$($WslRoot.Replace('/', '\'))"
+    $windowsBase = Join-Path $windowsRoot '.local'
+    $windowsInfluencaRoot = Join-Path $windowsBase 'state/influenca'
+    $destination = Join-Path $windowsInfluencaRoot $PhoneName
+    return Join-Path $destination $Timestamp
+}
+
 function Wait-ForCopiedItem {
     param(
         [string]$DestinationPath,
@@ -145,19 +174,15 @@ Write-Host "[phone-intake] Camera folder path: $($cameraFolder.Path)" -Foregroun
 Write-Host "[phone-intake] This is a shell namespace path, not a normal filesystem path. CopyHere is more reliable when passed the shell item object itself." -ForegroundColor Yellow
 
 $timestamp = Get-Date -Format 'yyyy-MM-ddTHH-mm-ss'
-# These are WSL-native paths and must remain slash-based; Join-Path would use Windows
-# path semantics and reintroduce backslashes into the command we want to paste into bash.
-$wslDestinationBase = "$WslRoot/.local"
-$wslStateRoot = "$wslDestinationBase/state"
-$wslDestinationPath = "$wslStateRoot/$($phone.Name)/$timestamp"
+$phoneSlug = ConvertTo-KebabCase $phone.Name
+
+# Keep the user-facing and terminal path in WSL-native form: /home/.../.local/state/influenca/<phone-slug>/<timestamp>
+$wslDestinationRoot = "$WslRoot/.local/state/influenca/$phoneSlug"
+$wslDestinationPath = "$wslDestinationRoot/$timestamp"
 
 # The shell namespace API needs a Windows UNC path, but the command we hand off to WSL
 # should stay in native Linux form so it can be pasted into the same terminal session.
-$windowsDestinationRoot = "\\wsl.localhost\Ubuntu$($WslRoot.Replace('/', '\'))"
-$windowsDestinationBase = Join-Path $windowsDestinationRoot '.local'
-$windowsStateRoot = Join-Path $windowsDestinationBase 'state'
-$destination = Join-Path $windowsStateRoot "$($phone.Name)"
-$destination = Join-Path $destination $timestamp
+$destination = Get-WindowsPhoneCopyPath -WslRoot $WslRoot -PhoneName $phoneSlug -Timestamp $timestamp
 
 Write-Host "[phone-intake] Destination: $destination" -ForegroundColor DarkGray
 Write-Host "[phone-intake] WSL destination path: $wslDestinationPath" -ForegroundColor DarkGray
@@ -219,6 +244,5 @@ Write-Host "[phone-intake] Finished. Successfully copied $copied item(s) into $d
 Write-Host "[phone-intake] Final destination count: $(if (Test-Path $destination) { (Get-ChildItem -Force $destination | Measure-Object).Count } else { 0 })" -ForegroundColor DarkGray
 Write-Host
 Write-Host "[phone-intake] Next Steps:" -ForegroundColor Cyan
-Write-Host $nextStepCommand -ForegroundColor Green
 Write-Host "[phone-intake] Copy/paste this command in your WSL terminal:" -ForegroundColor DarkGray
-Write-Host $nextStepCommand -ForegroundColor Cyan
+Write-Host $nextStepCommand -ForegroundColor Green
