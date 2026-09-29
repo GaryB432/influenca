@@ -46,7 +46,7 @@ The script automatically resolves your WSL home directory and prints a
 ```
 ✨ Next step — paste into your WSL terminal:
 
-  influenca accession "/home/gary/.local/state/influenca/2026-09-28_17-30-00/pixel-9-pro" --transcribe true
+  influenca accession ~/.local/state/influenca/2026-09-28_17-30-00/pixel-9-pro
 ```
 
 ## Development
