@@ -27,8 +27,10 @@ export function progress({
     barCompleteChar: chars.complete,
     barIncompleteChar: chars.incomplete,
     barsize: size,
+    clearOnComplete: true,
     format: ` {bar} | {percentage}% | {msg}`,
     hideCursor: true,
+    stream: process.stderr,
   };
   const bar = new cliProgress.SingleBar(barUberOptions);
 

@@ -9,10 +9,44 @@ influenca ~/my-media --exif
 
 ## Content intake
 
-move `avi` files from your Windows `G:` drive to a time-stamped temporary folder
+### SD card / USB drive (WSL)
+
+Move `avi` / `wav` files from a Windows drive (e.g. `G:`) to a timestamped folder,
+then print the ready-to-run `accession` command:
+
+```sh
+./scripts/intake.sh g
+```
+
+### Android phone (MTP via Windows Shell)
+
+Phone enumeration and file copying require the Windows Shell COM API (MTP).
+Run this from **PowerShell 7 on Windows** (`pwsh.exe`):
+
+```powershell
+# Defaults: first MTP device found, last 7 days of media
+pwsh.exe -File scripts\intake-android.ps1
+
+# Target a specific phone by partial name, copy last 3 days
+pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Pixel" -MaxAgeDays 3
+
+# Copy ALL camera files (no age filter)
+pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Galaxy" -MaxAgeDays 0
+```
+
+Or invoke it directly from a WSL terminal (requires `pwsh.exe` on the Windows `PATH`):
 
 ```bash
-./scripts/intake.sh g
+pwsh.exe -File "$(wslpath -w ./scripts/intake-android.ps1)"
+```
+
+The script automatically resolves your WSL home directory and prints a
+**WSL-native, pasteable** next-step command — no Windows paths leak into the output:
+
+```
+✨ Next step — paste into your WSL terminal:
+
+  influenca accession ~/.local/state/influenca/2026-09-28_17-30-00/pixel-9-pro
 ```
 
 ## Development

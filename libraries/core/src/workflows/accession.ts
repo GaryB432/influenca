@@ -132,6 +132,65 @@ export async function runAccessionWorkflow(
   };
 }
 
+export async function transcribeAudio(
+  options: AccessionWorkflowOptions,
+  soundPath: string,
+  scratchPath: string,
+): Promise<Transcription | undefined> {
+  const getAudioPathFromSoundPath = () =>
+    new Promise<string | undefined>((resolve) => {
+      ffmpeg(soundPath)
+        .noVideo() // 1. Completely strip the video track
+        .audioCodec("libmp3lame") // 2. Use native MP3 encoding
+        .audioChannels(1) // 3. Drop to mono (saves 50% file size)
+        .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
+        .outputOptions("-map_metadata -1") // 5. Strip metadata tags
+        .output(scratchPath)
+        .on("end", () => {
+          resolve(scratchPath);
+        })
+        .on("error", (err: unknown) => {
+          const e = err instanceof Error ? err.message : String(err);
+          coolsole.error("Ffmpeg Error details: ".concat(e));
+          resolve(undefined);
+        })
+        .run();
+    });
+
+  const transcribeThisAudio = (the_audio: string) =>
+    new Promise<Transcription | undefined>((resolve) => {
+      if (!the_audio) {
+        resolve(undefined);
+        return;
+      }
+
+      const openai = new OpenAI({ apiKey: options.openAiKey });
+
+      openai.audio.transcriptions
+        .create({
+          file: fs.createReadStream(the_audio),
+          model: "whisper-1",
+          response_format: "verbose_json",
+        })
+        .then((verbose_transcription) => {
+          resolve(verbose_transcription);
+        })
+        .catch((err: unknown) => {
+          const e = err instanceof Error ? err.message : String(err);
+          coolsole.error("Error details: ".concat(e));
+          resolve(undefined);
+        });
+    });
+
+  const audio_scratch = await getAudioPathFromSoundPath();
+  if (!audio_scratch) {
+    return undefined;
+  }
+  if (audio_scratch !== scratchPath) throw new Error("not scratch");
+
+  return await transcribeThisAudio(audio_scratch);
+}
+
 async function createVideoEntry(
   options: AccessionWorkflowOptions,
   path_part: path.ParsedPath,
@@ -296,66 +355,6 @@ async function transcodeToMp4(
         .run();
     }
   });
-}
-
-async function transcribeAudio(
-  options: AccessionWorkflowOptions,
-  soundPath: string,
-  scratchPath: string,
-): Promise<Transcription | undefined> {
-  const getAudioPathFromSoundPath = () =>
-    new Promise<string | undefined>((resolve) => {
-      ffmpeg(soundPath)
-        .noVideo() // 1. Completely strip the video track
-        .audioCodec("libmp3lame") // 2. Use native MP3 encoding
-        .audioChannels(1) // 3. Drop to mono (saves 50% file size)
-        .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
-        .outputOptions("-map_metadata -1") // 5. Strip metadata tags
-        .output(scratchPath)
-        .on("end", () => {
-          resolve(scratchPath);
-        })
-        .on("error", () => {
-          // const e = _err instanceof Error ? _err.message : String(_err);
-          // coolsole.error("Ffmpeg Error details: ".concat(e));
-          resolve(undefined);
-        })
-        .run();
-    });
-
-  const transcribeThisAudio = (the_audio: string) =>
-    new Promise<Transcription>((resolve) => {
-      if (!the_audio) throw new Error("just temporary i think");
-
-      const openai = new OpenAI({ apiKey: options.openAiKey });
-
-      openai.audio.transcriptions
-        .create({
-          file: fs.createReadStream(the_audio),
-          model: "whisper-1",
-          response_format: "verbose_json",
-        })
-        .then((verbose_transcription) => {
-          resolve(verbose_transcription);
-        }, logError);
-    });
-  const logError = (err: unknown) => {
-    const e = err instanceof Error ? err.message : String(err);
-    coolsole.error("Error details: ".concat(e));
-  };
-
-  const audio_scratch = await getAudioPathFromSoundPath();
-  if (!audio_scratch) {
-    return undefined;
-  }
-  if (audio_scratch !== scratchPath) throw new Error("not scratch");
-
-  try {
-    return await transcribeThisAudio(audio_scratch);
-  } catch (err) {
-    logError(err);
-    return undefined;
-  }
 }
 
 const really_call_ffmpeg = true;
