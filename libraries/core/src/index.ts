@@ -47,7 +47,9 @@ export type VideoEntry = {
   video: Record<
     string,
     {
+      name: string;
       stats: VideoStatisticalBlock;
+      summary: string;
     }
   >;
 };
