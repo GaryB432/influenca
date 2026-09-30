@@ -227,6 +227,8 @@ async function runAccession(
       onProgress() {
         throw new Error("progress meter in progress");
       },
+      select: (s: { initialValue: string }) => Promise.resolve(s.initialValue),
+      text: (s: { initialValue: string }) => Promise.resolve(s.initialValue),
     },
   );
 
