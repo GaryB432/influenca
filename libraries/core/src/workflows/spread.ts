@@ -13,8 +13,7 @@ import * as gbfs from "../shims/fs";
 
 export type SpreadWorkflowOptions = {
   inDir: string;
-  minimal: boolean;
-  primaryLanguage: string | undefined;
+  rename: boolean;
 };
 
 export type SpreadWorkflowResult = {
@@ -87,24 +86,24 @@ export async function runSpreadWorkflow(
         const words = text.split(/\s+/).length;
         totalWords += words;
 
-        if (!options.minimal) {
-          // const is_language_dim = options.primaryLanguage
-          //   ? entry.transcript.meta.language !== options.primaryLanguage
-          //   : false;
-          // const mutedSegments = segments
-          //   .map((seg) =>
-          //     maybeColorize(is_language_dim ? ASCII_DIM : 15, seg.text),
-          //   )
-          //   .join("\n");
-          // console.log(
-          //   languageConsoleLine(
-          //     entry.transcript.meta.language,
-          //     options.primaryLanguage,
-          //   ),
-          // );
-          // coolsole.log(labeledLan);
-          // coolsole.log(mutedSegments);
-        }
+        // if (!options.minimal) {
+        //   const is_language_dim = options.primaryLanguage
+        //     ? entry.transcript.meta.language !== options.primaryLanguage
+        //     : false;
+        //   const mutedSegments = segments
+        //     .map((seg) =>
+        //       maybeColorize(is_language_dim ? ASCII_DIM : 15, seg.text),
+        //     )
+        //     .join("\n");
+        //   console.log(
+        //     languageConsoleLine(
+        //       entry.transcript.meta.language,
+        //       options.primaryLanguage,
+        //     ),
+        //   );
+        //   coolsole.log(labeledLan);
+        //   coolsole.log(mutedSegments);
+        // }
       }
     } else {
       coolsole.log(logForNoTranscript());

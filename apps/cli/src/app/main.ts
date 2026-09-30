@@ -5,10 +5,12 @@ import path from "node:path";
 
 import { AccessionCommand } from "./commands/accession-command";
 import { AnalyzeCommand } from "./commands/analyze-command";
+import { SpreadCommand } from "./commands/spread-command";
 import { setupEnvironment, webAppOrigin } from "./environment";
 
 const accessionCommand = new AccessionCommand();
 const analyzeCommand = new AnalyzeCommand();
+const spreadCommand = new SpreadCommand();
 
 type AccessionOptions = {
   dryRun: boolean;
@@ -23,6 +25,10 @@ type AnalyzeOptions = {
   language: string | undefined;
   minimal: boolean;
 };
+
+type SpreadOptions = {
+  fun: boolean;
+} & CommonInteractiveOptions;
 
 type CommonInteractiveOptions = {
   interactive: boolean;
@@ -75,6 +81,15 @@ export async function main(rawArguments: string[]): Promise<void> {
     .example("analyze ./tmp/processed --no-minimal")
     .action(async (inDir: string | undefined, options: AnalyzeOptions) => {
       await runAnalyze(inDir, options);
+    });
+
+  cli
+    .command("spread [inDir]", "Process manifest interactively")
+    .option("-r, --rename", "Rename media files", { default: true })
+    .example("spread ./tmp/processed")
+    .example("spread ./tmp/some-place --no-rename")
+    .action(async (inDir: string | undefined, options: SpreadOptions) => {
+      await runSpread(inDir, options);
     });
 
   const parsedArgs = cli.parse(rawArguments, { run: false });
@@ -269,6 +284,26 @@ async function runAnalyze(
         Promise.resolve(options.initialValue),
     },
   );
+
+  outro(message);
+}
+
+async function runSpread(
+  inDir: string | undefined,
+  options: SpreadOptions,
+): Promise<void> {
+  if (!inDir) {
+    throwValidationError("inDir is required. Provide [inDir].");
+  }
+
+  const message = await spreadCommand.execute({
+    args: [inDir],
+    options: {
+      rename: options.fun,
+      // language: options.language,
+      // minimal: options.minimal ?? true,
+    },
+  });
 
   outro(message);
 }
