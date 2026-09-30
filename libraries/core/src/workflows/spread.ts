@@ -25,6 +25,14 @@ export type SpreadWorkflowResult = {
   withStatsCount: number;
 };
 
+
+export type SpreadWorkflowProgress = {
+  completedFiles: number;
+  currentFile?: string;
+  totalFiles: number;
+};
+
+
 // export function getArbitraryJunk(
 //   vttTranscription: Transcription,
 // ): number | undefined {

@@ -27,7 +27,7 @@ type AnalyzeOptions = {
 };
 
 type SpreadOptions = {
-  fun: boolean;
+  rename: boolean;
 } & CommonInteractiveOptions;
 
 type CommonInteractiveOptions = {

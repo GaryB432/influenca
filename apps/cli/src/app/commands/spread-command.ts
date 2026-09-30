@@ -1,17 +1,30 @@
-import { color } from "@influenca/core";
-import { runSpreadWorkflow, type SpreadWorkflowResult } from "@influenca/core";
+import {
+  color,
+  runSpreadWorkflow,
+  type SpreadWorkflowProgress,
+  type SpreadWorkflowResult,
+} from "@influenca/core";
 
-import { type CliCommand, type ParsedCommandArgs } from "../command-contract";
+import {
+  type CliCommand,
+  type CommandRuntime,
+  type ParsedCommandArgs,
+} from "../command-contract";
 
 export type SpreadCommandOptions = {
   rename: boolean;
 };
+
+// export type AccessionCommandRuntime = CommandRuntime<SpreadWorkflowOptions>;
+
+export type SpreadCommandRuntime = CommandRuntime<SpreadWorkflowProgress>;
 
 // const { summaryTone } = color;
 
 export class SpreadCommand implements CliCommand<SpreadCommandOptions> {
   public async execute(
     input: ParsedCommandArgs<SpreadCommandOptions>,
+    runtime: SpreadCommandRuntime,
   ): Promise<string> {
     const [inDir] = input.args;
 
