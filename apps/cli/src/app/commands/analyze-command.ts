@@ -1,21 +1,30 @@
-import { color } from "@influenca/core";
 import {
   type AnalyzeWorkflowResult,
+  color,
   runAnalyzeWorkflow,
 } from "@influenca/core";
 
-import { type CliCommand, type ParsedCommandArgs } from "../command-contract";
+import {
+  type CliCommand,
+  type CommandRuntime,
+  type ParsedCommandArgs,
+} from "../command-contract";
 
 export type AnalyzeCommandOptions = {
   language: string | undefined;
   minimal: boolean;
 };
 
-// const { summaryTone } = color;
+export type AnalyzeCommandRuntime = CommandRuntime<AnalyzeWorkflowProgress>;
+
+type AnalyzeWorkflowProgress = {
+  tbd: boolean;
+};
 
 export class AnalyzeCommand implements CliCommand<AnalyzeCommandOptions> {
   public async execute(
     input: ParsedCommandArgs<AnalyzeCommandOptions>,
+    _runtime: AnalyzeCommandRuntime,
   ): Promise<string> {
     const [inDir] = input.args;
 

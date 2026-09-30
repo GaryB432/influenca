@@ -250,13 +250,25 @@ async function runAnalyze(
     throwValidationError("inDir is required. Provide [inDir].");
   }
 
-  const message = await analyzeCommand.execute({
-    args: [inDir],
-    options: {
-      language: options.language,
-      minimal: options.minimal ?? true,
+  const message = await analyzeCommand.execute(
+    {
+      args: [inDir],
+      options: {
+        language: options.language,
+        minimal: options.minimal ?? true,
+      },
     },
-  });
+    {
+      meter: progress,
+      onProgress() {
+        throw new Error("progress meter in progress");
+      },
+      select: (options: { initialValue: string }) =>
+        Promise.resolve(options.initialValue),
+      text: (options: { initialValue: string }) =>
+        Promise.resolve(options.initialValue),
+    },
+  );
 
   outro(message);
 }
