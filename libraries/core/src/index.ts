@@ -5,6 +5,7 @@ export * from "./utils/meter";
 export * from "./utils/names";
 export * from "./workflows/accession";
 export * from "./workflows/analyze";
+export * from "./workflows/spread";
 
 import OpenAI from "openai";
 
