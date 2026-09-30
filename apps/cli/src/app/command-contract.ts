@@ -10,9 +10,13 @@ export interface CliCommand<TOptions, TProgress = never> {
 export type CommandRuntime<TProgress = never> = {
   meter: (o: ProgressOptions) => ProgressResult;
   onProgress: (progress: TProgress) => void;
+  select: (o: ResolutionOptions) => Promise<string | symbol | undefined>;
+  text: (o: ResolutionOptions) => Promise<string | symbol | undefined>;
 };
 
 export type ParsedCommandArgs<TOptions> = {
   args: string[];
   options: TOptions;
 };
+
+type ResolutionOptions = { initialValue: string };
