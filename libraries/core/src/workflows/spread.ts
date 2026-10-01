@@ -13,7 +13,14 @@ import * as gbfs from "../shims/fs";
 
 export type SpreadWorkflowOptions = {
   inDir: string;
+  primarylanguage: string | undefined;
   rename: boolean;
+};
+
+export type SpreadWorkflowProgress = {
+  completedFiles: number;
+  currentFile?: string;
+  totalFiles: number;
 };
 
 export type SpreadWorkflowResult = {
@@ -24,20 +31,6 @@ export type SpreadWorkflowResult = {
   videoCount: number;
   withStatsCount: number;
 };
-
-
-export type SpreadWorkflowProgress = {
-  completedFiles: number;
-  currentFile?: string;
-  totalFiles: number;
-};
-
-
-// export function getArbitraryJunk(
-//   vttTranscription: Transcription,
-// ): number | undefined {
-//   return vttTranscription?.segments?.length;
-// }
 
 export async function runSpreadWorkflow(
   options: SpreadWorkflowOptions,
@@ -56,15 +49,15 @@ export async function runSpreadWorkflow(
   let withStatsCount = 0;
   let totalWords = 0;
 
-  // function languageConsoleLine(
-  //   lang: string,
-  //   primeLang: string | undefined,
-  // ): string {
-  //   const ipl = options.primaryLanguage ? lang === primeLang : true;
-  //   return maybeColorize(ipl ? 2 : ASCII_DIM, "language")
-  //     .concat("  : ")
-  //     .concat(maybeColorize(ipl ? 10 : ASCII_DIM, lang));
-  // }
+  function languageConsoleLine(
+    lang: string,
+    primeLang: string | undefined,
+  ): string {
+    const ipl = options.primarylanguage ? lang === primeLang : true;
+    return maybeColorize(ipl ? 2 : ASCII_DIM, "language")
+      .concat("  : ")
+      .concat(maybeColorize(ipl ? 10 : ASCII_DIM, lang));
+  }
 
   for (const manifest_key of manifest_keys) {
     const entry = manifest[manifest_key];
@@ -94,24 +87,25 @@ export async function runSpreadWorkflow(
         const words = text.split(/\s+/).length;
         totalWords += words;
 
-        // if (!options.minimal) {
-        //   const is_language_dim = options.primaryLanguage
-        //     ? entry.transcript.meta.language !== options.primaryLanguage
-        //     : false;
-        //   const mutedSegments = segments
-        //     .map((seg) =>
-        //       maybeColorize(is_language_dim ? ASCII_DIM : 15, seg.text),
-        //     )
-        //     .join("\n");
-        //   console.log(
-        //     languageConsoleLine(
-        //       entry.transcript.meta.language,
-        //       options.primaryLanguage,
-        //     ),
-        //   );
-        //   coolsole.log(labeledLan);
-        //   coolsole.log(mutedSegments);
-        // }
+        const is_language_dim = options.primarylanguage
+          ? entry.transcript.meta.language !== options.primarylanguage
+          : false;
+
+        const mutedSegments = segments
+          .map((seg) =>
+            maybeColorize(is_language_dim ? ASCII_DIM : 15, seg.text),
+          )
+          .join("\n");
+
+        console.log(
+          languageConsoleLine(
+            entry.transcript.meta.language,
+            options.primarylanguage,
+          ),
+        );
+
+        // coolsole.log(labeledLan);
+        coolsole.log(mutedSegments);
       }
     } else {
       coolsole.log(logForNoTranscript());

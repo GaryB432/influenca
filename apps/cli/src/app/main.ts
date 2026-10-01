@@ -1,5 +1,11 @@
 import { cancel, isCancel, outro, text } from "@clack/prompts";
-import { color, progress } from "@influenca/core";
+import {
+  color,
+  progress,
+  type ProgressOptions,
+  type ProgressResult,
+  type SpreadWorkflowProgress,
+} from "@influenca/core";
 import { cac } from "cac";
 import path from "node:path";
 
@@ -24,15 +30,16 @@ type AccessionOptions = {
 type AnalyzeOptions = {
   language: string | undefined;
   minimal: boolean;
-};
-
-type SpreadOptions = {
-  rename: boolean;
 } & CommonInteractiveOptions;
 
 type CommonInteractiveOptions = {
   interactive: boolean;
 };
+
+type SpreadOptions = {
+  language: string | undefined;
+  rename: boolean;
+} & CommonInteractiveOptions;
 
 export function getOpenAiApiKey(
   explicitKey: string | undefined,
@@ -296,19 +303,39 @@ async function runSpread(
     throwValidationError("inDir is required. Provide [inDir].");
   }
 
-  const message = await spreadCommand.execute({
-    args: [inDir],
-    options: {
-      rename: options.fun,
-      // language: options.language,
-      // minimal: options.minimal ?? true,
+  const message = await spreadCommand.execute(
+    {
+      args: [inDir],
+      options: {
+        primaryLanguage: "NNN", // options.primaryLanguage
+        rename: options.rename,
+      },
     },
-  });
+    {
+      meter: function (o: ProgressOptions): ProgressResult {
+        throw new Error("Function not implemented.");
+      },
+      onProgress: function (progress: SpreadWorkflowProgress): void {
+        throw new Error("Function not implemented.");
+      },
+      select: function (o: {
+        initialValue: string;
+      }): Promise<string | symbol | undefined> {
+        throw new Error("Function not implemented.");
+      },
+      text: function (o: {
+        initialValue: string;
+      }): Promise<string | symbol | undefined> {
+        throw new Error("Function not implemented.");
+      },
+    },
+  );
 
   outro(message);
 }
 
 function throwValidationError(message: string): never {
+  // console.log(progress.name);
   throw new Error(message);
 }
 

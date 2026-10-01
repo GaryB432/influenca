@@ -12,6 +12,7 @@ import {
 } from "../command-contract";
 
 export type SpreadCommandOptions = {
+  primaryLanguage: string;
   rename: boolean;
 };
 
@@ -24,7 +25,7 @@ export type SpreadCommandRuntime = CommandRuntime<SpreadWorkflowProgress>;
 export class SpreadCommand implements CliCommand<SpreadCommandOptions> {
   public async execute(
     input: ParsedCommandArgs<SpreadCommandOptions>,
-    runtime: SpreadCommandRuntime,
+    _runtime: SpreadCommandRuntime,
   ): Promise<string> {
     const [inDir] = input.args;
 
@@ -34,6 +35,7 @@ export class SpreadCommand implements CliCommand<SpreadCommandOptions> {
 
     const result = await runSpreadWorkflow({
       inDir,
+      primarylanguage: input.options.primaryLanguage,
       rename: input.options.rename,
     });
 
