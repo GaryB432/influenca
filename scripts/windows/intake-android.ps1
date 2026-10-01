@@ -1,3 +1,5 @@
+# DEPRECATED: Use ../intake.sh for cross-platform intake. This Windows-only
+# script remains for users who need the Windows Shell MTP transport.
 <#
 .SYNOPSIS
     Copies the newest camera media from an Android phone (MTP) into a timestamped
