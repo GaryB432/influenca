@@ -42,7 +42,7 @@ export function greet(greetee: string): string {
 //   return dumper(options);
 // }
 
-async function text(
+export async function text(
   options: TextOptions,
 ): Promise<string | symbol | undefined> {
   console.log("faking");
