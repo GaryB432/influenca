@@ -9,45 +9,32 @@ influenca ~/my-media --exif
 
 ## Content intake
 
-### SD card / USB drive (WSL)
+### USB media and Android phones
 
-Move `avi` / `wav` files from a Windows drive (e.g. `G:`) to a timestamped folder,
-then print the ready-to-run `accession` command:
+Use the cross-platform intake script from Linux, WSL, or macOS. It detects
+auto-mounted USB/SD volumes first, then Android via Linux `adb`, Windows
+`adb.exe` in WSL, `simple-mtpfs`, or GNOME GVfs (`gio`):
 
 ```sh
-./scripts/intake.sh g
+# Automatically detect the connected source (last 2 days of mp4/mov)
+./scripts/intake.sh
+
+# Choose a transport or adjust the source and filters
+./scripts/intake.sh --transport adb --max-days 3 --extensions mp4,mov,avi
+./scripts/intake.sh --transport mtp --source-dir "Internal storage/DCIM/Camera"
 ```
 
-### Android phone (MTP via Windows Shell)
+For Android over Linux `adb` in WSL, attach the phone to WSL with
+[`usbipd-win`](https://github.com/dorssel/usbipd-win) and enable USB debugging.
+The `adb-win` transport uses `adb.exe` from Windows without USB/IP. MTP through
+`simple-mtpfs` in WSL may require systemd; `gio` requires a GNOME/GVfs session.
+For a custom directory layout, pass `--source-dir`; use a device path for `adb`
+and a mounted path for `mtp`. For `gio`, use a path relative to the device root
+or a full `mtp://` URI.
 
-Phone enumeration and file copying require the Windows Shell COM API (MTP).
-Run this from **PowerShell 7 on Windows** (`pwsh.exe`):
-
-```powershell
-# Defaults: first MTP device found, last 7 days of media
-pwsh.exe -File scripts\intake-android.ps1
-
-# Target a specific phone by partial name, copy last 3 days
-pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Pixel" -MaxAgeDays 3
-
-# Copy ALL camera files (no age filter)
-pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Galaxy" -MaxAgeDays 0
-```
-
-Or invoke it directly from a WSL terminal (requires `pwsh.exe` on the Windows `PATH`):
-
-```bash
-pwsh.exe -File "$(wslpath -w ./scripts/intake-android.ps1)"
-```
-
-The script automatically resolves your WSL home directory and prints a
-**WSL-native, pasteable** next-step command — no Windows paths leak into the output:
-
-```
-✨ Next step — paste into your WSL terminal:
-
-  influenca accession ~/.local/state/influenca/2026-09-28_17-30-00/pixel-9-pro
-```
+On success, the script prints a ready-to-paste `influenca accession` command.
+The previous Windows Shell MTP implementation remains deprecated at
+[`scripts/windows/intake-android.ps1`](scripts/windows/intake-android.ps1).
 
 ## Development
 

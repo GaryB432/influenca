@@ -1,87 +1,254 @@
-#!/bin/bash
-# Exit immediately if any command fails
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-# 1. Configuration & Formatting
-INPUT_DRIVE="${1:-G}"
-INPUT_DRIVE="${INPUT_DRIVE%:}"
-DRIVE_LOWER="${INPUT_DRIVE,}"
-DRIVE_LOWER="${DRIVE_LOWER:0:1}"
-DRIVE_UPPER="${DRIVE_LOWER^^}"
+MAX_DAYS=${MAX_DAYS:-2}
+EXTENSIONS=${EXTENSIONS:-mp4,mov}
+TRANSPORT=auto
+SOURCE_DIR=
+USER=${USER:-$(id -un)}
 
-MOUNT_POINT="/mnt/${DRIVE_LOWER}"
-WINDOWS_DRIVE="${DRIVE_UPPER}:"
+usage() {
+  cat <<'EOF'
+Usage: intake.sh [--transport auto|usb|adb|adb-win|mtp|gio]
+                 [--max-days N] [--extensions EXT[,EXT...]]
+                 [--source-dir PATH]
 
-# Heuristic WSL detection: warn only; do not block mounting.
-if ! grep -qiE '(microsoft|wsl)' /proc/version 2>/dev/null; then
-    echo "⚠️  This does not look like WSL based on /proc/version."
-    echo "   Continuing anyway and attempting to mount ${WINDOWS_DRIVE}..."
+Copy recent camera media from an auto-mounted volume or Android phone.
+Defaults: --transport auto --max-days 2 --extensions mp4,mov
+
+In WSL, adb-win uses Windows adb.exe. For Android over USB with Linux adb,
+attach the device with usbipd-win first. MTP access with simple-mtpfs in WSL
+may require systemd; gio requires a GNOME/GVfs session.
+EOF
+}
+
+fail() {
+  printf '❌ %s\n' "$*" >&2
+  exit 1
+}
+
+while (($#)); do
+  case "$1" in
+    --transport)
+      (($# >= 2)) || fail "--transport requires a value"
+      TRANSPORT=$2
+      shift 2
+      ;;
+    --max-days)
+      (($# >= 2)) || fail "--max-days requires a value"
+      MAX_DAYS=$2
+      shift 2
+      ;;
+    --extensions)
+      (($# >= 2)) || fail "--extensions requires a value"
+      EXTENSIONS=$2
+      shift 2
+      ;;
+    --source-dir)
+      (($# >= 2)) || fail "--source-dir requires a value"
+      SOURCE_DIR=$2
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      fail "Unknown argument: $1 (see --help)"
+      ;;
+  esac
+done
+
+[[ "$MAX_DAYS" =~ ^[0-9]+$ ]] || fail "--max-days must be a non-negative integer"
+case "$TRANSPORT" in
+  auto|usb|adb|adb-win|mtp|gio) ;;
+  *) fail "Unsupported transport '$TRANSPORT' (choose auto, usb, adb, adb-win, mtp, or gio)" ;;
+esac
+
+EXTS=()
+IFS=',' read -r -a requested_extensions <<< "$EXTENSIONS"
+for ext in "${requested_extensions[@]}"; do
+  ext=${ext#.}
+  [[ -n "$ext" ]] || continue
+  EXTS+=("$(printf '%s' "$ext" | tr '[:upper:]' '[:lower:]')")
+done
+((${#EXTS[@]})) || fail "At least one file extension is required"
+
+is_wsl() {
+  grep -qiE '(microsoft|wsl)' /proc/version 2>/dev/null
+}
+
+contains_media() {
+  local directory=$1 ext
+  for ext in "${EXTS[@]}"; do
+    if find "$directory" -type f -iname "*.$ext" -print -quit 2>/dev/null | grep -q .; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+find_usb_mount() {
+  local base volume
+  for base in "/media/$USER" "/run/media/$USER" /Volumes; do
+    [[ -d "$base" ]] || continue
+    for volume in "$base"/*; do
+      [[ -d "$volume" ]] || continue
+      if contains_media "$volume"; then
+        printf '%s\n' "$volume"
+        return 0
+      fi
+    done
+  done
+  return 1
+}
+
+has_adb_device() {
+  local binary=$1
+  command -v "$binary" >/dev/null 2>&1 || return 1
+  "$binary" devices 2>/dev/null | awk '$2 == "device" { found = 1 } END { exit !found }'
+}
+
+gio_mtp_uri() {
+  command -v gio >/dev/null 2>&1 || return 1
+  gio mount -li 2>/dev/null |
+    sed -n 's/^[[:space:]]*default_location=//p' |
+    grep -m1 '^mtp://' || return 1
+}
+
+USB_MOUNT=
+GIO_URI=
+if [[ "$TRANSPORT" == auto || "$TRANSPORT" == usb ]]; then
+  USB_MOUNT=$(find_usb_mount || true)
 fi
 
-# 2. Check if the drive is already mounted to avoid errors
-if mountpoint -q "$MOUNT_POINT" 2>/dev/null && ls "$MOUNT_POINT" >/dev/null 2>&1; then
-    echo "ℹ️  ${WINDOWS_DRIVE} is already mounted at ${MOUNT_POINT}. Skipping mount step."
-else
-    # Clean up any stale/broken stacked mounts before remounting.
-    if mountpoint -q "$MOUNT_POINT" 2>/dev/null; then
-        echo "⚠️  Found existing mount(s) at ${MOUNT_POINT}; clearing them..."
-        sudo umount -R "$MOUNT_POINT" 2>/dev/null || true
-    fi
+if [[ "$TRANSPORT" == auto ]]; then
+  if [[ -n "$USB_MOUNT" ]]; then
+    TRANSPORT=usb
+  elif has_adb_device adb; then
+    TRANSPORT=adb
+  elif is_wsl && has_adb_device adb.exe; then
+    TRANSPORT=adb-win
+  elif command -v simple-mtpfs >/dev/null 2>&1; then
+    TRANSPORT=mtp
+  elif GIO_URI=$(gio_mtp_uri); then
+    TRANSPORT=gio
+  else
+    fail "No supported source found. Mount a USB volume, connect Android with adb/adb.exe, or install simple-mtpfs (or use gio in GNOME)."
+  fi
+fi
 
-    ATTEMPT=0
-    while mountpoint -q "$MOUNT_POINT" 2>/dev/null; do
-        ATTEMPT=$((ATTEMPT + 1))
-        echo "⚠️  ${MOUNT_POINT} still mounted; unmount attempt ${ATTEMPT}..."
-        sudo umount -l "$MOUNT_POINT" || true
-        if [ "$ATTEMPT" -ge 8 ]; then
-            echo "❌ Error: Could not clear mount stack at ${MOUNT_POINT}."
-            echo "   Try: sudo umount -R ${MOUNT_POINT}"
-            exit 1
-        fi
-    done
-
-    # Ensure the mount point directory exists safely.
-    if ! sudo mkdir -p "$MOUNT_POINT"; then
-        echo "❌ Error: Could not create mount point ${MOUNT_POINT}."
-        echo "   Try manually running: sudo umount -l ${MOUNT_POINT}"
-        exit 1
-    fi
-
-    echo "🔌 Attempting to mount ${WINDOWS_DRIVE} to ${MOUNT_POINT}..."
-
-    # Try mounting, keep stderr so the real root cause is visible.
-    if ! sudo mount -t drvfs "$WINDOWS_DRIVE" "$MOUNT_POINT"; then
-        echo "❌ Error: Could not mount ${WINDOWS_DRIVE}."
-        echo "   Verify the drive letter in Windows Explorer and rerun as: ./scripts/intake.sh <LETTER>"
-        # Clean up the empty directory so it doesn't leave a ghost folder.
-        sudo rmdir "$MOUNT_POINT" 2>/dev/null || true
-        exit 1
-    fi
+if [[ "$TRANSPORT" == usb && -z "$SOURCE_DIR" ]]; then
+  [[ -n "$USB_MOUNT" ]] || fail "No mounted volume with matching media found under /media/$USER or /run/media/$USER; pass --source-dir to specify one."
+  SOURCE_DIR=$USB_MOUNT
 fi
 
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+DEST="$HOME/.local/state/influenca/$TIMESTAMP"
+mkdir -p "$DEST"
 
-# 3. Your Rsync Command Pipeline
-# Customize your destination directory as needed
+WORK_DIR=
+MOUNT_DIR=
+cleanup() {
+  if [[ -n "$MOUNT_DIR" ]]; then
+    if command -v fusermount3 >/dev/null 2>&1; then
+      fusermount3 -u "$MOUNT_DIR" 2>/dev/null || true
+    elif command -v fusermount >/dev/null 2>&1; then
+      fusermount -u "$MOUNT_DIR" 2>/dev/null || true
+    fi
+    rm -rf "$MOUNT_DIR" 2>/dev/null || true
+  fi
+  [[ -z "$WORK_DIR" ]] || rm -rf "$WORK_DIR"
+}
+trap cleanup EXIT
 
-DEST_DIR="$HOME/.local/state/influenca/$TIMESTAMP/media"
-mkdir -p "$DEST_DIR"
+copy_from() {
+  local source=$1 file relative extension target copied=0
+  [[ -d "$source" ]] || fail "Source directory does not exist: $source"
+  while IFS= read -r -d '' file; do
+    extension=${file##*.}
+    extension=$(printf '%s' "$extension" | tr '[:upper:]' '[:lower:]')
+    [[ " ${EXTS[*]} " == *" $extension "* ]] || continue
+    if ((MAX_DAYS > 0)) && ! find "$file" -type f -mtime "-$MAX_DAYS" -print -quit | grep -q .; then
+      continue
+    fi
+    relative=${file#"$source"/}
+    target="$DEST/$relative"
+    mkdir -p "$(dirname "$target")"
+    cp -p "$file" "$target"
+    copied=$((copied + 1))
+  done < <(find "$source" -type f -print0)
+  printf '%s\n' "$copied"
+}
 
-echo "☕🔄 Starting rsync operations from ${MOUNT_POINT} to ${DEST_DIR}..."
+case "$TRANSPORT" in
+  usb)
+    echo "📂 USB volume: $SOURCE_DIR"
+    ;;
+  adb|adb-win)
+    SOURCE_DIR=${SOURCE_DIR:-/sdcard/DCIM/Camera}
+    WORK_DIR=$(mktemp -d)
+    if [[ "$TRANSPORT" == adb-win ]]; then
+      command -v wslpath >/dev/null 2>&1 || fail "wslpath is required to use Windows adb.exe from WSL"
+      echo "📱 Android via adb.exe (WSL)"
+      adb.exe pull "$SOURCE_DIR" "$(wslpath -w "$WORK_DIR")"
+    else
+      echo "📱 Android via adb"
+      adb pull "$SOURCE_DIR" "$WORK_DIR"
+    fi
+    if [[ -d "$WORK_DIR/$(basename "$SOURCE_DIR")" ]]; then
+      SOURCE_DIR="$WORK_DIR/$(basename "$SOURCE_DIR")"
+    else
+      SOURCE_DIR=$WORK_DIR
+    fi
+    ;;
+  mtp)
+    command -v simple-mtpfs >/dev/null 2>&1 || fail "Install simple-mtpfs to use the MTP transport"
+    WORK_DIR=$(mktemp -d)
+    MOUNT_DIR=$(mktemp -d)
+    simple-mtpfs "$MOUNT_DIR"
+    SOURCE_DIR=${SOURCE_DIR:-}
+    if [[ -z "$SOURCE_DIR" ]]; then
+      for candidate in \
+        "$MOUNT_DIR/Internal shared storage/DCIM/Camera" \
+        "$MOUNT_DIR/Internal storage/DCIM/Camera" \
+        "$MOUNT_DIR/Internal Storage/DCIM/Camera" \
+        "$MOUNT_DIR/Phone/DCIM/Camera" \
+        "$MOUNT_DIR/DCIM/Camera" \
+        "$MOUNT_DIR/Internal storage/DCIM" \
+        "$MOUNT_DIR/Internal Storage/DCIM" \
+        "$MOUNT_DIR/Phone/DCIM" \
+        "$MOUNT_DIR/DCIM"; do
+        if [[ -d "$candidate" ]]; then
+          SOURCE_DIR=$candidate
+          break
+        fi
+      done
+    elif [[ "$SOURCE_DIR" != /* ]]; then
+      SOURCE_DIR="$MOUNT_DIR/$SOURCE_DIR"
+    fi
+    [[ -n "$SOURCE_DIR" ]] || fail "Could not find DCIM on the MTP device; pass --source-dir to specify its path."
+    echo "📱 Android via simple-mtpfs"
+    ;;
+  gio)
+    GIO_URI=${GIO_URI:-$(gio_mtp_uri || true)}
+    [[ -n "$GIO_URI" ]] || fail "No GVfs MTP device found; check that the phone is mounted in Files."
+    WORK_DIR=$(mktemp -d)
+    if [[ -z "$SOURCE_DIR" ]]; then
+      SOURCE_DIR="${GIO_URI%/}/Internal%20storage/DCIM/Camera"
+    elif [[ "$SOURCE_DIR" != mtp://* ]]; then
+      SOURCE_DIR="${GIO_URI%/}/$(printf '%s' "$SOURCE_DIR" | sed 's/ /%20/g')"
+    fi
+    echo "📱 Android via gio"
+    gio copy "$SOURCE_DIR" "$WORK_DIR/"
+    if [[ -d "$WORK_DIR/Camera" ]]; then
+      SOURCE_DIR="$WORK_DIR/Camera"
+    else
+      SOURCE_DIR=$WORK_DIR
+    fi
+    ;;
+esac
 
-rsync -rtv --progress --include="*/" --include="*.AVI" --include="*.avi" --include="*.WAV" --include="*.wav" --exclude="*" "$MOUNT_POINT/DCIMA/" "$MOUNT_POINT/AUDIO/" "$DEST_DIR/"
-
-rm -rf "$MOUNT_POINT/AUDIO" "$MOUNT_POINT/DCIMA" "$MOUNT_POINT/TIME.TXT"
-
-echo "2026-01-01 00:00:01 N" > "$MOUNT_POINT/TIME.TXT"
-
-# sudo umount /mnt/rushmore
-
-ls "$DEST_DIR"
-
-echo "✅ Intake complete!"
-
-printf "✨ Next Steps: %s %s %s\n" \
-  "$(tput setaf 81)apps/cli/dist/bin.mjs accession" \
-  "$(tput setaf 121)$DEST_DIR$(tput sgr0)"
-
+COUNT=$(copy_from "$SOURCE_DIR")
+printf '\n✅ %s file(s) → %s\n\n' "$COUNT" "$DEST"
+printf 'influenca accession %q --transcribe true\n' "$DEST"
