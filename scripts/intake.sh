@@ -16,6 +16,8 @@ Usage: intake.sh [--transport auto|usb|adb|adb-win|mtp|gio]
 Copy recent camera media from an auto-mounted volume or Android phone.
 Defaults: --transport auto --max-days 2 --extensions mp4,mov
 
+In WSL, mounted Windows drives under /mnt are checked. If none contain media,
+the script tries to mount WSL_USB_DRIVE (default G) with sudo and drvfs.
 In WSL, adb-win uses Windows adb.exe. For Android over USB with Linux adb,
 attach the device with usbipd-win first. MTP access with simple-mtpfs in WSL
 may require systemd; gio requires a GNOME/GVfs session.
@@ -100,6 +102,39 @@ find_usb_mount() {
       fi
     done
   done
+  if is_wsl; then
+    local drive=${WSL_USB_DRIVE:-G}
+    drive=$(printf '%s' "$drive" | tr '[:upper:]' '[:lower:]')
+    for volume in "/mnt/$drive" /mnt/[a-z]; do
+      [[ -d "$volume" ]] || continue
+      if contains_media "$volume"; then
+        printf '%s\n' "$volume"
+        return 0
+      fi
+    done
+  fi
+  return 1
+}
+
+mount_wsl_default_drive() {
+  is_wsl || return 1
+  local drive=${WSL_USB_DRIVE:-G} mount_dir
+  [[ "$drive" =~ ^[a-zA-Z]$ ]] || {
+    printf '⚠️  WSL_USB_DRIVE must be a single drive letter (got %s).\n' "$drive" >&2
+    return 1
+  }
+  drive=$(printf '%s' "$drive" | tr '[:lower:]' '[:upper:]')
+  mount_dir="/mnt/${drive,,}"
+  mountpoint -q "$mount_dir" 2>/dev/null && return 1
+  command -v sudo >/dev/null 2>&1 || return 1
+
+  printf '🔌 Trying to mount WSL drive %s: at %s (sudo may prompt for your Linux password)...\n' "$drive" "$mount_dir" >&2
+  if sudo mkdir -p "$mount_dir" && sudo mount -t drvfs "$drive:" "$mount_dir"; then
+    if contains_media "$mount_dir"; then
+      printf '%s\n' "$mount_dir"
+      return 0
+    fi
+  fi
   return 1
 }
 
@@ -120,6 +155,9 @@ USB_MOUNT=
 GIO_URI=
 if [[ "$TRANSPORT" == auto || "$TRANSPORT" == usb ]]; then
   USB_MOUNT=$(find_usb_mount || true)
+  if [[ -z "$USB_MOUNT" ]]; then
+    USB_MOUNT=$(mount_wsl_default_drive || true)
+  fi
 fi
 
 if [[ "$TRANSPORT" == auto ]]; then
