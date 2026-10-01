@@ -28,11 +28,11 @@ For Android over Linux `adb` in WSL, attach the phone to WSL with
 [`usbipd-win`](https://github.com/dorssel/usbipd-win) and enable USB debugging.
 The `adb-win` transport uses `adb.exe` from Windows without USB/IP. MTP through
 `simple-mtpfs` in WSL may require systemd; `gio` requires a GNOME/GVfs session.
-In WSL, the script checks mounted Windows drives under `/mnt` first. If none
-contain matching media, it tries to mount `G:` using `sudo` and `drvfs`; set
-`WSL_USB_DRIVE` to another drive letter if needed. This may prompt for your
-Ubuntu password. If WSL automount is enabled, the drive should already appear
-under `/mnt/<letter>` and no `sudo` mount is needed.
+In WSL, the script checks the selected drive under `/mnt` (default `G:`) rather
+than scanning every drive letter. If it is not mounted, it tries to mount that
+drive using `sudo` and `drvfs`; set `WSL_USB_DRIVE` to another single drive
+letter if needed. This may prompt for your Ubuntu password. If WSL automount is
+enabled, the selected drive should already appear under `/mnt/<letter>`.
 For a custom directory layout, pass `--source-dir`; use a device path for `adb`
 and a mounted path for `mtp`. For `gio`, use a path relative to the device root
 or a full `mtp://` URI.

@@ -80,6 +80,10 @@ is_wsl() {
   grep -qiE '(microsoft|wsl)' /proc/version 2>/dev/null
 }
 
+if is_wsl && [[ ! "${WSL_USB_DRIVE:-G}" =~ ^[a-zA-Z]$ ]]; then
+  fail "WSL_USB_DRIVE must be a single drive letter (got ${WSL_USB_DRIVE})."
+fi
+
 contains_media() {
   local directory=$1 ext
   for ext in "${EXTS[@]}"; do
@@ -91,7 +95,7 @@ contains_media() {
 }
 
 find_usb_mount() {
-  local base volume
+  local base volume drive
   for base in "/media/$USER" "/run/media/$USER" /Volumes; do
     [[ -d "$base" ]] || continue
     for volume in "$base"/*; do
@@ -103,15 +107,12 @@ find_usb_mount() {
     done
   done
   if is_wsl; then
-    local drive=${WSL_USB_DRIVE:-G}
-    drive=$(printf '%s' "$drive" | tr '[:upper:]' '[:lower:]')
-    for volume in "/mnt/$drive" /mnt/[a-z]; do
-      [[ -d "$volume" ]] || continue
-      if contains_media "$volume"; then
-        printf '%s\n' "$volume"
-        return 0
-      fi
-    done
+    drive=$(printf '%s' "${WSL_USB_DRIVE:-G}" | tr '[:upper:]' '[:lower:]')
+    volume="/mnt/$drive"
+    if [[ -d "$volume" ]] && contains_media "$volume"; then
+      printf '%s\n' "$volume"
+      return 0
+    fi
   fi
   return 1
 }
@@ -172,12 +173,19 @@ if [[ "$TRANSPORT" == auto ]]; then
   elif GIO_URI=$(gio_mtp_uri); then
     TRANSPORT=gio
   else
+    if is_wsl; then
+      fail "No supported source found. WSL USB drive ${WSL_USB_DRIVE:-G}: was not found or has no matching media; set WSL_USB_DRIVE to its letter. For Android, connect with adb/adb.exe or install simple-mtpfs (or use gio in GNOME)."
+    fi
     fail "No supported source found. Mount a USB volume, connect Android with adb/adb.exe, or install simple-mtpfs (or use gio in GNOME)."
   fi
 fi
 
 if [[ "$TRANSPORT" == usb && -z "$SOURCE_DIR" ]]; then
-  [[ -n "$USB_MOUNT" ]] || fail "No mounted volume with matching media found under /media/$USER or /run/media/$USER; pass --source-dir to specify one."
+  USB_LOCATIONS="/media/$USER or /run/media/$USER"
+  if is_wsl; then
+    USB_LOCATIONS+=" or /mnt/${WSL_USB_DRIVE:-G}"
+  fi
+  [[ -n "$USB_MOUNT" ]] || fail "No mounted volume with matching media found under $USB_LOCATIONS; pass --source-dir to specify one."
   SOURCE_DIR=$USB_MOUNT
 fi
 
