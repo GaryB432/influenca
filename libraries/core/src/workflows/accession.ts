@@ -53,6 +53,10 @@ const baseTempDir = fs.realpathSync(os.tmpdir());
 
 let temporary_for_wav_work: fs.DisposableTempDir | undefined;
 
+type MF = Record<string, VR>;
+
+type VR = Pick<VideoEntry, "video">;
+
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
 ): Promise<AccessionWorkflowResult> {
@@ -131,6 +135,38 @@ export async function runAccessionWorkflow(
     processedFiles,
     transcribedFiles,
   };
+}
+
+export async function stitch(input: MF): Promise<Manifest> {
+  const temporary_result = Object.keys(input).reduce((accum, slug) => {
+    const infoa = input[slug];
+
+    if (infoa) {
+      // const v: VideoEntry = {
+      //   transcript: undefined,
+      //   video: {},
+      //   ...mnfst[slug],
+      // };
+
+      // console.log(b);
+      // a[b] = { transcript: undefined, video: {} };
+      // console.log(qqf);
+
+      const newve: VideoEntry = {
+        transcript: undefined,
+        ...infoa,
+      };
+
+      accum[slug] = newve;
+    }
+    return accum;
+  }, {} as Manifest);
+
+  // const f = Object.keys(m).map((slug) => {
+  //   return { slug, fun: true };
+  // });
+
+  return temporary_result;
 }
 
 export async function transcribeAudio(
