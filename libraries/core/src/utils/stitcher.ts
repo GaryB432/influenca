@@ -1,6 +1,18 @@
 import type { Manifest, VideoStatisticalBlock } from "..";
 
-type StitchCandidate = Record<string, VideoStatisticalBlock>;
+type StitchCandidate = Record<string, { name: string } | VideoStatisticalBlock>;
+
+const isEmptyObject = (x: unknown) =>
+  x !== null && typeof x === "object" && Object.keys(x).length === 0;
+
+export async function checkForFragments(mnfst: Manifest): Promise<Manifest> {
+  const m = { ...mnfst };
+  const frags = await locate_candidates_low_level(m);
+  if (!isEmptyObject(frags)) {
+    console.warn("videos are being ignored here");
+  }
+  return m;
+}
 
 export async function locate_candidates_low_level(
   mnfst: Manifest,
@@ -23,7 +35,10 @@ export async function locate_candidates_low_level(
       only_vid_stats.duration_seconds > 55;
 
     if (likely_a_fragment) {
-      candidate_results[manifestKey] = only_vid_stats;
+      candidate_results[manifestKey] = {
+        ...only_vid_stats,
+        name: first_video_key,
+      };
     }
   }
   return candidate_results;

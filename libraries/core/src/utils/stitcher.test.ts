@@ -12,26 +12,32 @@ describe("oven", () => {
         "VID00001": {
           "duration_seconds": 59,
           "frames": 1799,
+          "name": "VID00001_FUN_59.mp4",
         },
         "VID00004": {
           "duration_seconds": 60,
           "frames": 1801,
+          "name": "VID00004_MORE_LIKE_60.mp4",
         },
         "VID00005": {
           "duration_seconds": 59,
           "frames": 1799,
+          "name": "VID00005.mp4",
         },
         "VID00007": {
           "duration_seconds": 59,
           "frames": 1799,
+          "name": "VID00007.mp4",
         },
         "VID00008": {
           "duration_seconds": 59,
           "frames": 1799,
+          "name": "VID00008.mp4",
         },
         "VID00009": {
           "duration_seconds": 59,
           "frames": 1799,
+          "name": "VID00009_IS_ONLY_59.mp4",
         },
       }
     `);
@@ -77,7 +83,7 @@ const some_manifest: Manifest = {
   VID00001: {
     transcript: undefined,
     video: {
-      "VID00001.mp4": {
+      "VID00001_FUN_59.mp4": {
         stats: {
           duration_seconds: 59,
           frames: 1799,
@@ -100,7 +106,7 @@ const some_manifest: Manifest = {
   VID00004: {
     transcript: undefined,
     video: {
-      "VID00004.mp4": {
+      "VID00004_MORE_LIKE_60.mp4": {
         stats: {
           duration_seconds: 60,
           frames: 1801,
@@ -144,7 +150,7 @@ const some_manifest: Manifest = {
   VID00009: {
     transcript: undefined,
     video: {
-      "VID00009.mp4": {
+      "VID00009_IS_ONLY_59.mp4": {
         stats: {
           duration_seconds: 59,
           frames: 1799,
@@ -166,7 +172,7 @@ const some_manifest: Manifest = {
   WHATEVER: {
     transcript: undefined,
     video: {
-      "AUD00001.mp4": {
+      "TWELVE_SECONDS_OVER.mp4": {
         stats: {
           duration_seconds: 72,
           frames: 1803,
