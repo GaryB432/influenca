@@ -56,5 +56,5 @@ export type VideoStatisticalBlock = {
   arbitraryFutureMetric?: string;
   duration_seconds: number;
   frames: number;
-  interestScore: number;
+  interestScore?: number;
 };
