@@ -14,6 +14,7 @@ type AccessionOptions = {
   dryRun: boolean;
   openAiKey: string;
   outDir: string;
+  stitch: boolean;
   timestamp: boolean;
   transcribe: boolean;
   verbose: boolean;

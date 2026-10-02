@@ -29,6 +29,7 @@ export type AccessionWorkflowOptions = {
   meter: (options: ProgressOptions) => ProgressResult;
   openAiKey: string;
   outDir: string;
+  stitch: boolean;
   transcribe: boolean;
   verbose: boolean;
 };

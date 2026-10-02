@@ -16,6 +16,7 @@ export type AccessionCommandOptions = {
   dryRun: boolean;
   openAiKey: string;
   outDir: string;
+  stitch: boolean;
   transcribe: boolean;
   verbose: boolean;
 };

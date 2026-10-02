@@ -63,6 +63,7 @@ describe("transcribeAudio", () => {
           }),
           openAiKey: "test-key",
           outDir: "/tmp/out",
+          stitch: true,
           transcribe: true,
           verbose: false,
         },
