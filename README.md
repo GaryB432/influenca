@@ -43,7 +43,7 @@ pwsh.exe -File "$(wslpath -w ./scripts/intake-android.ps1)"
 The script automatically resolves your WSL home directory and prints a
 **WSL-native, pasteable** next-step command — no Windows paths leak into the output:
 
-```
+```console
 ✨ Next step — paste into your WSL terminal:
 
   influenca accession ~/.local/state/influenca/2026-09-28_17-30-00/pixel-9-pro
