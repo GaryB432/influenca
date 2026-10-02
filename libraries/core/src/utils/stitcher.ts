@@ -1,15 +1,13 @@
-import type { Manifest } from "..";
+import type { Manifest, VideoStatisticalBlock } from "..";
 
-type Cadnf = Record<string, string[]>;
+type StitchCandidate = Record<string, VideoStatisticalBlock>;
 
-export function add(...addends: number[]) {
-  return addends.reduce((a, b) => (a += b));
-}
-
-export async function findem(mnfst: Manifest): Promise<Cadnf> {
-  const candidate_results: Cadnf = {};
+export async function locate_candidates_low_level(
+  mnfst: Manifest,
+): Promise<StitchCandidate> {
+  const candidate_results: StitchCandidate = {};
   for (const [manifestKey, og_video] of Object.entries(mnfst)) {
-    const fragmentCandidates: string[] = [];
+    // const fragmentCandidates: string[] = [];
     const [first_video_key, ...rest] = Object.keys(og_video.video);
 
     if (!first_video_key || rest.length !== 0) {
@@ -25,12 +23,8 @@ export async function findem(mnfst: Manifest): Promise<Cadnf> {
       only_vid_stats.duration_seconds > 55;
 
     if (likely_a_fragment) {
-      candidate_results[manifestKey] = fragmentCandidates;
+      candidate_results[manifestKey] = only_vid_stats;
     }
   }
   return candidate_results;
-}
-
-export function greet(greetee: string): string {
-  return `stitcher says hello to ${greetee}`;
 }
