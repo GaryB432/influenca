@@ -2,7 +2,22 @@ import { describe, expect, it } from "vitest";
 
 import type { Manifest } from "..";
 
-import { locate_candidates_low_level } from "./stitcher";
+import { isNear, locate_candidates_low_level } from "./stitcher";
+
+describe("isNear", () => {
+  it("alpha", () => {
+    expect(isNear(5, 10)).toBeFalsy();
+  });
+  it("bravo", () => {
+    expect(isNear(5, 5)).toBeTruthy();
+  });
+  it("charlie", () => {
+    expect(isNear(5, 10, 6)).toBeTruthy();
+  });
+  it("delta", () => {
+    expect(isNear(60, 59, 1)).toBeTruthy();
+  });
+});
 
 describe("stitcher", () => {
   it("should get fragments", async () => {
