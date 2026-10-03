@@ -21,6 +21,7 @@ import type {
 import * as color from "../color";
 import { analyzeMotion, calculateActivityScore } from "../motion";
 import { writeJSONSync } from "../shims/fs";
+import { checkForFragments } from "../utils/stitcher";
 import { generateMissingVideo } from "./video-fill";
 
 export type AccessionWorkflowOptions = {
@@ -75,7 +76,7 @@ export async function runAccessionWorkflow(
 
   const media_parts = every_media_parts.slice(0, limit);
 
-  const manifest: Manifest = {};
+  const fragmentary_manifest: Manifest = {};
 
   if (!options.dryRun) {
     fs.mkdirSync(outDir, { recursive: true });
@@ -95,7 +96,7 @@ export async function runAccessionWorkflow(
   for (const path_part of media_parts) {
     try {
       const videoEntry = await createVideoEntry(options, path_part);
-      manifest[path_part.name] = videoEntry;
+      fragmentary_manifest[path_part.name] = videoEntry;
       processedFiles += 1;
       if (videoEntry.transcript) {
         transcribedFiles += 1;
@@ -111,6 +112,8 @@ export async function runAccessionWorkflow(
       `${path_part.base} complete`,
     );
   }
+
+  const manifest = await checkForFragments(fragmentary_manifest);
 
   if (!options.dryRun) {
     writeJSONSync<Manifest>(manifestPath, manifest, {
