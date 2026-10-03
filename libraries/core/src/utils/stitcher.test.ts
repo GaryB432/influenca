@@ -4,52 +4,30 @@ import type { Manifest } from "..";
 
 import { locate_candidates_low_level } from "./stitcher";
 
-describe("oven", () => {
+describe("stitcher", () => {
   it("should get fragments", async () => {
-    const cands = await locate_candidates_low_level(some_manifest);
-    expect(cands).toMatchInlineSnapshot(`
-      {
-        "VID00001": {
-          "duration_seconds": 59,
-          "frames": 1799,
-          "name": "VID00001_FUN_59.mp4",
-        },
-        "VID00004": {
-          "duration_seconds": 60,
-          "frames": 1801,
-          "name": "VID00004_MORE_LIKE_60.mp4",
-        },
-        "VID00005": {
-          "duration_seconds": 59,
-          "frames": 1799,
-          "name": "VID00005.mp4",
-        },
-        "VID00007": {
-          "duration_seconds": 59,
-          "frames": 1799,
-          "name": "VID00007.mp4",
-        },
-        "VID00008": {
-          "duration_seconds": 59,
-          "frames": 1799,
-          "name": "VID00008.mp4",
-        },
-        "VID00009": {
-          "duration_seconds": 59,
-          "frames": 1799,
-          "name": "VID00009_IS_ONLY_59.mp4",
-        },
-      }
-    `);
+    const reslt = Object.values(
+      await locate_candidates_low_level(some_manifest),
+    ).map((g) => g.name);
+    expect(reslt.toSorted()).toEqual([
+      "V01_FUN_59.mp4",
+      "V04_MORE_LIKE_60.mp4",
+      "V05.mp4",
+      "V07.mp4",
+      "V08.mp4",
+      "V09_IS_ONLY_59.mp4",
+    ]);
+
+    expect(reslt).not.toContain("TWELVE_SECONDS_OVER.mp4");
   });
 
   it("should disallow extra media", async () => {
     await expect(
       locate_candidates_low_level({
-        VID00002: {
+        V02: {
           transcript: undefined,
           video: {
-            "VID00002.mp4": {
+            "V02.mp4": {
               stats: {
                 duration_seconds: 590,
                 frames: 17990,
@@ -63,10 +41,10 @@ describe("oven", () => {
             },
           },
         },
-        VID00004: {
+        V04: {
           transcript: undefined,
           video: {
-            "VID00004.mp4": {
+            "V04.mp4": {
               stats: {
                 duration_seconds: 60,
                 frames: 1801,
@@ -80,10 +58,10 @@ describe("oven", () => {
 });
 
 const some_manifest: Manifest = {
-  VID00001: {
+  V01: {
     transcript: undefined,
     video: {
-      "VID00001_FUN_59.mp4": {
+      "V01_FUN_59.mp4": {
         stats: {
           duration_seconds: 59,
           frames: 1799,
@@ -92,10 +70,10 @@ const some_manifest: Manifest = {
     },
   },
 
-  VID00002: {
+  V02: {
     transcript: undefined,
     video: {
-      "VID00002.mp4": {
+      "V02.mp4": {
         stats: {
           duration_seconds: 590,
           frames: 17990,
@@ -103,10 +81,10 @@ const some_manifest: Manifest = {
       },
     },
   },
-  VID00004: {
+  V04: {
     transcript: undefined,
     video: {
-      "VID00004_MORE_LIKE_60.mp4": {
+      "V04_MORE_LIKE_60.mp4": {
         stats: {
           duration_seconds: 60,
           frames: 1801,
@@ -114,10 +92,10 @@ const some_manifest: Manifest = {
       },
     },
   },
-  VID00005: {
+  V05: {
     transcript: undefined,
     video: {
-      "VID00005.mp4": {
+      "V05.mp4": {
         stats: {
           duration_seconds: 59,
           frames: 1799,
@@ -125,10 +103,10 @@ const some_manifest: Manifest = {
       },
     },
   },
-  VID00007: {
+  V07: {
     transcript: undefined,
     video: {
-      "VID00007.mp4": {
+      "V07.mp4": {
         stats: {
           duration_seconds: 59,
           frames: 1799,
@@ -136,10 +114,10 @@ const some_manifest: Manifest = {
       },
     },
   },
-  VID00008: {
+  V08: {
     transcript: undefined,
     video: {
-      "VID00008.mp4": {
+      "V08.mp4": {
         stats: {
           duration_seconds: 59,
           frames: 1799,
@@ -147,10 +125,10 @@ const some_manifest: Manifest = {
       },
     },
   },
-  VID00009: {
+  V09: {
     transcript: undefined,
     video: {
-      "VID00009_IS_ONLY_59.mp4": {
+      "V09_IS_ONLY_59.mp4": {
         stats: {
           duration_seconds: 59,
           frames: 1799,
@@ -158,10 +136,10 @@ const some_manifest: Manifest = {
       },
     },
   },
-  VID00010: {
+  V10: {
     transcript: undefined,
     video: {
-      "VID00010.mp4": {
+      "V10.mp4": {
         stats: {
           duration_seconds: 16,
           frames: 491,

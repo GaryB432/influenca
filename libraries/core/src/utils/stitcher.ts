@@ -1,6 +1,6 @@
 import type { Manifest, VideoStatisticalBlock } from "..";
 
-type StitchCandidate = Record<string, { name: string } | VideoStatisticalBlock>;
+type StitchCandidate = Record<string, { name: string } & VideoStatisticalBlock>;
 
 const isEmptyObject = (x: unknown) =>
   x !== null && typeof x === "object" && Object.keys(x).length === 0;
