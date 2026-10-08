@@ -196,11 +196,11 @@ async function createVideoEntry(
   let video_slug = path_part.base;
 
   let transcript:
+    | undefined
     | {
         meta: AbbreviatedTranscriptionMetadata;
         segments: string;
-      }
-    | undefined;
+      };
 
   const mp4base = path.format({ ext: ".mp4", name: path_part.name });
 

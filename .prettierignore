@@ -1,5 +1,3 @@
-apps/web/.svelte-kit
-apps/web/build
-fixtures/
-pnpm-*.yaml
-
+dist/
+node_modules/
+pnpm*.yaml

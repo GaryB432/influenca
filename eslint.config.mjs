@@ -2,96 +2,48 @@ import js from "@eslint/js";
 import json from "@eslint/json";
 import markdown from "@eslint/markdown";
 import perfectionist from "eslint-plugin-perfectionist";
-import svelte from "eslint-plugin-svelte";
+import { yaml } from "eslint-yaml";
+import { defineConfig } from "eslint/config";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
-export default tseslint.config(
+export default defineConfig([
   {
-    ignores: [
-      "**/dist/**",
-      "**/node_modules/**",
-      "**/.svelte-kit/**",
-      "**/build/**",
-    ],
+    files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
+    languageOptions: { globals: globals.node },
+    ...js.configs.recommended,
+    ...perfectionist.configs["recommended-natural"],
   },
-
+  ...tseslint.configs.recommended,
   {
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended,
-      perfectionist.configs["recommended-alphabetical"],
-    ],
-    files: ["**/*.{js,mjs,ts}"],
-    ignores: ["**/eslint.config.{js,mjs,ts}"],
-    rules: {
-      // typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
-      // see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
-      "no-undef": "off",
-    },
-  },
-
-  {
-    files: ["packages/core/**/*.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            {
-              message: "🤡 Stop! Core cannot depend on the CLI package.",
-              name: "@influenca/cli",
-            },
-            {
-              message:
-                "Core cannot depend on cac; keep CLI concerns in packages/cli.",
-              name: "cac",
-            },
-          ],
-          patterns: ["@influenca/cli/*"],
-        },
-      ],
-    },
-  },
-
-  {
-    files: ["apps/core/src/**/*.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            {
-              message:
-                "Command files must stay UI-agnostic; use @clack/prompts in packages/cli entry modules.",
-              name: "@clack/prompts",
-            },
-          ],
-          patterns: ["@clack/prompts/*"],
-        },
-      ],
-    },
+    files: ["**/*.json"],
+    language: "json/jsonc",
+    plugins: { json },
+    rules: { ...json.configs.recommended.rules },
   },
   {
-    extends: [...svelte.configs.recommended],
-    files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
-    languageOptions: {
-      parserOptions: {
-        extraFileExtensions: [".svelte"],
-        parser: tseslint.parser,
-        projectService: true,
-      },
-    },
-  },
-
-  {
-    extends: [...markdown.configs.recommended],
     files: ["**/*.md"],
     language: "markdown/gfm",
+    plugins: { markdown },
+    rules: { ...markdown.configs.recommended.rules },
   },
-
   {
-    extends: [json.configs.recommended],
-    files: ["**/*.json", "**/*.jsonc"],
-    language: "json/jsonc",
+    files: ["*.yaml", "*.yml"],
+    ignores: ["**/pnpm-lock.yaml"],
+    language: "yaml/yaml",
+    plugins: { yaml },
+    rules: {
+      "yaml/no-empty-mapping-value": "error",
+    },
   },
-);
+  {
+    ignores: [
+      ".git",
+      "**/node_modules",
+      "**/dist",
+      "**/.svelte-kit",
+      "**/build",
+      "tmp",
+    ],
+  },
+]);

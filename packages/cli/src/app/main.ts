@@ -11,14 +11,14 @@ import { setupEnvironment, webAppOrigin } from "./environment";
 const accessionCommand = new AccessionCommand();
 const analyzeCommand = new AnalyzeCommand();
 
-type AccessionOptions = {
+type AccessionOptions = CommonInteractiveOptions & {
   dryRun: boolean;
   openAiKey: string;
   outDir: string;
   timestamp: boolean;
   transcribe: boolean;
   verbose: boolean;
-} & CommonInteractiveOptions;
+};
 
 type AnalyzeOptions = {
   language: string | undefined;

@@ -1,7 +1,7 @@
 import type { Manifest } from "@influenca/core";
 
-import { fs as gfs } from "@influenca/core";
 import { env } from "$env/dynamic/private";
+import { fs as gfs } from "@influenca/core";
 import path from "node:path";
 
 export const corpusRoot = env.INFLUENCA_MEDIA_DIR;

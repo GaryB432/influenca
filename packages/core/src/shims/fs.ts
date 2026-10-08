@@ -27,12 +27,12 @@ export function writeFileSync(
 export function writeJSONSync<T>(
   file: PathOrFileDescriptor,
   data: T,
-  options?: {
+  options?: WriteFileOptions & {
     stringify?: {
       replacer?: (number | string)[] | null;
       space?: number | string;
     };
-  } & WriteFileOptions,
+  },
 ): void {
   const replacer = options?.stringify?.replacer;
   const space = options?.stringify?.space;

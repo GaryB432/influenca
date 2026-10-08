@@ -1,8 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  clean: true,
+  deps: { alwaysBundle: [/^@influenca\/core(\/|$)/] },
   entry: ["src/bin.ts"],
-  format: ["esm"],
-  outDir: "dist",
+  format: "esm",
 });

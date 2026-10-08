@@ -1,8 +1,8 @@
 import type { TranscriptionSegment } from "@influenca/core";
 
-type PetitVTTCue = {
+type PetitVTTCue = Pick<VTTCue, "endTime" | "startTime" | "text"> & {
   id?: string;
-} & Pick<VTTCue, "endTime" | "startTime" | "text">;
+};
 
 export function segmentToCue(
   segment: Pick<TranscriptionSegment, "end" | "id" | "start" | "text">,

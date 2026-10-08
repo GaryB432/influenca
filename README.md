@@ -62,26 +62,14 @@ pnpm install
 The workspace is source-first for local development.
 
 - Typecheck and tests run from source across workspace packages.
-- `core` is an internal TypeScript package first for local checks, and its runtime package exports point to built JavaScript in `dist`.
-- `cli` and `web` are build targets; their builds are the primary required artifacts.
-- Third-party dependencies are consumed from `node_modules` (external), not bundled into app artifacts by default.
-- Build speed optimizations (`.tsbuildinfo`, incremental tuning, extra orchestration) are optional and should only be introduced after measuring a real bottleneck.
-
-### Two-mode contract
-
-- Runtime mode (`cli`/CI/prod): apps import library package runtime exports (`dist/*.mjs`).
-- Web dev mode (HMR): `apps/web` aliases workspace libs to `src/index.ts` for instant source edits.
+- `core` is never built on its own. Its package exports point at `src/index.ts`, and the cli bundles it.
+- `cli` is the only build target: `pnpm build` writes `packages/cli/dist/bin.mjs`.
+- Third-party dependencies are consumed from `node_modules` (external), not bundled.
 - Dependency ownership: each package declares only what it directly imports in source.
 
-In practice: use `pnpm run lint`, `pnpm run typecheck`, and `pnpm run test` as the default feedback loop. Run `pnpm run build` when you need runnable artifacts.
+In practice: use `pnpm lint`, `pnpm typecheck`, and `pnpm test` as the default feedback loop. Run `pnpm build` when you need a runnable cli.
 
-- Run the full workspace checks:
-
-```bash
-pnpm run check
-```
-
-- Build apps and packages to dist:
+- Build the cli:
 
 ```bash
 pnpm run build
@@ -90,7 +78,7 @@ pnpm run build
 - Run CLI end-to-end smoke test:
 
 ```bash
-pnpm run build && ./scripts/e2e-all.sh
+./scripts/e2e-all.sh
 ```
 
 - Typecheck all projects:

@@ -1,44 +1,29 @@
 {
-  "name": "influenca@root",
-  "description": "tools for video production workflows",
-  "private": true,
+  "name": "influenca-monorepo",
   "version": "0.0.0",
-  "homepage": "https://github.com/GaryB432/influenca#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/GaryB432/influenca.git"
-  },
-  "bugs": {
-    "url": "https://github.com/GaryB432/influenca/issues"
-  },
-  "packageManager": "pnpm@11.9.0",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "build": "pnpm -r --filter './apps/*' --filter './packages/*' --if-present run build",
-    "build:cli": "pnpm --filter @influenca/cli... --if-present run build",
-    "typecheck": "pnpm -r --if-present run typecheck",
-    "lint": "pnpm -r --if-present run lint",
-    "format": "pnpm dlx prettier -wl .",
-    "test": "pnpm -r --filter './apps/*' --filter './packages/*' --if-present run test",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run test",
-    "clean": "pnpm -r --filter './apps/*' --filter './packages/*' exec rm -rf dist"
+    "build": "pnpm --filter @influenca/cli build",
+    "dev:web": "pnpm --filter @influenca/web dev",
+    "influenca": "node packages/cli/dist/bin.mjs",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
-    "@eslint/js": "^9.34.0",
-    "@eslint/json": "^0.13.1",
-    "@eslint/markdown": "^7.3.0",
-    "@sveltejs/adapter-node": "^5.5.7",
-    "@types/cli-progress": "^3.11.6",
-    "@types/fluent-ffmpeg": "^2.1.28",
-    "@types/node": "^24.3.0",
-    "eslint": "^9.34.0",
-    "eslint-plugin-perfectionist": "^4.15.0",
-    "eslint-plugin-svelte": "^3.12.2",
-    "prettier-plugin-svelte": "^4.1.1",
-    "svelte": "^5.38.8",
-    "tsdown": "^0.22.14",
+    "@eslint/js": "^10.0.1",
+    "@eslint/json": "^2.1.1",
+    "@eslint/markdown": "^8.0.3",
+    "@types/node": "^26.6.4",
+    "eslint": "^10.12.0",
+    "eslint-plugin-perfectionist": "^5.12.1",
+    "eslint-yaml": "^0.1.0",
+    "globals": "^17.13.0",
+    "tsdown": "^0.23.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.41.0",
-    "vite": "^8.1.5",
-    "vitest": "catalog:"
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^5.0.3"
   }
 }

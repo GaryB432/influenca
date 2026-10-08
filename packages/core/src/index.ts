@@ -34,11 +34,11 @@ export type TranscriptionSegment = OpenAI.Audio.TranscriptionSegment;
 
 export type VideoEntry = {
   transcript:
+    | undefined
     | {
         meta: AbbreviatedTranscriptionMetadata;
         segments: string;
-      }
-    | undefined;
+      };
   video: Record<
     string,
     {

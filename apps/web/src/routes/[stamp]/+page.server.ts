@@ -1,6 +1,6 @@
+import { corpusRoot } from "$lib/server/corpus";
 import { type Manifest, fs as shims } from "@influenca/core";
 import { error } from "@sveltejs/kit";
-import { corpusRoot } from "$lib/server/corpus";
 import path from "path";
 
 import type { PageServerLoad } from "./$types";

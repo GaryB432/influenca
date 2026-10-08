@@ -4,7 +4,7 @@ set -eu
 
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 
-pnpm --filter @influenca/cli... run build
+pnpm build
 
 packages/cli/dist/bin.mjs accession fixtures --outDir "tmp/$TIMESTAMP" --no-timestamp
 

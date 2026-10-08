@@ -1,6 +1,6 @@
+import { corpusRoot, getVideoCorpus } from "$lib/server/corpus";
 import { fs as gfs, type TranscriptionSegment } from "@influenca/core";
 import { json } from "@sveltejs/kit";
-import { corpusRoot, getVideoCorpus } from "$lib/server/corpus";
 import path from "path";
 
 export async function GET({ params }) {

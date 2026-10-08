@@ -1,11 +1,5 @@
 packages:
-  - 'packages/cli'
-  - 'apps/web'
-  - 'packages/core'
-
-catalog:
-  vitest: ^4.1.10
-
-allowBuilds:
-  ffmpeg-static: true
-  esbuild: true
+  - packages/*
+  - apps/*
+onlyBuiltDependencies:
+  - esbuild

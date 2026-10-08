@@ -26,7 +26,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 11.9.0
+          version: 12.5.1
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
@@ -38,7 +38,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Lint
-        run: pnpm run lint
+        run: pnpm lint
 
       - name: Run Build/Test
-        run: pnpm run typecheck && pnpm --filter @influenca/cli... run build && pnpm test
+        run: pnpm typecheck && pnpm build && pnpm test
