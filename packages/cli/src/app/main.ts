@@ -1,8 +1,9 @@
 import { cancel, isCancel, outro, text } from "@clack/prompts";
-import { color, progress } from "@influenca/core";
 import { cac } from "cac";
 import path from "node:path";
 
+import * as color from "../color";
+import { progress } from "../meter";
 import { AccessionCommand } from "./commands/accession-command";
 import { AnalyzeCommand } from "./commands/analyze-command";
 import { setupEnvironment, webAppOrigin } from "./environment";

@@ -16,8 +16,7 @@
     "test": "npm run test:unit -- --run"
   },
   "dependencies": {
-    "@influenca/core": "workspace:^",
-    "@influenca/shared": "workspace:^"
+    "@influenca/core": "workspace:^"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

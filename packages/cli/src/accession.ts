@@ -1,26 +1,24 @@
+import type {
+  AbbreviatedTranscriptionMetadata,
+  Manifest,
+  Transcription,
+  TranscriptionSegment,
+  VideoEntry,
+  VideoStatisticalBlock,
+} from "@influenca/core";
 import type { FfprobeData } from "fluent-ffmpeg";
 
-import { console_wrapper as coolsole } from "@influenca/shared";
+import { fs as coreFs } from "@influenca/core";
 import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
 import os from "node:os";
 import * as path from "node:path";
 import OpenAI from "openai";
 
-import type {
-  AbbreviatedTranscriptionMetadata,
-  Manifest,
-  ProgressOptions,
-  ProgressResult,
-  Transcription,
-  TranscriptionSegment,
-  VideoEntry,
-  VideoStatisticalBlock,
-} from "../index";
+import type { ProgressOptions, ProgressResult } from "./meter";
 
-import * as color from "../color";
-import { analyzeMotion, calculateActivityScore } from "../motion";
-import { writeJSONSync } from "../shims/fs";
+import * as color from "./color";
+import { analyzeMotion, calculateActivityScore } from "./motion";
 import { generateMissingVideo } from "./video-fill";
 
 export type AccessionWorkflowOptions = {
@@ -103,7 +101,7 @@ export async function runAccessionWorkflow(
     } catch (error) {
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
-      coolsole.error(message);
+      console.error(message);
       // progress.message('nope')
     }
     progress.advance(
@@ -113,7 +111,7 @@ export async function runAccessionWorkflow(
   }
 
   if (!options.dryRun) {
-    writeJSONSync<Manifest>(manifestPath, manifest, {
+    coreFs.writeJSONSync<Manifest>(manifestPath, manifest, {
       stringify: { replacer: null, space: 2 },
     });
     if (temporary_for_wav_work) {
@@ -151,7 +149,7 @@ export async function transcribeAudio(
         })
         .on("error", (err: unknown) => {
           const e = err instanceof Error ? err.message : String(err);
-          coolsole.error("Ffmpeg Error details: ".concat(e));
+          console.error("Ffmpeg Error details: ".concat(e));
           resolve(undefined);
         })
         .run();
@@ -177,7 +175,7 @@ export async function transcribeAudio(
         })
         .catch((err: unknown) => {
           const e = err instanceof Error ? err.message : String(err);
-          coolsole.error("Error details: ".concat(e));
+          console.error("Error details: ".concat(e));
           resolve(undefined);
         });
     });
@@ -254,7 +252,7 @@ async function createVideoEntry(
         segments: segmentJsonPath,
       };
 
-      writeJSONSync<TranscriptionSegment[]>(
+      coreFs.writeJSONSync<TranscriptionSegment[]>(
         outputSegmentsPath,
         whisperTranscription.segments ?? [],
         {
@@ -307,7 +305,7 @@ async function probeVideo(
 ): Promise<FfprobeData> {
   return new Promise<FfprobeData>((resolve, reject) => {
     if (drier) {
-      coolsole.log("probeVideo");
+      console.log("probeVideo");
       setTimeout(() => {
         resolve({
           chapters: [],
@@ -334,7 +332,7 @@ async function transcodeToMp4(
 ): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     if (drier) {
-      coolsole.log(
+      console.log(
         JSON.stringify({
           inputPath,
           m: "transcodeToMp4",

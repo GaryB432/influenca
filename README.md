@@ -62,7 +62,7 @@ pnpm install
 The workspace is source-first for local development.
 
 - Typecheck and tests run from source across workspace packages.
-- Packages (`core`, `shared`) are internal TypeScript packages first for local checks, and runtime package exports point to built JavaScript in `dist`.
+- `core` is an internal TypeScript package first for local checks, and its runtime package exports point to built JavaScript in `dist`.
 - `cli` and `web` are build targets; their builds are the primary required artifacts.
 - Third-party dependencies are consumed from `node_modules` (external), not bundled into app artifacts by default.
 - Build speed optimizations (`.tsbuildinfo`, incremental tuning, extra orchestration) are optional and should only be introduced after measuring a real bottleneck.

@@ -1,9 +1,5 @@
-import { color } from "@influenca/core";
-import {
-  type AnalyzeWorkflowResult,
-  runAnalyzeWorkflow,
-} from "@influenca/core";
-
+import { type AnalyzeWorkflowResult, runAnalyzeWorkflow } from "../../analyze";
+import * as color from "../../color";
 import { type CliCommand, type ParsedCommandArgs } from "../command-contract";
 
 export type AnalyzeCommandOptions = {

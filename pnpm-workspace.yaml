@@ -2,7 +2,6 @@ packages:
   - 'packages/cli'
   - 'apps/web'
   - 'packages/core'
-  - 'packages/shared'
 
 catalog:
   vitest: ^4.1.10

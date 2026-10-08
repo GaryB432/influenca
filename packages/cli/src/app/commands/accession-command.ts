@@ -2,10 +2,9 @@ import {
   type AccessionWorkflowOptions,
   type AccessionWorkflowProgress,
   type AccessionWorkflowResult,
-  color,
   runAccessionWorkflow,
-} from "@influenca/core";
-
+} from "../../accession";
+import * as color from "../../color";
 import {
   type CliCommand,
   type CommandRuntime,

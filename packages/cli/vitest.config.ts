@@ -7,9 +7,6 @@ export default defineConfig({
       "@influenca/core": fileURLToPath(
         new URL("../core/src/index.ts", import.meta.url),
       ),
-      "@influenca/shared": fileURLToPath(
-        new URL("../shared/src/index.ts", import.meta.url),
-      ),
     },
   },
   test: {

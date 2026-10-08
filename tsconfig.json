@@ -6,9 +6,6 @@
     },
     {
       "path": "./packages/core"
-    },
-    {
-      "path": "./packages/shared"
     }
   ]
 }

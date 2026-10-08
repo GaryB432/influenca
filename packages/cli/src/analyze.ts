@@ -1,16 +1,14 @@
-import { console_wrapper as coolsole } from "@influenca/shared";
-import fs from "node:fs";
-import path, { join } from "node:path";
-
-import { ASCII_DIM, maybeColorize } from "../color";
-// import { maybeColorize } from "../color";
 import {
+  fs as gbfs,
   type Manifest,
   type Transcription,
   type TranscriptionSegment,
   type VideoStatisticalBlock,
-} from "../index";
-import * as gbfs from "../shims/fs";
+} from "@influenca/core";
+import fs from "node:fs";
+import path, { join } from "node:path";
+
+import { ASCII_DIM, maybeColorize } from "./color";
 
 export type AnalyzeWorkflowOptions = {
   inDir: string;
@@ -73,9 +71,9 @@ export async function runAnalyzeWorkflow(
     }
     const videoStats = entry.video[mp4name]!;
 
-    coolsole.log(logForVideoId(mp4name, videoStats));
+    console.log(logForVideoId(mp4name, videoStats));
 
-    // coolsole.log(
+    // console.log(
     //   `${summaryTone.label(mp4name)}: ${summaryTone.number(JSON.stringify(videoStats))}`,
     // );
 
@@ -106,12 +104,12 @@ export async function runAnalyzeWorkflow(
             ),
           );
 
-          // coolsole.log(labeledLan);
-          coolsole.log(mutedSegments);
+          // console.log(labeledLan);
+          console.log(mutedSegments);
         }
       }
     } else {
-      coolsole.log(logForNoTranscript());
+      console.log(logForNoTranscript());
     }
 
     withStatsCount += 1;

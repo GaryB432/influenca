@@ -1,6 +1,6 @@
+import { type Transcription } from "@influenca/core";
 import { expect, test } from "vitest";
 
-import { type Transcription } from "../index";
 import { getExtremelyFoundationalSegmentCount } from "./analyze";
 
 test("transcribes basics", () => {

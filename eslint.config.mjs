@@ -24,18 +24,6 @@ export default tseslint.config(
     files: ["**/*.{js,mjs,ts}"],
     ignores: ["**/eslint.config.{js,mjs,ts}"],
     rules: {
-      "@typescript-eslint/no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: ["../../*"],
-              message:
-                "Relative imports are prohibited to prevent coupling. Use your defined workspace aliases instead.",
-            },
-          ],
-        },
-      ],
       // typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
       // see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
       "no-undef": "off",
