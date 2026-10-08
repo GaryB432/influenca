@@ -22,7 +22,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@influenca/core": resolve(baseDir, "libraries/core/src/index.ts"),
+      "@influenca/core": resolve(baseDir, "packages/core/src/index.ts"),
     },
   },
 });

@@ -1,8 +1,8 @@
 packages:
-  - 'apps/cli'
+  - 'packages/cli'
   - 'apps/web'
-  - 'libraries/core'
-  - 'libraries/shared'
+  - 'packages/core'
+  - 'packages/shared'
 
 catalog:
   vitest: ^4.1.10

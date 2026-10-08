@@ -43,7 +43,7 @@ export default tseslint.config(
   },
 
   {
-    files: ["libraries/core/**/*.ts"],
+    files: ["packages/core/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -55,7 +55,7 @@ export default tseslint.config(
             },
             {
               message:
-                "Core cannot depend on cac; keep CLI concerns in apps/cli.",
+                "Core cannot depend on cac; keep CLI concerns in packages/cli.",
               name: "cac",
             },
           ],
@@ -74,7 +74,7 @@ export default tseslint.config(
           paths: [
             {
               message:
-                "Command files must stay UI-agnostic; use @clack/prompts in apps/cli entry modules.",
+                "Command files must stay UI-agnostic; use @clack/prompts in packages/cli entry modules.",
               name: "@clack/prompts",
             },
           ],

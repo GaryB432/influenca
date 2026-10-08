@@ -5,10 +5,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@influenca/core": fileURLToPath(
-        new URL("../../libraries/core/src/index.ts", import.meta.url),
+        new URL("../core/src/index.ts", import.meta.url),
       ),
       "@influenca/shared": fileURLToPath(
-        new URL("../../libraries/shared/src/index.ts", import.meta.url),
+        new URL("../shared/src/index.ts", import.meta.url),
       ),
     },
   },

@@ -2,13 +2,13 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/cli"
+      "path": "./packages/cli"
     },
     {
-      "path": "./libraries/core"
+      "path": "./packages/core"
     },
     {
-      "path": "./libraries/shared"
+      "path": "./packages/shared"
     }
   ]
 }
