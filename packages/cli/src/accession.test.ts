@@ -3,33 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 
 const openAiCreate = vi.fn();
 
-const ffmpegMockInstance = {
-  audioBitrate: vi.fn().mockReturnThis(),
-  audioChannels: vi.fn().mockReturnThis(),
-  audioCodec: vi.fn().mockReturnThis(),
-  noVideo: vi.fn().mockReturnThis(),
-  on: vi.fn(function (
-    this: unknown,
-    event: string,
-    handler: (...args: unknown[]) => void,
-  ) {
-    if (event === "end") {
-      queueMicrotask(() => handler());
-    }
-    return this;
-  }),
-  output: vi.fn().mockReturnThis(),
-  outputOptions: vi.fn().mockReturnThis(),
-  run: vi.fn(),
-};
-
-vi.mock("fluent-ffmpeg", () => ({
-  default: Object.assign(
-    vi.fn(() => ffmpegMockInstance),
-    {
-      ffprobe: vi.fn(),
-    },
-  ),
+vi.mock("./ffmpeg.js", () => ({
+  runFfmpeg: vi.fn().mockResolvedValue(""),
 }));
 
 vi.mock("openai", () => ({
@@ -71,11 +46,6 @@ describe("transcribeAudio", () => {
         {
           dryRun: false,
           inDir: "/tmp/in",
-          meter: () => ({
-            advance: () => {},
-            start: () => {},
-            stop: () => {},
-          }),
           openAiKey: "test-key",
           outDir: "/tmp/out",
           transcribe: true,

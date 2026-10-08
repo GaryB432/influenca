@@ -6,19 +6,20 @@ import type {
   VideoEntry,
   VideoStatisticalBlock,
 } from "@influenca/core";
-import type { FfprobeData } from "fluent-ffmpeg";
 
 import { outro } from "@clack/prompts";
 import { fs as coreFs } from "@influenca/core";
-import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
 import os from "node:os";
 import * as path from "node:path";
 import OpenAI from "openai";
 
+import { startBar } from "./bar.js";
 import * as color from "./color";
-import { progress, type ProgressOptions, type ProgressResult } from "./meter";
+import { convert } from "./convert.js";
+import { type OnProgress, runFfmpeg } from "./ffmpeg.js";
 import { analyzeMotion, calculateActivityScore } from "./motion";
+import { probe } from "./probe.js";
 import { generateMissingVideo } from "./video-fill";
 
 export type AccessionOptions = {
@@ -34,7 +35,6 @@ export type AccessionOptions = {
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
   inDir: string;
-  meter: (options: ProgressOptions) => ProgressResult;
   openAiKey: string;
   outDir: string;
   transcribe: boolean;
@@ -123,7 +123,6 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
   const result = await runAccessionWorkflow({
     dryRun: opts.dryRun,
     inDir: opts.inDir,
-    meter: progress,
     openAiKey,
     outDir: opts.noTimestamp ? base : path.join(base, stamp),
     transcribe: !opts.noTranscribe,
@@ -175,12 +174,17 @@ export async function runAccessionWorkflow(
   let processedFiles = 0;
   let transcribedFiles = 0;
 
-  const progress = options.meter({ max: matchedFiles });
-  progress.start(color.summaryTone.path(options.outDir));
+  // Each file is weighted by its input size.
+  const sizes = media_parts.map(
+    (p) => fs.statSync(path.join(options.inDir, path.format(p))).size,
+  );
+  const bar = startBar(sizes.reduce((sum, bytes) => sum + bytes, 0));
 
-  for (const path_part of media_parts) {
+  for (const [i, path_part] of media_parts.entries()) {
     try {
-      const videoEntry = await createVideoEntry(options, path_part);
+      const videoEntry = await bar.job(sizes[i] ?? 0, path_part.base, (report) =>
+        createVideoEntry(options, path_part, report),
+      );
       manifest[path_part.name] = videoEntry;
       processedFiles += 1;
       if (videoEntry.transcript) {
@@ -190,12 +194,7 @@ export async function runAccessionWorkflow(
       failedFiles += 1;
       const message = error instanceof Error ? error.message : String(error);
       console.error(message);
-      // progress.message('nope')
     }
-    progress.advance(
-      processedFiles + failedFiles,
-      `${path_part.base} complete`,
-    );
   }
 
   if (!options.dryRun) {
@@ -206,7 +205,7 @@ export async function runAccessionWorkflow(
       temporary_for_wav_work.remove();
     }
   }
-  progress.stop();
+  bar.finish(color.summaryTone.path(options.outDir));
 
   return {
     failedFiles,
@@ -224,24 +223,34 @@ export async function transcribeAudio(
   scratchPath: string,
 ): Promise<Transcription | undefined> {
   const getAudioPathFromSoundPath = () =>
-    new Promise<string | undefined>((resolve) => {
-      ffmpeg(soundPath)
-        .noVideo() // 1. Completely strip the video track
-        .audioCodec("libmp3lame") // 2. Use native MP3 encoding
-        .audioChannels(1) // 3. Drop to mono (saves 50% file size)
-        .audioBitrate("32k") // 4. Shrink size (perfect for speech Whisper)
-        .outputOptions("-map_metadata -1") // 5. Strip metadata tags
-        .output(scratchPath)
-        .on("end", () => {
-          resolve(scratchPath);
-        })
-        .on("error", (err: unknown) => {
-          const e = err instanceof Error ? err.message : String(err);
-          console.error("Ffmpeg Error details: ".concat(e));
-          resolve(undefined);
-        })
-        .run();
-    });
+    runFfmpeg(
+      [
+        "-v",
+        "error",
+        "-y",
+        "-i",
+        soundPath,
+        "-vn", // 1. Completely strip the video track
+        "-c:a",
+        "libmp3lame", // 2. Use native MP3 encoding
+        "-ac",
+        "1", // 3. Drop to mono (saves 50% file size)
+        "-b:a",
+        "32k", // 4. Shrink size (perfect for speech Whisper)
+        "-map_metadata",
+        "-1", // 5. Strip metadata tags
+        scratchPath,
+      ],
+      0,
+      () => {},
+    ).then(
+      () => scratchPath,
+      (err: unknown) => {
+        const e = err instanceof Error ? err.message : String(err);
+        console.error("Ffmpeg Error details: ".concat(e));
+        return undefined;
+      },
+    );
 
   const transcribeThisAudio = (the_audio: string) =>
     new Promise<Transcription | undefined>((resolve) => {
@@ -280,6 +289,7 @@ export async function transcribeAudio(
 async function createVideoEntry(
   options: AccessionWorkflowOptions,
   path_part: path.ParsedPath,
+  report: OnProgress,
 ): Promise<VideoEntry> {
   let video_slug = path_part.base;
 
@@ -294,31 +304,27 @@ async function createVideoEntry(
 
   const mp4_FP = path.resolve(options.outDir, mp4base);
 
+  // ffmpeg reports its position in seconds, so the bar needs the source's length.
+  const src_FP = path.resolve(options.inDir, path.format(path_part));
+  const src_seconds = Number((await probe(src_FP)).format?.duration) || 0;
+
   switch (path_part.ext.toLowerCase()) {
     case ".avi":
     case ".mp4": {
-      await transcodeToMp4(
-        path.resolve(options.inDir, path.format(path_part)),
-        mp4_FP,
-        !really_call_ffmpeg,
-      );
+      await convert(src_FP, mp4_FP, "video", src_seconds, report);
       break;
     }
     case ".wav": {
-      const wav_fp = path.resolve(options.inDir, path.format(path_part));
-      await generateMissingVideo(wav_fp, mp4_FP);
+      await generateMissingVideo(src_FP, mp4_FP, src_seconds, report);
       break;
     }
   }
 
   video_slug = path.parse(mp4_FP).base;
 
-  const stats: VideoStatisticalBlock = await getVideoStatisticalBlock(
-    mp4_FP,
-    !really_call_ffmpeg,
-  );
+  const stats: VideoStatisticalBlock = await getVideoStatisticalBlock(mp4_FP);
 
-  if (really_call_ffmpeg && temporary_for_wav_work && options.transcribe) {
+  if (temporary_for_wav_work && options.transcribe) {
     const whisperTranscription = await transcribeAudio(
       options,
       mp4_FP,
@@ -364,85 +370,25 @@ async function createVideoEntry(
 
 async function getVideoStatisticalBlock(
   videoPath: string,
-  drier: boolean,
 ): Promise<VideoStatisticalBlock> {
-  const probeResult = await probeVideo(videoPath, drier);
-  const videoStream = probeResult.streams.find(
+  const probeResult = await probe(videoPath);
+  const videoStream = probeResult.streams?.find(
     (stream) => stream.codec_type === "video",
   );
 
   // const arbitraryFutureMetric = "tbd";
-  const duration_seconds = parseInt(videoStream?.duration ?? "0", 10);
+  const duration_seconds = parseInt(probeResult.format?.duration ?? "0", 10);
   const frames = parseInt(videoStream?.nb_frames ?? "0", 10);
 
   // theoretical max stdev of an 8-bit luma signal, used to normalize detail ratio
   const globalMaxStdev = 128;
-  const interestScore = drier
-    ? 0
-    : calculateActivityScore(
-        (await analyzeMotion(videoPath)).frames,
-        globalMaxStdev,
-      );
+  const interestScore = calculateActivityScore(
+    (await analyzeMotion(videoPath)).frames,
+    globalMaxStdev,
+  );
 
   return { duration_seconds, frames, interestScore };
 }
 
-async function probeVideo(
-  videoPath: string,
-  drier: boolean,
-): Promise<FfprobeData> {
-  return new Promise<FfprobeData>((resolve, reject) => {
-    if (drier) {
-      console.log("probeVideo");
-      setTimeout(() => {
-        resolve({
-          chapters: [],
-          format: {},
-          streams: [],
-        });
-      }, 20000);
-    } else {
-      ffmpeg.ffprobe(videoPath, (error, data) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve(data);
-      });
-    }
-  });
-}
-
-async function transcodeToMp4(
-  inputPath: string,
-  outputVideoPath: string,
-  drier: boolean,
-): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    if (drier) {
-      console.log(
-        JSON.stringify({
-          inputPath,
-          m: "transcodeToMp4",
-          outputVideoPath,
-        }),
-      );
-      setTimeout(() => {
-        resolve();
-      }, 5000);
-    } else {
-      ffmpeg(inputPath)
-        .output(outputVideoPath)
-        .videoCodec("libx264")
-        .audioCodec("aac")
-        .outputOptions("-crf", "23", "-preset", "fast")
-        .on("end", () => resolve())
-        .on("error", reject)
-        .run();
-    }
-  });
-}
-
 const WEB_APP_ORIGIN = "http://localhost:5173";
-const really_call_ffmpeg = true;
 const limit = Infinity;
