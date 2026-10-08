@@ -16,8 +16,6 @@
     "@influenca/core": "workspace:*",
     "@optique/clack": "^1.3.3",
     "@optique/core": "^1.3.3",
-    "@optique/run": "^1.3.3",
-    "openai": "^6.49.0",
-    "sharp": "^0.35.3"
+    "@optique/run": "^1.3.3"
   }
 }

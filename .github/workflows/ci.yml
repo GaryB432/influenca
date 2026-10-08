@@ -37,8 +37,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The tests and the e2e script make small real clips and convert them.
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Run Lint
         run: pnpm lint
 
       - name: Run Build/Test
-        run: pnpm typecheck && pnpm build && pnpm test
+        run: pnpm typecheck && pnpm test && sh scripts/e2e.sh

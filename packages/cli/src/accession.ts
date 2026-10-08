@@ -1,394 +1,227 @@
-import type {
-  AbbreviatedTranscriptionMetadata,
-  Manifest,
-  Transcription,
-  TranscriptionSegment,
-  VideoEntry,
-  VideoStatisticalBlock,
+import {
+  formatDuration,
+  type Manifest,
+  MANIFEST_FILENAME,
+  type ManifestEntry,
 } from "@influenca/core";
+import { createReadStream, createWriteStream } from "node:fs";
+import {
+  access,
+  mkdir,
+  readdir,
+  rename,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
+import { basename, dirname, join, resolve } from "node:path";
+import { pipeline } from "node:stream/promises";
 
-import { outro } from "@clack/prompts";
-import { fs as coreFs } from "@influenca/core";
-import * as fs from "node:fs";
-import os from "node:os";
-import * as path from "node:path";
-import OpenAI from "openai";
+import type { OnProgress } from "./ffmpeg.js";
 
 import { startBar } from "./bar.js";
-import * as color from "./color";
 import { convert } from "./convert.js";
-import { type OnProgress, runFfmpeg } from "./ffmpeg.js";
-import { analyzeMotion, calculateActivityScore } from "./motion";
-import { probe } from "./probe.js";
-import { generateMissingVideo } from "./video-fill";
+import { classify, type IntakeFile, planEntries } from "./entries.js";
+import { hasManifest, mediaDir, stamp } from "./paths.js";
+import { applyProbe, isFfprobeMissing, probe } from "./probe.js";
+import { accent } from "./theme.js";
 
 export type AccessionOptions = {
   dryRun: boolean;
   inDir: string;
   noTimestamp: boolean;
-  noTranscribe: boolean;
-  openAiKey?: string;
   outDir?: string;
   verbose: boolean;
 };
 
-export type AccessionWorkflowOptions = {
-  dryRun: boolean;
-  inDir: string;
-  openAiKey: string;
-  outDir: string;
-  transcribe: boolean;
-  verbose: boolean;
-};
-
-export type AccessionWorkflowProgress = {
-  completedFiles: number;
-  currentFile?: string;
-  totalFiles: number;
-};
-
-export type AccessionWorkflowResult = {
-  failedFiles: number;
-  manifestPath: string;
-  matchedFiles: number;
-  outDir: string;
-  processedFiles: number;
-  transcribedFiles: number;
-};
-
-const baseTempDir = fs.realpathSync(os.tmpdir());
-
-let temporary_for_wav_work: fs.DisposableTempDir | undefined;
-
-export function formatSummary(
-  result: AccessionWorkflowResult,
-  dryRun?: boolean,
-): string {
-  if (dryRun) {
-    return `Dry run complete: matched ${result.matchedFiles} file(s) in ${result.outDir}.`;
-  }
-
-  const tone = { ...color.summaryTone };
-
-  const rows: Array<[label: string, value: string]> = [
-    ["processed files", String(result.processedFiles)],
-    ["matched files", String(result.matchedFiles)],
-    ["failedFiles", String(result.failedFiles)],
-    ["transcribed files", String(result.transcribedFiles)],
-    ["output dir", result.outDir],
-  ];
-  const labelWidth = rows.reduce(
-    (max, [label]) => Math.max(max, label.length),
-    0,
-  );
-
-  const paths = ["manifest", "output dir"];
-
-  const prettyRows = rows.map(([label, value]) => {
-    const paddedLabel = `${label.padEnd(labelWidth)}:`;
-    const isPath = paths.includes(label);
-    const colorizedValue = isPath ? tone.path(value) : tone.number(value);
-    return `${tone.label(paddedLabel)} ${colorizedValue}`;
-  });
-
-  return [
-    tone.heading("Accession stats"),
-    tone.accent("-----------------------------"),
-    ...prettyRows,
-    tone.heading("Next step"),
-    [
-      process.argv[1],
-      color.maybeColorize(6, "analyze"),
-      tone.path(result.outDir),
-    ].join(" "),
-  ].join("\n");
-}
-
-/** Resolves what the flags leave open, runs the workflow, and prints its summary. */
 export async function runAccession(opts: AccessionOptions): Promise<void> {
-  const base = opts.outDir ?? process.env.INFLUENCA_MEDIA_DIR;
-  if (!base) {
+  const inDir = resolve(opts.inDir);
+  const base = resolve(opts.outDir ?? mediaDir());
+  const outDir = opts.noTimestamp ? base : join(base, stamp());
+
+  if (await hasManifest(outDir)) {
     throw new Error(
-      "outDir is required. Provide --out-dir or INFLUENCA_MEDIA_DIR.",
-    );
-  }
-  const openAiKey = opts.openAiKey ?? process.env.OPENAI_API_KEY;
-  if (!openAiKey) {
-    throw new Error(
-      "openAiKey is required. Provide --open-ai-key or OPENAI_API_KEY.",
+      `Refusing to overwrite: ${join(outDir, MANIFEST_FILENAME)} already exists. ` +
+        "Use a new --out-dir or drop --no-timestamp.",
     );
   }
 
-  const stamp = new Date().toISOString().replace(/[-:]|\.\d{3}/g, "");
-  const result = await runAccessionWorkflow({
-    dryRun: opts.dryRun,
-    inDir: opts.inDir,
-    openAiKey,
-    outDir: opts.noTimestamp ? base : path.join(base, stamp),
-    transcribe: !opts.noTranscribe,
-    verbose: opts.verbose,
-  });
-
-  outro(
-    [
-      formatSummary(result, opts.dryRun),
-      [color.color256(4, WEB_APP_ORIGIN), color.color256(12, stamp)].join("/"),
-    ].join("\n"),
-  );
-}
-
-export async function runAccessionWorkflow(
-  options: AccessionWorkflowOptions,
-): Promise<AccessionWorkflowResult> {
-  if (options.verbose) {
-    throw new Error("verbosity is a matter for the terminal layer");
+  const files = await listIntake(inDir, opts.verbose);
+  const planned = planEntries(files);
+  if (planned.length === 0) {
+    throw new Error(`No supported media (avi, mp4, wav, jpg) in ${inDir}`);
   }
-  if (options.dryRun) {
-    throw new Error("revisit what that means");
+  const sources = await probeEntries(inDir, planned);
+
+  for (const e of sources) {
+    const line = `${e.sourceName} -> ${e.outputName} (${describe(e)})`;
+    if (opts.dryRun) console.log(`[dry-run] ${line}`);
+    else if (opts.verbose) console.log(`• ${line}`);
   }
-  if (!options.outDir) {
-    throw new Error("outDir is required.");
-  }
-
-  const outDir = options.outDir;
-  const manifestPath = path.join(outDir, ".influenca.json");
-  const files = fs.readdirSync(options.inDir);
-
-  const every_media_parts = files
-    .map((f) => path.parse(f))
-    .filter((p) => p.ext.toLowerCase().match(/\.(avi|mp4|wav)$/));
-
-  const media_parts = every_media_parts.slice(0, limit);
-
-  const manifest: Manifest = {};
-
-  if (!options.dryRun) {
-    fs.mkdirSync(outDir, { recursive: true });
-    temporary_for_wav_work = fs.mkdtempDisposableSync(
-      path.join(baseTempDir, "influenca-"),
+  if (opts.dryRun) {
+    console.log(
+      `[dry-run] ${sources.length} file(s) would be written to ${outDir}`,
     );
+    return;
   }
 
-  let failedFiles = 0;
-  const matchedFiles = media_parts.length;
-  let processedFiles = 0;
-  let transcribedFiles = 0;
-
+  const totalBytes = sources.reduce((sum, e) => sum + e.bytes, 0);
+  await mkdir(outDir, { recursive: true });
   // Each file is weighted by its input size.
-  const sizes = media_parts.map(
-    (p) => fs.statSync(path.join(options.inDir, path.format(p))).size,
-  );
-  const bar = startBar(sizes.reduce((sum, bytes) => sum + bytes, 0));
-
-  for (const [i, path_part] of media_parts.entries()) {
-    try {
-      const videoEntry = await bar.job(sizes[i] ?? 0, path_part.base, (report) =>
-        createVideoEntry(options, path_part, report),
+  const bar = startBar(totalBytes);
+  try {
+    const entries: ManifestEntry[] = [];
+    for (const e of sources) {
+      const src = join(inDir, e.sourceName);
+      const dest = join(outDir, e.outputName);
+      entries.push(
+        await bar.job(e.bytes, e.sourceName, (report) =>
+          bringIn(e, src, dest, report),
+        ),
       );
-      manifest[path_part.name] = videoEntry;
-      processedFiles += 1;
-      if (videoEntry.transcript) {
-        transcribedFiles += 1;
-      }
-    } catch (error) {
-      failedFiles += 1;
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(message);
     }
-  }
 
-  if (!options.dryRun) {
-    coreFs.writeJSONSync<Manifest>(manifestPath, manifest, {
-      stringify: { replacer: null, space: 2 },
-    });
-    if (temporary_for_wav_work) {
-      temporary_for_wav_work.remove();
-    }
-  }
-  bar.finish(color.summaryTone.path(options.outDir));
-
-  return {
-    failedFiles,
-    manifestPath,
-    matchedFiles,
-    outDir,
-    processedFiles,
-    transcribedFiles,
-  };
-}
-
-export async function transcribeAudio(
-  options: AccessionWorkflowOptions,
-  soundPath: string,
-  scratchPath: string,
-): Promise<Transcription | undefined> {
-  const getAudioPathFromSoundPath = () =>
-    runFfmpeg(
-      [
-        "-v",
-        "error",
-        "-y",
-        "-i",
-        soundPath,
-        "-vn", // 1. Completely strip the video track
-        "-c:a",
-        "libmp3lame", // 2. Use native MP3 encoding
-        "-ac",
-        "1", // 3. Drop to mono (saves 50% file size)
-        "-b:a",
-        "32k", // 4. Shrink size (perfect for speech Whisper)
-        "-map_metadata",
-        "-1", // 5. Strip metadata tags
-        scratchPath,
-      ],
-      0,
-      () => {},
-    ).then(
-      () => scratchPath,
-      (err: unknown) => {
-        const e = err instanceof Error ? err.message : String(err);
-        console.error("Ffmpeg Error details: ".concat(e));
-        return undefined;
-      },
+    const manifest: Manifest = {
+      createdAt: new Date().toISOString(),
+      entries,
+      version: 1,
+    };
+    await writeFile(
+      join(outDir, MANIFEST_FILENAME),
+      JSON.stringify(manifest, null, 2),
     );
-
-  const transcribeThisAudio = (the_audio: string) =>
-    new Promise<Transcription | undefined>((resolve) => {
-      if (!the_audio) {
-        resolve(undefined);
-        return;
-      }
-
-      const openai = new OpenAI({ apiKey: options.openAiKey });
-
-      openai.audio.transcriptions
-        .create({
-          file: fs.createReadStream(the_audio),
-          model: "whisper-1",
-          response_format: "verbose_json",
-        })
-        .then((verbose_transcription) => {
-          resolve(verbose_transcription);
-        })
-        .catch((err: unknown) => {
-          const e = err instanceof Error ? err.message : String(err);
-          console.error("Error details: ".concat(e));
-          resolve(undefined);
-        });
-    });
-
-  const audio_scratch = await getAudioPathFromSoundPath();
-  if (!audio_scratch) {
-    return undefined;
+  } catch (error) {
+    bar.fail("Accession failed");
+    throw error;
   }
-  if (audio_scratch !== scratchPath) throw new Error("not scratch");
-
-  return await transcribeThisAudio(audio_scratch);
+  bar.finish(
+    `Wrote ${sources.length} entries to ${accent(outDir)}`,
+    `Next: ${accent(`influenca analyze ${/\s/.test(outDir) ? `"${outDir}"` : outDir}`)}`,
+  );
 }
 
-async function createVideoEntry(
-  options: AccessionWorkflowOptions,
-  path_part: path.ParsedPath,
+/**
+ * Copies or converts one file and returns the entry describing what now sits in the run folder.
+ * The work happens under a .part- name, so a file with its real name is always complete.
+ */
+async function bringIn(
+  e: ManifestEntry,
+  src: string,
+  dest: string,
   report: OnProgress,
-): Promise<VideoEntry> {
-  let video_slug = path_part.base;
-
-  let transcript:
-    | undefined
-    | {
-        meta: AbbreviatedTranscriptionMetadata;
-        segments: string;
-      };
-
-  const mp4base = path.format({ ext: ".mp4", name: path_part.name });
-
-  const mp4_FP = path.resolve(options.outDir, mp4base);
-
-  // ffmpeg reports its position in seconds, so the bar needs the source's length.
-  const src_FP = path.resolve(options.inDir, path.format(path_part));
-  const src_seconds = Number((await probe(src_FP)).format?.duration) || 0;
-
-  switch (path_part.ext.toLowerCase()) {
-    case ".avi":
-    case ".mp4": {
-      await convert(src_FP, mp4_FP, "video", src_seconds, report);
-      break;
-    }
-    case ".wav": {
-      await generateMissingVideo(src_FP, mp4_FP, src_seconds, report);
-      break;
-    }
+): Promise<ManifestEntry> {
+  if (
+    await access(dest).then(
+      () => true,
+      () => false,
+    )
+  ) {
+    throw new Error(`Refusing to overwrite: ${dest} already exists.`);
   }
+  // Same folder and same extension: the rename stays on one drive, and ffmpeg still sees the format.
+  const part = join(dirname(dest), `.part-${basename(dest)}`);
+  try {
+    const kept = await (e.kind === "image" || e.outputName === e.sourceName
+      ? copy(src, part, e.bytes, report).then(() => e)
+      : convertAndCheck(e, src, part, report));
+    await rename(part, dest);
+    return kept;
+  } catch (error) {
+    await rm(part, { force: true });
+    throw error;
+  }
+}
 
-  video_slug = path.parse(mp4_FP).base;
+/** Converts into part and returns the entry for the result, or throws if it cannot be trusted. */
+async function convertAndCheck(
+  e: Exclude<ManifestEntry, { kind: "image" }>,
+  src: string,
+  part: string,
+  report: OnProgress,
+): Promise<ManifestEntry> {
+  await convert(src, part, e.kind, e.durationSec, report);
 
-  const stats: VideoStatisticalBlock = await getVideoStatisticalBlock(mp4_FP);
-
-  if (temporary_for_wav_work && options.transcribe) {
-    const whisperTranscription = await transcribeAudio(
-      options,
-      mp4_FP,
-      path.join(temporary_for_wav_work.path, mp4base),
-    );
-
-    if (whisperTranscription) {
-      const segmentJsonPath = path.format({
-        ext: ".vtt",
-        name: path_part.name,
-      });
-      const outputSegmentsPath = path.join(options.outDir, segmentJsonPath);
-
-      transcript = {
-        meta: {
-          duration: whisperTranscription.duration,
-          language: whisperTranscription.language,
-        },
-        segments: segmentJsonPath,
-      };
-
-      coreFs.writeJSONSync<TranscriptionSegment[]>(
-        outputSegmentsPath,
-        whisperTranscription.segments ?? [],
-        {
-          stringify: { replacer: null, space: 2 },
-        },
+  // The manifest describes the converted file, and a probe that disagrees with the
+  // source means the conversion cannot be trusted as the only copy.
+  const kept = applyProbe(e, await probe(part));
+  if (kept.kind !== "image" && e.metaSource === "ffprobe") {
+    const drift = Math.abs(kept.durationSec - e.durationSec);
+    if (drift > DURATION_TOLERANCE_SEC) {
+      throw new Error(
+        `${e.outputName} is ${kept.durationSec}s but ${e.sourceName} is ${e.durationSec}s; not trusting the conversion.`,
       );
     }
   }
-
-  const video: Record<string, { stats: VideoStatisticalBlock }> = {};
-
-  video[video_slug] = {
-    stats,
-  };
-
-  return {
-    transcript,
-    video,
-  };
+  return { ...kept, bytes: (await stat(part)).size };
 }
 
-async function getVideoStatisticalBlock(
-  videoPath: string,
-): Promise<VideoStatisticalBlock> {
-  const probeResult = await probe(videoPath);
-  const videoStream = probeResult.streams?.find(
-    (stream) => stream.codec_type === "video",
+async function copy(
+  src: string,
+  dest: string,
+  bytes: number,
+  onProgress: OnProgress,
+): Promise<void> {
+  let copied = 0;
+  await pipeline(
+    createReadStream(src),
+    async function* (chunks: AsyncIterable<Buffer>) {
+      for await (const chunk of chunks) {
+        copied += chunk.length;
+        if (bytes > 0) onProgress(copied / bytes);
+        yield chunk;
+      }
+    },
+    createWriteStream(dest),
   );
-
-  // const arbitraryFutureMetric = "tbd";
-  const duration_seconds = parseInt(probeResult.format?.duration ?? "0", 10);
-  const frames = parseInt(videoStream?.nb_frames ?? "0", 10);
-
-  // theoretical max stdev of an 8-bit luma signal, used to normalize detail ratio
-  const globalMaxStdev = 128;
-  const interestScore = calculateActivityScore(
-    (await analyzeMotion(videoPath)).frames,
-    globalMaxStdev,
-  );
-
-  return { duration_seconds, frames, interestScore };
 }
 
-const WEB_APP_ORIGIN = "http://localhost:5173";
-const limit = Infinity;
+function describe(e: ManifestEntry): string {
+  const parts: string[] = [e.kind];
+  if (e.kind !== "image") parts.push(formatDuration(e.durationSec));
+  if (e.kind === "video") parts.push(`${e.frameCount} frames`);
+  if (e.width && e.height) parts.push(`${e.width}x${e.height}`);
+  if (e.metaSource === "estimated") parts.push("estimated");
+  return parts.join(", ");
+}
+
+async function listIntake(
+  inDir: string,
+  verbose: boolean,
+): Promise<IntakeFile[]> {
+  const files: IntakeFile[] = [];
+  for (const d of await readdir(inDir, { withFileTypes: true })) {
+    if (!d.isFile()) continue;
+    if (!classify(d.name)) {
+      if (verbose) console.log(`  skipped (unsupported): ${d.name}`);
+      continue;
+    }
+    files.push({ bytes: (await stat(join(inDir, d.name))).size, name: d.name });
+  }
+  return files;
+}
+
+/** Swaps size-based estimates for ffprobe's numbers, file by file, keeping the estimate on failure. */
+async function probeEntries(
+  inDir: string,
+  planned: ManifestEntry[],
+): Promise<ManifestEntry[]> {
+  const entries: ManifestEntry[] = [];
+  for (const e of planned) {
+    try {
+      entries.push(applyProbe(e, await probe(join(inDir, e.sourceName))));
+    } catch (error) {
+      if (isFfprobeMissing(error)) {
+        console.warn(
+          "ffprobe not found; durations and frame counts are estimates.",
+        );
+        return planned;
+      }
+      console.warn(`Could not probe ${e.sourceName}; keeping its estimate.`);
+      entries.push(e);
+    }
+  }
+  return entries;
+}
+
+/** Encoder padding moves a duration by a few hundredths of a second; a truncated file by far more. */
+const DURATION_TOLERANCE_SEC = 0.5;

@@ -25,8 +25,6 @@ const accession = command(
         type: "text",
       }),
       noTimestamp: option("--no-timestamp"),
-      noTranscribe: option("--no-transcribe"),
-      openAiKey: optional(option("--open-ai-key", string({ metavar: "KEY" }))), // defaults to OPENAI_API_KEY
       outDir: optional(option("--out-dir", string({ metavar: "PATH" }))), // defaults to INFLUENCA_MEDIA_DIR
       verbose: option("--verbose"),
     }),
@@ -38,7 +36,7 @@ const analyze = command(
   "analyze",
   map(
     object({
-      inDir: argument(string({ metavar: "OUT_DIR" })),
+      inDir: optional(argument(string({ metavar: "OUT_DIR" }))), // defaults to the latest run
       language: withDefault(option("-l", "--language", string()), "english"),
       minimal: option("--minimal"),
     }),

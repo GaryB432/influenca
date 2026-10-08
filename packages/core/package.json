@@ -4,12 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./node": "./src/node.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."
-  },
-  "dependencies": {
-    "openai": "^6.49.0"
   }
 }
