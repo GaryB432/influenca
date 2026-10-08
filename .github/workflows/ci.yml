@@ -37,9 +37,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright Chromium
-        run: pnpm --filter @influenca/web exec playwright install --with-deps chromium
-
       - name: Run Lint
         run: pnpm run lint
 
