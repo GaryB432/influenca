@@ -39,6 +39,7 @@ const analyze = command(
       inDir: optional(argument(string({ metavar: "OUT_DIR" }))), // defaults to the latest run
       language: withDefault(option("-l", "--language", string()), "english"),
       minimal: option("--minimal"),
+      redo: option("--redo"),
     }),
     (v) => ({ ...v, command: "analyze" as const }),
   ),

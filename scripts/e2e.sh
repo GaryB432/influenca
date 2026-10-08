@@ -34,6 +34,7 @@ printf '\n\033[1;34mEntries: \033[1;32m%s\033[0m\n' "$ENTRIES"
 printf '%s\n' "$ANALYSIS" | grep -qx 'Total frames: 30' || fail "expected 'Total frames: 30' from analyze"
 grep -q '"metaSource": "ffprobe"' "$OUT/.influenca.json" || fail "expected the entry to be probed, not estimated"
 grep -q '"videoCodec": "h264"' "$OUT/.influenca.json" || fail "expected fake.avi to be converted to H.264"
+[ -s "$OUT/.influenca.analysis.json" ] || fail "expected analyze to write an analysis file"
 [ -s "$OUT/fake.mp4" ] || fail "expected a converted fake.mp4 in the run folder"
 
 printf '\033[1;32mPASS\033[0m\n'

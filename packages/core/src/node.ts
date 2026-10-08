@@ -3,6 +3,7 @@
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
+import { type Analysis, ANALYSIS_FILENAME } from "./analysis.js";
 import { readJSON } from "./json.js";
 import {
   isManifest,
@@ -28,6 +29,16 @@ export async function listRuns(root: string): Promise<Run[]> {
   return found
     .filter((r): r is Run => r.manifest !== undefined)
     .toSorted((a, b) => (a.name < b.name ? 1 : -1));
+}
+
+/** A run's analysis, or undefined if there is none yet or it is not one this version wrote. */
+export async function readAnalysis(dir: string): Promise<Analysis | undefined> {
+  const a = await readJSON<null | Partial<Analysis>>(
+    join(dir, ANALYSIS_FILENAME),
+  ).catch(() => null);
+  return a?.version === 1 && typeof a.entries === "object"
+    ? (a as Analysis)
+    : undefined;
 }
 
 /** Reads a run folder's manifest, rejecting files this version cannot read. */

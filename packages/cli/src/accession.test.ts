@@ -1,4 +1,9 @@
-import { type Manifest, MANIFEST_FILENAME } from "@influenca/core";
+import {
+  type Analysis,
+  ANALYSIS_FILENAME,
+  type Manifest,
+  MANIFEST_FILENAME,
+} from "@influenca/core";
 import { readJSON } from "@influenca/core/node";
 import { execFileSync } from "node:child_process";
 import {
@@ -143,6 +148,33 @@ describe("accession + analyze", () => {
     await runAccession({ ...base, inDir, outDir });
     await runAnalyze({ inDir: outDir, language: "english", minimal: true });
     expect(console.log).toHaveBeenCalledWith("Total frames: 31");
+  });
+
+  it("analyze writes its measurements beside the manifest and reuses them", async () => {
+    await runAccession({ ...base, inDir, outDir });
+    const before = await readJSON<Manifest>(join(outDir, MANIFEST_FILENAME));
+    const read = () => readJSON<Analysis>(join(outDir, ANALYSIS_FILENAME));
+
+    await runAnalyze({ inDir: outDir, language: "english", minimal: false });
+    const first = await read();
+    expect(first.entries).toEqual({
+      1: { silentSec: 0, stillSec: 0 },
+      3: { silentSec: 0 },
+    });
+    expect(await readJSON<Manifest>(join(outDir, MANIFEST_FILENAME))).toEqual(
+      before,
+    );
+
+    await runAnalyze({ inDir: outDir, language: "english", minimal: false });
+    expect((await read()).createdAt).toBe(first.createdAt);
+
+    await runAnalyze({
+      inDir: outDir,
+      language: "english",
+      minimal: false,
+      redo: true,
+    });
+    expect((await read()).createdAt).not.toBe(first.createdAt);
   });
 
   describe("with a run from an older influenca alongside", () => {
