@@ -44,7 +44,22 @@ vi.mock("openai", () => ({
   },
 }));
 
-import { transcribeAudio } from "./accession";
+import { formatSummary, transcribeAudio } from "./accession";
+
+describe("formatSummary", () => {
+  it("points at analyze as the next step", () => {
+    expect(
+      formatSummary({
+        failedFiles: 0,
+        manifestPath: "",
+        matchedFiles: 0,
+        outDir: "",
+        processedFiles: 0,
+        transcribedFiles: 0,
+      }),
+    ).toMatch(/analyze/);
+  });
+});
 
 describe("transcribeAudio", () => {
   it("returns undefined when the transcription request fails instead of hanging", async () => {

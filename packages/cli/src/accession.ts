@@ -8,6 +8,7 @@ import type {
 } from "@influenca/core";
 import type { FfprobeData } from "fluent-ffmpeg";
 
+import { outro } from "@clack/prompts";
 import { fs as coreFs } from "@influenca/core";
 import ffmpeg from "fluent-ffmpeg";
 import * as fs from "node:fs";
@@ -15,11 +16,20 @@ import os from "node:os";
 import * as path from "node:path";
 import OpenAI from "openai";
 
-import type { ProgressOptions, ProgressResult } from "./meter";
-
 import * as color from "./color";
+import { progress, type ProgressOptions, type ProgressResult } from "./meter";
 import { analyzeMotion, calculateActivityScore } from "./motion";
 import { generateMissingVideo } from "./video-fill";
+
+export type AccessionOptions = {
+  dryRun: boolean;
+  inDir: string;
+  noTimestamp: boolean;
+  noTranscribe: boolean;
+  openAiKey?: string;
+  outDir?: string;
+  verbose: boolean;
+};
 
 export type AccessionWorkflowOptions = {
   dryRun: boolean;
@@ -49,6 +59,84 @@ export type AccessionWorkflowResult = {
 const baseTempDir = fs.realpathSync(os.tmpdir());
 
 let temporary_for_wav_work: fs.DisposableTempDir | undefined;
+
+export function formatSummary(
+  result: AccessionWorkflowResult,
+  dryRun?: boolean,
+): string {
+  if (dryRun) {
+    return `Dry run complete: matched ${result.matchedFiles} file(s) in ${result.outDir}.`;
+  }
+
+  const tone = { ...color.summaryTone };
+
+  const rows: Array<[label: string, value: string]> = [
+    ["processed files", String(result.processedFiles)],
+    ["matched files", String(result.matchedFiles)],
+    ["failedFiles", String(result.failedFiles)],
+    ["transcribed files", String(result.transcribedFiles)],
+    ["output dir", result.outDir],
+  ];
+  const labelWidth = rows.reduce(
+    (max, [label]) => Math.max(max, label.length),
+    0,
+  );
+
+  const paths = ["manifest", "output dir"];
+
+  const prettyRows = rows.map(([label, value]) => {
+    const paddedLabel = `${label.padEnd(labelWidth)}:`;
+    const isPath = paths.includes(label);
+    const colorizedValue = isPath ? tone.path(value) : tone.number(value);
+    return `${tone.label(paddedLabel)} ${colorizedValue}`;
+  });
+
+  return [
+    tone.heading("Accession stats"),
+    tone.accent("-----------------------------"),
+    ...prettyRows,
+    tone.heading("Next step"),
+    [
+      process.argv[1],
+      color.maybeColorize(6, "analyze"),
+      tone.path(result.outDir),
+    ].join(" "),
+  ].join("\n");
+}
+
+/** Resolves what the flags leave open, runs the workflow, and prints its summary. */
+export async function runAccession(opts: AccessionOptions): Promise<void> {
+  const base = opts.outDir ?? process.env.INFLUENCA_MEDIA_DIR;
+  if (!base) {
+    throw new Error(
+      "outDir is required. Provide --out-dir or INFLUENCA_MEDIA_DIR.",
+    );
+  }
+  const openAiKey = opts.openAiKey ?? process.env.OPENAI_API_KEY;
+  if (!openAiKey) {
+    throw new Error(
+      "openAiKey is required. Provide --open-ai-key or OPENAI_API_KEY.",
+    );
+  }
+
+  const stamp = new Date().toISOString().replace(/[-:]|\.\d{3}/g, "");
+  const result = await runAccessionWorkflow({
+    dryRun: opts.dryRun,
+    inDir: opts.inDir,
+    meter: progress,
+    openAiKey,
+    outDir: opts.noTimestamp ? base : path.join(base, stamp),
+    transcribe: !opts.noTranscribe,
+    verbose: opts.verbose,
+  });
+
+  outro(
+    [
+      formatSummary(result, opts.dryRun),
+      [color.color256(4, WEB_APP_ORIGIN), color.color256(12, stamp)].join("/"),
+    ].join("\n"),
+  );
+}
 
 export async function runAccessionWorkflow(
   options: AccessionWorkflowOptions,
@@ -355,5 +443,6 @@ async function transcodeToMp4(
   });
 }
 
+const WEB_APP_ORIGIN = "http://localhost:5173";
 const really_call_ffmpeg = true;
 const limit = Infinity;

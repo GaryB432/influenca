@@ -1,3 +1,4 @@
+import { outro } from "@clack/prompts";
 import {
   fs as gbfs,
   type Manifest,
@@ -8,7 +9,13 @@ import {
 import fs from "node:fs";
 import path, { join } from "node:path";
 
-import { ASCII_DIM, maybeColorize } from "./color";
+import { ASCII_DIM, maybeColorize, summaryTone } from "./color";
+
+export type AnalyzeOptions = {
+  inDir: string;
+  language: string;
+  minimal: boolean;
+};
 
 export type AnalyzeWorkflowOptions = {
   inDir: string;
@@ -29,6 +36,15 @@ export function getExtremelyFoundationalSegmentCount(
   vttTranscription: Transcription,
 ): number | undefined {
   return vttTranscription?.segments?.length;
+}
+
+export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
+  const result = await runAnalyzeWorkflow({
+    inDir: opts.inDir,
+    minimal: opts.minimal,
+    primaryLanguage: opts.language,
+  });
+  outro(formatAnalyzeSummary(result, opts.minimal));
 }
 
 export async function runAnalyzeWorkflow(
@@ -126,6 +142,58 @@ export async function runAnalyzeWorkflow(
     withStatsCount,
   };
 }
+function formatAnalyzeSummary(
+  result: AnalyzeWorkflowResult,
+  minimal: boolean,
+): string {
+  const tone = { ...summaryTone };
+
+  if (minimal) {
+    return [
+      tone.heading("Analyze minimal"),
+      `${tone.label("videos:")} ${tone.number(String(result.videoCount))}`,
+      `${tone.label("manifest:")} ${tone.path(result.manifestPath)}`,
+    ].join("\n");
+  }
+
+  const missingStatsCount = result.videoCount - result.withStatsCount;
+  const averageDurationSeconds =
+    result.withStatsCount > 0
+      ? result.totalDurationSeconds / result.withStatsCount
+      : 0;
+  const averageFrames =
+    result.withStatsCount > 0 ? result.totalFrames / result.withStatsCount : 0;
+
+  const rows: Array<[label: string, value: string]> = [
+    ["manifest", result.manifestPath],
+    ["videos", String(result.videoCount)],
+    ["with stats", String(result.withStatsCount)],
+    ["missing stats", String(missingStatsCount)],
+    ["total duration (s)", result.totalDurationSeconds.toFixed(2)],
+    ["total frames", String(result.totalFrames)],
+    ["total words", String(result.totalWords)],
+    ["avg duration per video (s)", averageDurationSeconds.toFixed(2)],
+    ["avg frames per video", averageFrames.toFixed(2)],
+  ];
+  const labelWidth = rows.reduce(
+    (max, [label]) => Math.max(max, label.length),
+    0,
+  );
+
+  const prettyRows = rows.map(([label, value]) => {
+    const paddedLabel = `${label.padEnd(labelWidth)}:`;
+    const isPath = label === "manifest";
+    const colorizedValue = isPath ? tone.path(value) : tone.number(value);
+    return `${tone.label(paddedLabel)} ${colorizedValue}`;
+  });
+
+  return [
+    tone.heading("Analyze stats"),
+    tone.accent("-----------------------------"),
+    ...prettyRows,
+  ].join("\n");
+}
+
 function logForNoTranscript(): string {
   return maybeColorize(ASCII_DIM, "No Transcript");
 }

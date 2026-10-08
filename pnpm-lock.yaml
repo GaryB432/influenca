@@ -82,14 +82,20 @@ importers:
   packages/cli:
     dependencies:
       '@clack/prompts':
-        specifier: ~1.7.0
-        version: 1.7.0
+        specifier: ^1.8.1
+        version: 1.8.1
       '@influenca/core':
         specifier: workspace:*
         version: link:../core
-      cac:
-        specifier: ^7.0.0
-        version: 7.0.0
+      '@optique/clack':
+        specifier: ^1.3.3
+        version: 1.3.3
+      '@optique/core':
+        specifier: ^1.3.3
+        version: 1.3.3
+      '@optique/run':
+        specifier: ^1.3.3
+        version: 1.3.3
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0
@@ -128,8 +134,16 @@ packages:
     resolution: {integrity: sha512-/kr3UWNtdJfxZtPgDqUOmG2pvwlmcLGheex5yiZKdwbzZJxhV+HMNR9QNmyY5cGwTNV6LrR7Jtp+KjhUAP1qBQ==}
     engines: {node: '>= 20.12.0'}
 
+  '@clack/core@1.5.1':
+    resolution: {integrity: sha512-iHTrHA8MtVuLl2TfZySmcKv1qO2PoyC9Z7pfSDozEuV5vtY3/wcOPKJXlqJ5Oq2Cx5DDGQGAMVx6HZfRRoVEbQ==}
+    engines: {node: '>= 20.12.0'}
+
   '@clack/prompts@1.7.0':
     resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
+    engines: {node: '>= 20.12.0'}
+
+  '@clack/prompts@1.8.1':
+    resolution: {integrity: sha512-dlT1m5e/0yUL0kRNcQn7yGLVThkgbB0Ga/1AmfDDC/8ik6AIiSf2QLQO2zPYvefsHP0aFgxO93cVLCCfDp7kzQ==}
     engines: {node: '>= 20.12.0'}
 
   '@emnapi/core@1.11.1':
@@ -422,6 +436,22 @@ packages:
     peerDependencies:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
+
+  '@optique/clack@1.3.3':
+    resolution: {integrity: sha512-yGewgyWtCo0+w9gs0qY5NST0MBxOLmkYncO2fg4/yGjF8I5w7ksIw/BjO0u604WwgVUAyKzNgCmcAyY+MF129Q==}
+    engines: {bun: '>=1.2.0', deno: '>=2.3.0', node: '>=20.12.0'}
+
+  '@optique/core@1.3.3':
+    resolution: {integrity: sha512-HIb2Qi2b7v26thfVx4q+iaqV3NQCJzcpNjSi1tBN2uco35ZiGmUIu6SFEwfOxLxuk9izF5EoImHlCzLHSgIKHQ==}
+    engines: {bun: '>=1.2.0', deno: '>=2.3.0', node: '>=20.0.0'}
+
+  '@optique/prompt@1.3.3':
+    resolution: {integrity: sha512-8sCkf8tWsaGlMVH/x3+s59KmM+zCc/ws99Vt2WqMtQGiUEloDFbqPL+5Ral21DFEM6mUJuN2PDWQ7iAR+kjcDw==}
+    engines: {bun: '>=1.2.0', deno: '>=2.3.0', node: '>=20.0.0'}
+
+  '@optique/run@1.3.3':
+    resolution: {integrity: sha512-uUE7WhQWamm0FXEuXqrpy5xZ3ckg8KbRYKo6yr7+TdVzgEMg6Y7sKsXlAy+z1B6QO6P6D+nIHwY49aPggA3lpA==}
+    engines: {bun: '>=1.2.0', deno: '>=2.3.0', node: '>=20.0.0'}
 
   '@oxc-project/types@0.139.0':
     resolution: {integrity: sha512-r9gHphtCs+1M7J0pw6Sn/hh/Wpa/iQrOOkrNAlVLF/gHq+/CJmHIWKKUUhdWjcD6CIa8idarspCsASiXCXvFUw==}
@@ -2233,9 +2263,21 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
+  '@clack/core@1.5.1':
+    dependencies:
+      fast-wrap-ansi: 0.2.2
+      sisteransi: 1.0.5
+
   '@clack/prompts@1.7.0':
     dependencies:
       '@clack/core': 1.4.3
+      fast-string-width: 3.0.2
+      fast-wrap-ansi: 0.2.2
+      sisteransi: 1.0.5
+
+  '@clack/prompts@1.8.1':
+    dependencies:
+      '@clack/core': 1.5.1
       fast-string-width: 3.0.2
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
@@ -2491,6 +2533,22 @@ snapshots:
       '@emnapi/runtime': 1.11.1
       '@tybys/wasm-util': 0.10.3
     optional: true
+
+  '@optique/clack@1.3.3':
+    dependencies:
+      '@clack/prompts': 1.7.0
+      '@optique/core': 1.3.3
+      '@optique/prompt': 1.3.3
+
+  '@optique/core@1.3.3': {}
+
+  '@optique/prompt@1.3.3':
+    dependencies:
+      '@optique/core': 1.3.3
+
+  '@optique/run@1.3.3':
+    dependencies:
+      '@optique/core': 1.3.3
 
   '@oxc-project/types@0.139.0': {}
 
