@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import json from "@eslint/json";
 import markdown from "@eslint/markdown";
 import perfectionist from "eslint-plugin-perfectionist";
+import svelte from "eslint-plugin-svelte";
 import { yaml } from "eslint-yaml";
 import { defineConfig } from "eslint/config";
 import globals from "globals";
@@ -15,6 +16,22 @@ export default defineConfig([
     ...perfectionist.configs["recommended-natural"],
   },
   ...tseslint.configs.recommended,
+  ...svelte.configs.recommended.map((config) =>
+    config.files ? config : { ...config, files: ["**/*.svelte"] },
+  ),
+  {
+    files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
+    languageOptions: {
+      parserOptions: {
+        extraFileExtensions: [".svelte"],
+        parser: tseslint.parser,
+        projectService: true,
+      },
+    },
+    rules: {
+      "no-undef": "off",
+    },
+  },
   {
     files: ["**/*.json"],
     language: "json/jsonc",
