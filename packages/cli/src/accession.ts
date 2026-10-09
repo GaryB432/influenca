@@ -19,17 +19,20 @@ import { pipeline } from "node:stream/promises";
 
 import type { OnProgress } from "./ffmpeg.js";
 
-import { startBar } from "./bar.js";
+import { say, startBar } from "./bar.js";
 import { convert } from "./convert.js";
 import { classify, type IntakeFile, planEntries } from "./entries.js";
 import { hasManifest, mediaDir, stamp } from "./paths.js";
 import { applyProbe, isFfprobeMissing, probe } from "./probe.js";
 import { accent, log, warn } from "./theme.js";
+import { transcribeRun } from "./transcribe.js";
 
 export type AccessionOptions = {
   dryRun: boolean;
   inDir: string;
   noTimestamp: boolean;
+  /** Keep the files and stop there, sending nothing to Whisper. */
+  noTranscribe: boolean;
   outDir?: string;
   verbose: boolean;
 };
@@ -92,10 +95,21 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
     bar.fail("Accession failed");
     throw error;
   }
-  bar.finish(
-    `Wrote ${sources.length} entries to ${accent(outDir)}`,
-    `Next: ${accent(`influenca analyze ${/\s/.test(outDir) ? `"${outDir}"` : outDir}`)}`,
-  );
+  bar.finish(`Wrote ${sources.length} entries to ${accent(outDir)}`);
+
+  const quoted = /\s/.test(outDir) ? `"${outDir}"` : outDir;
+  if (!opts.noTranscribe) {
+    // The run is whole from here on: the manifest is written, and nothing below can undo it.
+    try {
+      await transcribeRun(outDir);
+    } catch (error) {
+      console.warn(
+        `Kept, but not all transcribed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      console.warn(`To finish: influenca transcribe ${quoted}`);
+    }
+  }
+  say(`Next: ${accent(`influenca analyze ${quoted}`)}`);
 }
 
 /**

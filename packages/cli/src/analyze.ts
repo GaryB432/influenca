@@ -6,8 +6,13 @@ import {
   type Manifest,
   type ManifestEntry,
   summarize,
+  type Transcript,
 } from "@influenca/core";
-import { readAnalysis, readManifest } from "@influenca/core/node";
+import {
+  readAnalysis,
+  readManifest,
+  readTranscripts,
+} from "@influenca/core/node";
 import { rename, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
@@ -18,7 +23,7 @@ import { accent, dim, log } from "./theme.js";
 
 export type AnalyzeOptions = {
   inDir?: string;
-  /** Parsed but unused until transcripts are written to the analysis file. */
+  /** The language you expect to hear, as Whisper names it. Transcripts in another say so. */
   language: string;
   /** Totals from the manifest only: measures nothing and writes nothing. */
   minimal: boolean;
@@ -41,11 +46,20 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
 
   const existing = opts.redo ? undefined : await readAnalysis(dir);
   const analysis = existing ?? (await measureRun(dir, manifest));
+  const transcripts = await readTranscripts(dir);
+  let words = 0;
   for (const e of manifest.entries) {
+    const t = transcripts?.entries[e.id];
+    if (t?.status === "done") words += t.words;
     log(
-      `  ${[e.outputName, e.kind, ...details(e, analysis.entries[e.id])].join("  ")}`,
+      `  ${[e.outputName, e.kind, ...details(e, analysis.entries[e.id]), ...said(t, opts.language)].join("  ")}`,
     );
   }
+  log(
+    transcripts
+      ? `Total words: ${words}`
+      : dim("No transcripts; run `influenca transcribe` for what was said."),
+  );
   if (existing) {
     log(
       dim(`Analysis from ${existing.createdAt}; pass --redo to measure again.`),
@@ -109,4 +123,14 @@ async function measureRun(dir: string, manifest: Manifest): Promise<Analysis> {
   }
   bar.finish(`Wrote analysis to ${accent(path)}`);
   return analysis;
+}
+
+/** How much was said, which is its own hint of what a file holds. */
+function said(t: Transcript | undefined, primary: string): string[] {
+  if (t?.status === "failed") return ["transcript failed"];
+  if (t?.status !== "done") return [];
+  // With no words there is no language to speak of.
+  const other =
+    t.words === 0 || t.language === primary ? "" : ` (${t.language})`;
+  return [`${t.words} words${other}`];
 }

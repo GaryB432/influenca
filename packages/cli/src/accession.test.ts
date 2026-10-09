@@ -3,6 +3,8 @@ import {
   ANALYSIS_FILENAME,
   type Manifest,
   MANIFEST_FILENAME,
+  type Transcripts,
+  TRANSCRIPTS_FILENAME,
 } from "@influenca/core";
 import { readJSON } from "@influenca/core/node";
 import { execFileSync } from "node:child_process";
@@ -11,6 +13,7 @@ import {
   mkdir,
   mkdtemp,
   readdir,
+  readFile,
   rm,
   writeFile,
 } from "node:fs/promises";
@@ -29,13 +32,19 @@ import {
 
 import { runAccession } from "./accession.js";
 import { runAnalyze } from "./analyze.js";
+import { runTranscribe } from "./transcribe.js";
 
 describe("accession + analyze", () => {
   let fixtures: string;
   let root: string;
   let inDir: string;
   let outDir: string;
-  const base = { dryRun: false, noTimestamp: true, verbose: false };
+  const base = {
+    dryRun: false,
+    noTimestamp: true,
+    noTranscribe: true,
+    verbose: false,
+  };
 
   // Real media, made once: one second of 30 fps video with sound, and a second of audio.
   beforeAll(async () => {
@@ -68,12 +77,14 @@ describe("accession + analyze", () => {
     await writeFile(join(inDir, "b.JPG"), "x");
     await copyFile(join(fixtures, "c.wav"), join(inDir, "c.wav"));
     await writeFile(join(inDir, "notes.txt"), "ignored");
+    vi.stubEnv("OPENAI_API_KEY", ""); // whatever the shell has, nothing here reaches OpenAI
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     vi.spyOn(process.stderr, "write").mockImplementation(() => true);
   });
   afterEach(async () => {
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
     await rm(root, { force: true, recursive: true });
   });
 
@@ -177,6 +188,156 @@ describe("accession + analyze", () => {
       redo: true,
     });
     expect((await read()).createdAt).not.toBe(first.createdAt);
+  });
+
+  describe("transcribe", () => {
+    const heard = {
+      language: "english",
+      segments: [{ end: 1.5, start: 0, text: " Hello there." }],
+      text: "Hello there.",
+    };
+    const VTT = "WEBVTT\n\n00:00:00.000 --> 00:00:01.500\nHello there.\n";
+    const read = () =>
+      readJSON<Transcripts>(join(outDir, TRANSCRIPTS_FILENAME));
+    const reply = (body: unknown, status = 200) =>
+      whisper.mockImplementation(() =>
+        Promise.resolve(Response.json(body, { status })),
+      );
+    let whisper: ReturnType<typeof vi.fn<typeof fetch>>;
+
+    beforeEach(async () => {
+      vi.stubEnv("OPENAI_API_KEY", "sk-test");
+      whisper = vi.fn<typeof fetch>();
+      reply(heard);
+      vi.stubGlobal("fetch", whisper);
+      await runAccession({ ...base, inDir, outDir });
+    });
+
+    it("accession transcribes what it keeps unless told not to", async () => {
+      const fresh = join(root, "fresh");
+      await runAccession({
+        ...base,
+        inDir,
+        noTranscribe: false,
+        outDir: fresh,
+      });
+      expect((await readdir(fresh)).toSorted()).toEqual([
+        MANIFEST_FILENAME,
+        TRANSCRIPTS_FILENAME,
+        "a.mp4",
+        "a.vtt",
+        "b.JPG",
+        "c.mp3",
+        "c.vtt",
+      ]);
+    });
+
+    it("accession still keeps everything when Whisper cannot be reached", async () => {
+      whisper.mockRejectedValue(new Error("fetch failed"));
+      const fresh = join(root, "fresh");
+      await runAccession({
+        ...base,
+        inDir,
+        noTranscribe: false,
+        outDir: fresh,
+      });
+      expect((await readdir(fresh)).toSorted()).toEqual([
+        MANIFEST_FILENAME,
+        "a.mp4",
+        "b.JPG",
+        "c.mp3",
+      ]);
+      expect(console.warn).toHaveBeenCalledWith(
+        "Kept, but not all transcribed: fetch failed",
+      );
+    });
+
+    it("writes a transcript beside each file with sound, once", async () => {
+      await runTranscribe({ inDir: outDir });
+      expect(await readFile(join(outDir, "a.vtt"), "utf8")).toBe(VTT);
+      expect(await readFile(join(outDir, "c.vtt"), "utf8")).toBe(VTT);
+      const done = {
+        language: "english",
+        model: "whisper-1",
+        status: "done",
+        words: 2,
+      };
+      expect((await read()).entries).toEqual({
+        1: { ...done, vttName: "a.vtt" },
+        3: { ...done, vttName: "c.vtt" },
+      });
+
+      const [, request] = whisper.mock.calls[0] ?? [];
+      expect(request?.headers).toEqual({ Authorization: "Bearer sk-test" });
+      const form = request?.body as FormData;
+      expect(form.get("response_format")).toBe("verbose_json");
+      expect((form.get("file") as File).size).toBeGreaterThan(0);
+
+      await runTranscribe({ inDir: outDir });
+      expect(whisper).toHaveBeenCalledTimes(2);
+      await runTranscribe({ inDir: outDir, redo: true });
+      expect(whisper).toHaveBeenCalledTimes(4);
+    });
+
+    it("does not send a file with nothing to hear", async () => {
+      execFileSync("ffmpeg", [
+        ..."-v error -f lavfi -i anullsrc=r=16000:cl=mono -t 2".split(" "),
+        join(outDir, "c.mp3"),
+        "-y",
+      ]);
+      await runTranscribe({ inDir: outDir });
+      expect(whisper).toHaveBeenCalledTimes(1);
+      expect((await read()).entries[3]).toEqual({ status: "silent" });
+    });
+
+    it("records a file Whisper turns down and does not send it again", async () => {
+      reply({ error: { message: "too long" } }, 400);
+      await runTranscribe({ inDir: outDir });
+      expect((await read()).entries[3]).toEqual({
+        model: "whisper-1",
+        reason: "too long (HTTP 400)",
+        status: "failed",
+      });
+      expect(await readdir(outDir)).not.toContain("c.vtt");
+
+      await runTranscribe({ inDir: outDir });
+      expect(whisper).toHaveBeenCalledTimes(2);
+    });
+
+    it("stops on a refused key and carries on from there next time", async () => {
+      whisper.mockImplementationOnce(() =>
+        Promise.resolve(Response.json(heard)),
+      );
+      whisper.mockImplementationOnce(() =>
+        Promise.resolve(
+          Response.json({ error: { message: "bad key" } }, { status: 401 }),
+        ),
+      );
+      await expect(runTranscribe({ inDir: outDir })).rejects.toThrow(
+        "Whisper: bad key (HTTP 401)",
+      );
+      expect(Object.keys((await read()).entries)).toEqual(["1"]);
+
+      await runTranscribe({ inDir: outDir });
+      expect(whisper).toHaveBeenCalledTimes(3);
+      expect(Object.keys((await read()).entries)).toEqual(["1", "3"]);
+    });
+
+    it("needs a key only when there is something to send", async () => {
+      vi.stubEnv("OPENAI_API_KEY", "");
+      await expect(runTranscribe({ inDir: outDir })).rejects.toThrow(
+        /OPENAI_API_KEY/,
+      );
+    });
+
+    it("analyze counts the words, and names a language you did not expect", async () => {
+      await runTranscribe({ inDir: outDir });
+      await runAnalyze({ inDir: outDir, language: "french", minimal: false });
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringMatching(/c\.mp3 .* 2 words \(english\)$/),
+      );
+      expect(console.log).toHaveBeenCalledWith("Total words: 4");
+    });
   });
 
   describe("with a run from an older influenca alongside", () => {

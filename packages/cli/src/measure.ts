@@ -6,7 +6,7 @@ import { type OnProgress, runFfmpeg } from "./ffmpeg.js";
 // Shrinking each frame to a thumbnail averages sensor noise away, so only real movement
 // counts as change. Five frames a second is plenty to tell a parked scene from a busy one.
 const STILL_FILTER = "scale=64:-2:flags=area,fps=5,freezedetect=n=0.01:d=2";
-const SILENCE_FILTER = "silencedetect=n=-40dB:d=1";
+export const SILENCE_FILTER = "silencedetect=n=-40dB:d=1";
 
 /** Pure: totals a detector's stretches from ffmpeg's log. One still open at the end runs to the end. */
 export function detectedSec(

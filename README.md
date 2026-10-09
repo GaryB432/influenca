@@ -1,13 +1,14 @@
 # Influenca
 
 Take a folder of media off a camera or phone, keep it in a lasting form with a
-record of what was kept, then measure it and browse it.
+record of what was kept, then transcribe it, measure it and browse it.
 
 The model is a museum's. A pile of files left on the doorstep is the **intake**.
 **Accession** brings the supported ones inside, converts them to formats that
 last, and writes a **manifest** of what it kept. The intake is never touched and
-is yours to keep or wipe. **Analyze** then studies what is inside, and writes its
-findings to a separate file so the manifest stays a fixed record.
+is yours to keep or wipe. On the way in, what is said in each file is written
+down as subtitles. **Analyze** then studies what is inside, as often as you
+like. Each step writes to a file of its own, so the manifest stays a fixed record.
 
 ## How it works
 
@@ -29,7 +30,12 @@ flowchart TD
     direction TB
     media[("Kept media")]
     manifest[".influenca.json<br/>written once, at the end"]
+    vtt[("Transcripts: a .vtt per file<br/>and .influenca.transcripts.json")]
     analysis[".influenca.analysis.json<br/>safe to delete and redo"]
+  end
+
+  subgraph transcribe ["then, still in accession"]
+    whisper["Send the sound to Whisper<br/>(network, paid, once per file)"]
   end
 
   subgraph analyze ["influenca analyze"]
@@ -43,13 +49,21 @@ flowchart TD
   manifest --> measure
   media --> measure
   measure --> analysis
+  manifest -- "unless --no-transcribe" --> whisper
+  media --> whisper
+  whisper --> vtt
+  vtt -. "word counts" .-> measure
   manifest --> web["Web view"]
 ```
 
-The two commands take very different amounts of time. Accession re-encodes
-video, which runs at a few times playback speed. Analyze only decodes, at
-thumbnail size, and gets through the same footage many times faster. Probing is
-near-instant in both.
+The steps take very different amounts of time. Accession re-encodes video,
+which runs at a few times playback speed, and then waits on OpenAI for the
+transcripts. Analyze only decodes, at thumbnail size, and gets through the same
+footage many times faster.
+
+Transcribing is the only step that uses the network or costs money. It happens
+after the manifest is written, so a run is whole before anything is sent, and
+nothing that goes wrong with OpenAI can cost you the run.
 
 ## Setup
 
@@ -58,6 +72,7 @@ Needs a recent Node (developed on 24), pnpm, and `ffmpeg` with `ffprobe` on your
 ```sh
 pnpm install
 cp .env.example .env   # set INFLUENCA_MEDIA_DIR, where runs are kept
+                       # and OPENAI_API_KEY, to have what is said transcribed
 pnpm build
 ```
 
@@ -111,6 +126,7 @@ pnpm influenca accession /path/to/intake                 # -> $INFLUENCA_MEDIA_D
 pnpm influenca accession /path/to/intake --dry-run       # show the plan, write nothing
 pnpm influenca accession /path/to/intake --out-dir runs  # -> runs/<timestamp>/
 pnpm influenca accession /path/to/intake --out-dir runs/one --no-timestamp
+pnpm influenca accession /path/to/intake --no-transcribe # keep the files, send nothing to OpenAI
 ```
 
 Leave the intake folder off and you are asked for it. Only the top level of the
@@ -131,6 +147,37 @@ folder is read, and files of other types are left behind (`--verbose` lists them
 - Two intake files that would be kept under the same name (`a.avi` and `a.mp4`)
   stop the run before anything is written.
 
+## Transcripts
+
+Once the manifest is written, accession sends the sound of each file to OpenAI's
+`whisper-1` and writes what comes back as WebVTT beside the file, under the
+name players look for: `VID00010.vtt` for `VID00010.mp4`. It needs
+`OPENAI_API_KEY` in `.env`. Without one, or if OpenAI cannot be reached, the
+run is still kept and accession tells you how to finish:
+
+```sh
+pnpm influenca transcribe              # newest run under $INFLUENCA_MEDIA_DIR
+pnpm influenca transcribe /path/to/run
+pnpm influenca transcribe --redo       # send every file again, and pay again
+```
+
+`transcribe` does only what is left to do, so it is also how a run accessioned
+with `--no-transcribe` gets its transcripts later.
+
+- Only sound leaves your machine, as mono mp3 at 32 kb/s. OpenAI charges by the
+  minute of audio.
+- Each file is sent once. `.influenca.transcripts.json` records what came of it
+  (the language Whisper heard, the word count), and is saved after every file,
+  so a run that stops has lost nothing. Run it again and it sends what is left.
+- A file with less than a second of sound above -40 dB is not sent, and is
+  recorded as `silent`. Whisper invents words for silence.
+- A file OpenAI turns down, such as one over its 25 MB upload limit (about 100
+  minutes), is recorded as `failed` with the reason and not sent again.
+- Any other failure, such as a refused key or no network, stops the
+  transcribing there. What was done is kept.
+
+The model and the audio settings are in `packages/cli/src/whisper.ts`.
+
 ## Analyze
 
 ```sh
@@ -138,11 +185,12 @@ pnpm influenca analyze                 # newest run under $INFLUENCA_MEDIA_DIR
 pnpm influenca analyze /path/to/run
 pnpm influenca analyze --redo          # measure again
 pnpm influenca analyze --minimal       # manifest totals only; measures and writes nothing
+pnpm influenca analyze -l spanish      # the language you expect to hear (default english)
 ```
 
 ```
-  AUD00000.mp3  audio  00:02:22  silent 44%
-  VID00010.mp4  video  491 frames  21.1 Mb/s  still 0%  silent 0%
+  AUD00000.mp3  audio  00:02:22  silent 44%  212 words
+  VID00010.mp4  video  491 frames  21.1 Mb/s  still 0%  silent 0%  9 words (spanish)
 ```
 
 - **still**: share of a video in which the picture did not change for two
@@ -150,6 +198,9 @@ pnpm influenca analyze --minimal       # manifest totals only; measures and writ
 - **silent**: share of the sound below -40 dB for a second or more.
 - **Mb/s**: size over duration. At a fixed quality a busier picture costs more
   bits, so it is a rough hint of activity.
+- **words**: how much was said, if the run has been transcribed, with the
+  language when it is not the one you expected. Analyze only reads this; it
+  never calls OpenAI.
 
 The thresholds are in `packages/cli/src/measure.ts`. Results are saved to
 `.influenca.analysis.json` and reused on the next run unless you pass `--redo`.
@@ -159,9 +210,12 @@ The thresholds are in `packages/cli/src/measure.ts`. Results are saved to
 ```
 2059-05-20T00-00-00Z/
   VID00010.mp4
+  VID00010.vtt
   AUD00000.mp3
-  .influenca.json            the manifest: one entry per kept file
-  .influenca.analysis.json   analyze's findings, keyed by entry id
+  AUD00000.vtt
+  .influenca.json              the manifest: one entry per kept file
+  .influenca.transcripts.json  transcribe's record, keyed by entry id
+  .influenca.analysis.json     analyze's findings, keyed by entry id
 ```
 
 Each manifest entry records the kept file's name, size, duration, frame count,
@@ -180,7 +234,7 @@ Lists a run's files with their frames and durations, read from the manifest.
 
 | Path              | What                                                        |
 | ----------------- | ----------------------------------------------------------- |
-| `packages/core`   | Manifest and analysis types, readers, summary               |
+| `packages/core`   | Manifest, transcripts and analysis types, readers, summary  |
 | `packages/cli`    | The `influenca` command                                     |
 | `apps/web`        | SvelteKit viewer                                            |
 | `scripts/e2e.sh`  | Builds, then runs accession and analyze on a generated clip |

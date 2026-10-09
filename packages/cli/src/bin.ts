@@ -9,6 +9,7 @@ import { run } from "@optique/run";
 import { runAccession } from "./accession.js";
 import { runAnalyze } from "./analyze.js";
 import { printError } from "./theme.js";
+import { runTranscribe } from "./transcribe.js";
 
 try {
   process.loadEnvFile();
@@ -26,6 +27,7 @@ const accession = command(
         type: "text",
       }),
       noTimestamp: option("--no-timestamp"),
+      noTranscribe: option("--no-transcribe"),
       outDir: optional(option("--out-dir", string({ metavar: "PATH" }))), // defaults to INFLUENCA_MEDIA_DIR
       verbose: option("--verbose"),
     }),
@@ -46,10 +48,24 @@ const analyze = command(
   ),
 );
 
-const result = await run(or(accession, analyze), { programName: "influenca" });
+const transcribe = command(
+  "transcribe",
+  map(
+    object({
+      inDir: optional(argument(string({ metavar: "OUT_DIR" }))), // defaults to the latest run
+      redo: option("--redo"),
+    }),
+    (v) => ({ ...v, command: "transcribe" as const }),
+  ),
+);
+
+const result = await run(or(accession, transcribe, analyze), {
+  programName: "influenca",
+});
 
 try {
   if (result.command === "accession") await runAccession(result);
+  else if (result.command === "transcribe") await runTranscribe(result);
   else await runAnalyze(result);
 } catch (thrown) {
   printError(thrown instanceof Error ? thrown.message : thrown);

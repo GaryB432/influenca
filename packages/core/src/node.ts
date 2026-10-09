@@ -11,6 +11,7 @@ import {
   MANIFEST_FILENAME,
   type Run,
 } from "./manifest.js";
+import { type Transcripts, TRANSCRIPTS_FILENAME } from "./transcripts.js";
 
 export { readJSON } from "./json.js";
 
@@ -51,4 +52,16 @@ export async function readManifest(dir: string): Promise<Manifest> {
     );
   }
   return manifest;
+}
+
+/** A run's transcripts record, or undefined if there is none yet or it is not one this version wrote. */
+export async function readTranscripts(
+  dir: string,
+): Promise<Transcripts | undefined> {
+  const t = await readJSON<null | Partial<Transcripts>>(
+    join(dir, TRANSCRIPTS_FILENAME),
+  ).catch(() => null);
+  return t?.version === 1 && typeof t.entries === "object"
+    ? (t as Transcripts)
+    : undefined;
 }

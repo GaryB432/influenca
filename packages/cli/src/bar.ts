@@ -7,6 +7,12 @@ import { accent, dim, log } from "./theme.js";
 const BAR = unicodeOr("━", "=");
 const BAR_SIZE = 30;
 
+/** A parting line, closing the frame the bar drew if there was one. */
+export function say(hint: string): void {
+  if (process.stdout.isTTY) outro(hint);
+  else log(hint);
+}
+
 /** One bar across several jobs, each weighted by its share of the total. */
 export function startBar(total: number) {
   // clack draws regardless of where stdout goes, so keep the bar out of pipes and logs.
@@ -25,7 +31,7 @@ export function startBar(total: number) {
         if (hint) outro(hint);
       } else {
         log(message);
-        if (hint) log(hint);
+        if (hint) say(hint);
       }
     },
     /** Runs one job, handing it a reporter for its own 0..1. */
