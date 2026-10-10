@@ -1,148 +1,196 @@
-# influenca
+# Influenca
 
-Say it like `influenza` but with a a `c`
+Take a folder of media off a camera or phone, keep it in a lasting form with a
+record of what was kept, then measure it and browse it.
 
-```shell
-npm install influenca
-influenca ~/my-media --exif
+The model is a museum's. A pile of files left on the doorstep is the **intake**.
+**Accession** brings the supported ones inside, converts them to formats that
+last, and writes a **manifest** of what it kept. The intake is never touched and
+is yours to keep or wipe. **Analyze** then studies what is inside, and writes its
+findings to a separate file so the manifest stays a fixed record.
+
+## How it works
+
+```mermaid
+flowchart TD
+  intake[/"Intake folder<br/>avi, mp4, wav, jpg"/]
+
+  subgraph accession ["influenca accession"]
+    direction TB
+    probe["Probe each file<br/>(ffprobe, milliseconds)"]
+    convert["Convert avi to mp4, wav to mp3<br/>(ffmpeg encode: the slow part)"]
+    copy["Copy mp4 and jpg unchanged"]
+    verify["Probe the result,<br/>check its duration"]
+    probe --> convert --> verify
+    probe --> copy
+  end
+
+  subgraph run ["Run folder"]
+    direction TB
+    media[("Kept media")]
+    manifest[".influenca.json<br/>written once, at the end"]
+    analysis[".influenca.analysis.json<br/>safe to delete and redo"]
+  end
+
+  subgraph analyze ["influenca analyze"]
+    measure["Time the still and silent stretches<br/>(ffmpeg decode only: fast)"]
+  end
+
+  intake --> probe
+  verify --> media
+  copy --> media
+  accession -. "when every file is in" .-> manifest
+  manifest --> measure
+  media --> measure
+  measure --> analysis
+  manifest --> web["Web view"]
 ```
 
-## Content intake
+The two commands take very different amounts of time. Accession re-encodes
+video, which runs at a few times playback speed. Analyze only decodes, at
+thumbnail size, and gets through the same footage many times faster. Probing is
+near-instant in both.
 
-### SD card / USB drive (WSL)
+## Setup
 
-Move `avi` / `wav` files from a Windows drive (e.g. `G:`) to a timestamped folder,
-then print the ready-to-run `accession` command:
+Needs a recent Node (developed on 24), pnpm, and `ffmpeg` with `ffprobe` on your `PATH`.
+
+```sh
+pnpm install
+cp .env.example .env   # set INFLUENCA_MEDIA_DIR, where runs are kept
+pnpm build
+```
+
+## Intake
+
+Accession takes any folder. These two scripts fill one from a device and print
+the accession command to run next.
+
+### SD card or USB drive (WSL)
+
+Mounts a Windows drive letter, moves its `avi` and `wav` files into a
+timestamped folder under `~/.local/state/influenca/`, and clears them off the
+card:
 
 ```sh
 ./scripts/intake.sh g
 ```
 
-### Android phone (MTP via Windows Shell)
+### Android phone (MTP)
 
-Phone enumeration and file copying require the Windows Shell COM API (MTP).
-Run this from **PowerShell 7 on Windows** (`pwsh.exe`):
+Phones are reached through the Windows Shell, so this one runs in PowerShell 7
+on Windows:
 
 ```powershell
-# Defaults: first MTP device found, last 7 days of media
+# First phone found, last 7 days of camera files
 pwsh.exe -File scripts\intake-android.ps1
 
-# Target a specific phone by partial name, copy last 3 days
+# A phone by partial name, last 3 days
 pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Pixel" -MaxAgeDays 3
 
-# Copy ALL camera files (no age filter)
+# Every camera file, whatever its age
 pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Galaxy" -MaxAgeDays 0
 ```
 
-Or invoke it directly from a WSL terminal (requires `pwsh.exe` on the Windows `PATH`):
+Or start it from a WSL terminal, with `pwsh.exe` on the Windows `PATH`:
 
-```bash
+```sh
 pwsh.exe -File "$(wslpath -w ./scripts/intake-android.ps1)"
 ```
 
-The script automatically resolves your WSL home directory and prints a
-**WSL-native, pasteable** next-step command — no Windows paths leak into the output:
+It copies into your WSL home and prints a path you can paste there:
 
 ```
-✨ Next step — paste into your WSL terminal:
-
-  influenca accession ~/.local/state/influenca/2026-09-28_17-30-00/pixel-9-pro
+influenca accession "/home/you/.local/state/influenca/2059-05-20_00-00-00/pixel-9-pro"
 ```
 
-## Development
+## Accession
 
-- Install dependencies:
-
-```bash
-pnpm install
+```sh
+pnpm influenca accession /path/to/intake                 # -> $INFLUENCA_MEDIA_DIR/<timestamp>/
+pnpm influenca accession /path/to/intake --dry-run       # show the plan, write nothing
+pnpm influenca accession /path/to/intake --out-dir runs  # -> runs/<timestamp>/
+pnpm influenca accession /path/to/intake --out-dir runs/one --no-timestamp
 ```
 
-### Source-first monorepo baseline
+Leave the intake folder off and you are asked for it. Only the top level of the
+folder is read, and files of other types are left behind (`--verbose` lists them).
 
-The workspace is source-first for local development.
+| Arrives as              | Kept as   | How                               |
+| ----------------------- | --------- | --------------------------------- |
+| `.avi`                  | `.mp4`    | Converted to H.264 with AAC sound |
+| `.wav`                  | `.mp3`    | Converted                         |
+| `.mp4`, `.jpg`, `.jpeg` | unchanged | Copied under its own name         |
 
-- Typecheck and tests run from source across workspace packages.
-- Libraries (`core`, `shared`) are internal TypeScript packages first for local checks, and runtime package exports point to built JavaScript in `dist`.
-- Apps (`cli`, `web`) are build targets; app builds are the primary required artifacts.
-- Third-party dependencies are consumed from `node_modules` (external), not bundled into app artifacts by default.
-- Build speed optimizations (`.tsbuildinfo`, incremental tuning, extra orchestration) are optional and should only be introduced after measuring a real bottleneck.
+- The converted file is the only copy influenca keeps, so the encode settings
+  favour quality over size. They live in `packages/cli/src/convert.ts`.
+- Each file is written under a `.part-` name and renamed when it is complete and
+  its duration matches the source, so a file with its real name is always whole.
+- The manifest is written last. A run folder without one did not finish, and a
+  folder that already has one is never written into again.
+- Two intake files that would be kept under the same name (`a.avi` and `a.mp4`)
+  stop the run before anything is written.
 
-### Two-mode contract
+## Analyze
 
-- Runtime mode (`cli`/CI/prod): apps import library package runtime exports (`dist/*.mjs`).
-- Web dev mode (HMR): `apps/web` aliases workspace libs to `src/index.ts` for instant source edits.
-- Dependency ownership: each package declares only what it directly imports in source.
-
-In practice: use `pnpm run lint`, `pnpm run typecheck`, and `pnpm run test` as the default feedback loop. Run `pnpm run build` when you need runnable artifacts.
-
-- Run the full workspace checks:
-
-```bash
-pnpm run check
+```sh
+pnpm influenca analyze                 # newest run under $INFLUENCA_MEDIA_DIR
+pnpm influenca analyze /path/to/run
+pnpm influenca analyze --redo          # measure again
+pnpm influenca analyze --minimal       # manifest totals only; measures and writes nothing
 ```
 
-- Build apps and libraries to dist:
-
-```bash
-pnpm run build
+```
+  AUD00000.mp3  audio  00:02:22  silent 44%
+  VID00010.mp4  video  491 frames  21.1 Mb/s  still 0%  silent 0%
 ```
 
-- Run CLI end-to-end smoke test:
+- **still**: share of a video in which the picture did not change for two
+  seconds or more.
+- **silent**: share of the sound below -40 dB for a second or more.
+- **Mb/s**: size over duration. At a fixed quality a busier picture costs more
+  bits, so it is a rough hint of activity.
 
-```bash
-pnpm run build && ./scripts/e2e-all.sh
+The thresholds are in `packages/cli/src/measure.ts`. Results are saved to
+`.influenca.analysis.json` and reused on the next run unless you pass `--redo`.
+
+## What a run folder holds
+
+```
+2059-05-20T00-00-00Z/
+  VID00010.mp4
+  AUD00000.mp3
+  .influenca.json            the manifest: one entry per kept file
+  .influenca.analysis.json   analyze's findings, keyed by entry id
 ```
 
-- Typecheck all projects:
+Each manifest entry records the kept file's name, size, duration, frame count,
+dimensions and codecs, plus `sourceName`, the name it arrived under.
 
-```bash
-pnpm run typecheck
+## Web
+
+```sh
+pnpm dev:web
+# http://localhost:5173/view/<run-folder-name>   (/view for a --no-timestamp run)
 ```
 
-- Lint all projects:
+Lists a run's files with their frames and durations, read from the manifest.
 
-```bash
-pnpm run lint
+## Layout
+
+| Path              | What                                                        |
+| ----------------- | ----------------------------------------------------------- |
+| `packages/core`   | Manifest and analysis types, readers, summary               |
+| `packages/cli`    | The `influenca` command                                     |
+| `apps/web`        | SvelteKit viewer                                            |
+| `scripts/e2e.sh`  | Builds, then runs accession and analyze on a generated clip |
+| `scripts/intake*` | Fill an intake folder from an SD card or an Android phone   |
+
+## Checks
+
+```sh
+pnpm lint && pnpm typecheck && pnpm test
+sh scripts/e2e.sh
 ```
 
-- Test all projects:
-
-```bash
-pnpm run test
-```
-
-## Speech-to-Text Transcription
-
-Transcription is implemented in the current pipeline, but it only runs when the input has an audio stream and `OPENAI_API_KEY` is set. The workflow uses `fluent-ffmpeg` for media handling and OpenAI's Whisper API for transcription.
-
-### Workflow
-
-```mermaid
-flowchart TD
-    A["Input video"]
-    B["Normalize"]
-    C["Probe"]
-    D{"Can transcribe?"}
-    E["Extract audio"]
-    F["Transcribe"]
-    G["Skip transcription"]
-    H["Write manifest"]
-
-    A --> B
-    B -->|"ffmpeg"| C
-    C -->|"ffprobe"| D
-    D -->|Yes| E
-    D -->|No| G
-    E -->|"ffmpeg"| F
-    F -->|"Whisper API"| H
-    G --> H
-```
-
-### Tools In Use
-
-- `ffmpeg` via `fluent-ffmpeg` for transcoding and audio extraction
-- `ffprobe` via `fluent-ffmpeg` for duration, frame count, and stream detection
-- OpenAI Whisper API for transcription
-- `fs` and `path` for local file and manifest handling
-
-The manifest is written to `tmp/processed_videos/<timestamp>/.influenca.json` after each run.
+The tests and the e2e script generate small real clips, so they need ffmpeg too.

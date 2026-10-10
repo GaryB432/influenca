@@ -1,48 +1,54 @@
 <script lang="ts">
-  import { resolve } from "$app/paths";
+  import { goto } from "$app/navigation";
+  import { formatDuration } from "@influenca/core";
 
   let { data } = $props();
-
-  let selectedStamp = $state<string>();
 </script>
 
-<svg style="display: none;">
-  <symbol id="icon-folder" viewBox="0 0 24 24">
-    <path
-      d="M22 19V7a2 2 0 0 0-2-2h-7.17l-2-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linejoin="round"
-    />
-  </symbol>
-</svg>
+<svelte:head><title>Influenca</title></svelte:head>
 
-{#snippet figure()}
-  <svg
-    class="folder-icon"
-    xmlns="http://w3.org"
-    viewBox="0 0 24 24"
-    width="16"
-    height="16"
-  >
-    <path
-      d="M22 19V7a2 2 0 0 0-2-2h-7.17l-2-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"
-      fill="#3b82f6"
-      stroke="#2563eb"
-      stroke-width="2"
-      stroke-linejoin="round"
-    />
-  </svg>
-{/snippet}
+<main>
+  <h1>Influenca</h1>
+  {#if data.runs.length === 0}
+    <p>
+      No runs in <code>{data.root}</code> yet. Make one with
+      <code>influenca accession</code>.
+    </p>
+  {:else}
+    <label for="run">Runs in <code>{data.root}</code></label>
+    <select id="run" onchange={(e) => goto(e.currentTarget.value)}>
+      <option value="" disabled selected>Choose from {data.runs.length}…</option>
+      {#each data.runs as r (r.href)}
+        {@const files = r.summary.counts.video + r.summary.counts.audio + r.summary.counts.image}
+        <option value={r.href}>
+          {r.name} · {files} {files === 1 ? "file" : "files"} · {formatDuration(r.summary.totalDurationSec)}
+        </option>
+      {/each}
+    </select>
+  {/if}
+</main>
 
-<select name="folder-select" class="folder-select" bind:value={selectedStamp}>
-  {#each data.stamps as stamp (stamp)}
-    <option value={stamp}>
-      {@render figure()}
-      <span>
-        {stamp}
-      </span>
-    </option>
-  {/each}
-</select>
-<a href={resolve("/[stamp]", { stamp: selectedStamp ?? "W" })}>view</a>
+<style>
+  :global(body) {
+    margin: 0;
+    font: 16px/1.5 system-ui, sans-serif;
+    color: light-dark(#1d1f21, #e6e6e6);
+    background: light-dark(#fff, #16181a);
+    color-scheme: light dark;
+  }
+  main {
+    max-width: 44rem;
+    margin: 3rem auto;
+    padding: 0 1rem;
+  }
+  label {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: light-dark(#555, #aaa);
+  }
+  select {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    font: inherit;
+  }
+</style>

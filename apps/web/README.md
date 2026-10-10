@@ -56,12 +56,6 @@ pnpm run preview
 pnpm run check
 ```
 
-- Lint:
-
-```bash
-pnpm run lint
-```
-
 - Unit tests:
 
 ```bash

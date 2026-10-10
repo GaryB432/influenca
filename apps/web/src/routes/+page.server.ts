@@ -1,22 +1,45 @@
-import { corpusRoot } from "$lib/server/corpus";
-import { statSync } from "node:fs";
-import { readdir } from "node:fs/promises";
-import path from "node:path";
+import { type Run, summarize } from "@influenca/core";
+import { listRuns, readManifest } from "@influenca/core/node";
+import { error } from "@sveltejs/kit";
 
 import type { PageServerLoad } from "./$types";
 
-export const load = (async () => {
-  const entries = await readdir(corpusRoot, { withFileTypes: true });
+import { mediaRoot } from "../lib/server/media.js";
 
-  const stamps = entries
-    .filter((entry) => entry.isDirectory())
-    .sort((a, b) => {
-      return (
-        statSync(path.join(b.parentPath, b.name)).mtimeMs -
-        statSync(path.join(a.parentPath, a.name)).mtimeMs
-      );
-    })
-    .map((entry) => entry.name);
+export const load: PageServerLoad = async () => {
+  let root: string;
+  try {
+    root = mediaRoot();
+  } catch (e) {
+    error(
+      500,
+      e instanceof Error ? e.message : "Media directory is not configured",
+    );
+  }
 
-  return { stamps };
-}) satisfies PageServerLoad;
+  let runs: Run[];
+  try {
+    runs = await listRuns(root);
+  } catch {
+    error(500, `Cannot read the media directory ${root}`);
+  }
+  // A --no-timestamp run lives in the media directory itself and is served at /view.
+  const here = await readManifest(root).catch(() => undefined);
+
+  return {
+    root,
+    runs: [
+      ...(here
+        ? [{ href: "/view", manifest: here, name: "(media directory)" }]
+        : []),
+      ...runs.map((r) => ({
+        ...r,
+        href: `/view/${encodeURIComponent(r.name)}`,
+      })),
+    ].map(({ href, manifest, name }) => ({
+      href,
+      name,
+      summary: summarize(manifest),
+    })),
+  };
+};
