@@ -10,12 +10,21 @@ const format = (value: unknown): string => {
 };
 
 const stream = (
-  stream: NodeJS.WriteStream,
+  method: "error" | "log" | "warn",
   style: Parameters<typeof styleText>[0],
   ...values: unknown[]
-) => {
+): void => {
   const message = values.map(format).join(" ");
-  stream.write(`${styleText(style, message)}\n`);
+  const rendered = styleText(style, message);
+
+  const target =
+    method === "error"
+      ? process.stderr
+      : method === "warn"
+        ? process.stderr
+        : process.stdout;
+
+  target.write(`${rendered}\n`);
 };
 
 /** One accent for the whole CLI. styleText drops the color for pipes and NO_COLOR. */
@@ -24,10 +33,10 @@ export const accent = (s: string) => styleText("cyanBright", s);
 export const dim = (s: string) => styleText("dim", s);
 
 export const log = (...values: unknown[]) =>
-  stream(process.stdout, "cyanBright", ...values);
+  stream("log", "cyanBright", ...values);
 
 export const warn = (...values: unknown[]) =>
-  stream(process.stderr, "yellow", ...values);
+  stream("warn", "yellow", ...values);
 
 export const printError = (...values: unknown[]) =>
-  stream(process.stderr, "red", ...values);
+  stream("error", "red", ...values);

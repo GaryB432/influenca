@@ -68,8 +68,8 @@ describe("accession + analyze", () => {
     await writeFile(join(inDir, "b.JPG"), "x");
     await copyFile(join(fixtures, "c.wav"), join(inDir, "c.wav"));
     await writeFile(join(inDir, "notes.txt"), "ignored");
-    vi.spyOn(console, "log").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {}); // b.JPG is not a real picture
+    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    vi.spyOn(process.stderr, "write").mockImplementation(() => true);
   });
   afterEach(async () => {
     vi.restoreAllMocks();
@@ -147,7 +147,9 @@ describe("accession + analyze", () => {
   it("analyze prints the frame total", async () => {
     await runAccession({ ...base, inDir, outDir });
     await runAnalyze({ inDir: outDir, language: "english", minimal: true });
-    expect(console.log).toHaveBeenCalledWith("Total frames: 31");
+    expect(process.stdout.write).toHaveBeenCalledWith(
+      expect.stringContaining("Total frames: 31"),
+    );
   });
 
   it("analyze writes its measurements beside the manifest and reuses them", async () => {
@@ -192,7 +194,9 @@ describe("accession + analyze", () => {
       await runAccession({ ...base, inDir, noTimestamp: false, outDir });
       vi.stubEnv("INFLUENCA_MEDIA_DIR", outDir);
       await runAnalyze({ language: "english", minimal: true });
-      expect(console.log).toHaveBeenCalledWith("Total frames: 31");
+      expect(process.stdout.write).toHaveBeenCalledWith(
+        expect.stringContaining("Total frames: 31"),
+      );
     });
 
     it("analyze names the problem when pointed at it", async () => {
