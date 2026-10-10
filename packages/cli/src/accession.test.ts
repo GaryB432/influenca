@@ -247,8 +247,8 @@ describe("accession + analyze", () => {
         "b.JPG",
         "c.mp3",
       ]);
-      expect(console.warn).toHaveBeenCalledWith(
-        "Kept, but not all transcribed: fetch failed",
+      expect(process.stderr.write).toHaveBeenCalledWith(
+        expect.stringContaining("Kept, but not all transcribed: fetch failed"),
       );
     });
 
@@ -333,10 +333,12 @@ describe("accession + analyze", () => {
     it("analyze counts the words, and names a language you did not expect", async () => {
       await runTranscribe({ inDir: outDir });
       await runAnalyze({ inDir: outDir, language: "french", minimal: false });
-      expect(console.log).toHaveBeenCalledWith(
-        expect.stringMatching(/c\.mp3 .* 2 words \(english\)$/),
+      expect(process.stdout.write).toHaveBeenCalledWith(
+        expect.stringMatching(/c\.mp3 .* 2 words \(english\)\n$/),
       );
-      expect(console.log).toHaveBeenCalledWith("Total words: 4");
+      expect(process.stdout.write).toHaveBeenCalledWith(
+        expect.stringContaining("Total words: 4"),
+      );
     });
   });
 

@@ -10,7 +10,7 @@ import { join, parse, resolve } from "node:path";
 
 import { startBar } from "./bar.js";
 import { latestRun, mediaDir } from "./paths.js";
-import { accent, dim } from "./theme.js";
+import { accent, dim, log, warn } from "./theme.js";
 import { RejectedError, transcribe, WHISPER_MODEL } from "./whisper.js";
 
 export type TranscribeOptions = {
@@ -24,11 +24,9 @@ type Media = Exclude<ManifestEntry, { kind: "image" }>;
 /** Catches a run up: accession transcribes as it goes, so this is for what that left undone. */
 export async function runTranscribe(opts: TranscribeOptions): Promise<void> {
   const dir = opts.inDir ? resolve(opts.inDir) : await latestRun(mediaDir());
-  console.log(accent(dir));
+  log(accent(dir));
   if ((await transcribeRun(dir, opts.redo)) === 0) {
-    console.log(
-      dim("Nothing left to transcribe; pass --redo to send it again."),
-    );
+    log(dim("Nothing left to transcribe; pass --redo to send it again."));
   }
 }
 
@@ -115,7 +113,7 @@ export async function transcribeRun(
   for (const e of todo) {
     const t = transcripts.entries[e.id];
     if (t?.status === "failed") {
-      console.warn(`  ${e.outputName}: not transcribed: ${t.reason}`);
+      warn(`  ${e.outputName}: not transcribed: ${t.reason}`);
     }
   }
   return todo.length;

@@ -103,10 +103,10 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
     try {
       await transcribeRun(outDir);
     } catch (error) {
-      console.warn(
+      warn(
         `Kept, but not all transcribed: ${error instanceof Error ? error.message : String(error)}`,
       );
-      console.warn(`To finish: influenca transcribe ${quoted}`);
+      warn(`To finish: influenca transcribe ${quoted}`);
     }
   }
   say(`Next: ${accent(`influenca analyze ${quoted}`)}`);
