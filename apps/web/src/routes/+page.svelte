@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { formatDuration } from "@influenca/core";
-
   import { goto } from "$app/navigation";
+  import { formatDuration } from "@influenca/core";
 
   let { data } = $props();
 </script>

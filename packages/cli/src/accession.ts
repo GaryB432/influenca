@@ -24,7 +24,7 @@ import { convert } from "./convert.js";
 import { classify, type IntakeFile, planEntries } from "./entries.js";
 import { hasManifest, mediaDir, stamp } from "./paths.js";
 import { applyProbe, isFfprobeMissing, probe } from "./probe.js";
-import { accent } from "./theme.js";
+import { accent, log, warn } from "./theme.js";
 
 export type AccessionOptions = {
   dryRun: boolean;
@@ -55,13 +55,11 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
 
   for (const e of sources) {
     const line = `${e.sourceName} -> ${e.outputName} (${describe(e)})`;
-    if (opts.dryRun) console.log(`[dry-run] ${line}`);
-    else if (opts.verbose) console.log(`• ${line}`);
+    if (opts.dryRun) log(`[dry-run] ${line}`);
+    else if (opts.verbose) log(`• ${line}`);
   }
   if (opts.dryRun) {
-    console.log(
-      `[dry-run] ${sources.length} file(s) would be written to ${outDir}`,
-    );
+    log(`[dry-run] ${sources.length} file(s) would be written to ${outDir}`);
     return;
   }
 
@@ -192,7 +190,7 @@ async function listIntake(
   for (const d of await readdir(inDir, { withFileTypes: true })) {
     if (!d.isFile()) continue;
     if (!classify(d.name)) {
-      if (verbose) console.log(`  skipped (unsupported): ${d.name}`);
+      if (verbose) log(`  skipped (unsupported): ${d.name}`);
       continue;
     }
     files.push({ bytes: (await stat(join(inDir, d.name))).size, name: d.name });
@@ -211,12 +209,10 @@ async function probeEntries(
       entries.push(applyProbe(e, await probe(join(inDir, e.sourceName))));
     } catch (error) {
       if (isFfprobeMissing(error)) {
-        console.warn(
-          "ffprobe not found; durations and frame counts are estimates.",
-        );
+        warn("ffprobe not found; durations and frame counts are estimates.");
         return planned;
       }
-      console.warn(`Could not probe ${e.sourceName}; keeping its estimate.`);
+      warn(`Could not probe ${e.sourceName}; keeping its estimate.`);
       entries.push(e);
     }
   }

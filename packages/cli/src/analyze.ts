@@ -14,7 +14,7 @@ import { join, resolve } from "node:path";
 import { startBar } from "./bar.js";
 import { measure } from "./measure.js";
 import { latestRun, mediaDir } from "./paths.js";
-import { accent, dim } from "./theme.js";
+import { accent, dim, log } from "./theme.js";
 
 export type AnalyzeOptions = {
   inDir?: string;
@@ -31,28 +31,28 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
   const manifest = await readManifest(dir);
   const s = summarize(manifest);
 
-  console.log(accent(dir));
-  console.log(
+  log(accent(dir));
+  log(
     `Videos: ${s.counts.video}  Audio: ${s.counts.audio}  Images: ${s.counts.image}`,
   );
-  console.log(`Total frames: ${s.totalFrames}`);
+  log(`Total frames: ${s.totalFrames}`);
   if (opts.minimal) return;
-  console.log(`Total duration: ${formatDuration(s.totalDurationSec)}`);
+  log(`Total duration: ${formatDuration(s.totalDurationSec)}`);
 
   const existing = opts.redo ? undefined : await readAnalysis(dir);
   const analysis = existing ?? (await measureRun(dir, manifest));
   for (const e of manifest.entries) {
-    console.log(
+    log(
       `  ${[e.outputName, e.kind, ...details(e, analysis.entries[e.id])].join("  ")}`,
     );
   }
   if (existing) {
-    console.log(
+    log(
       dim(`Analysis from ${existing.createdAt}; pass --redo to measure again.`),
     );
   }
   if (s.estimated) {
-    console.log(
+    log(
       dim(
         "Note: files that could not be probed show estimated frames and durations.",
       ),

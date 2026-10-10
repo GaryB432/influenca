@@ -10,10 +10,29 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig([
   {
-    files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
+    files: ["**/*.{js,mjs,cjs,ts,mts,cts,svelte}"],
     languageOptions: { globals: globals.node },
     ...js.configs.recommended,
     ...perfectionist.configs["recommended-natural"],
+  },
+  {
+    rules: {
+      "no-console": [
+        "warn",
+        {
+          allow: ["warn", "error"],
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      "**/*.test.{js,ts,mjs,mts,cjs,cts}",
+      "**/*.spec.{js,ts,mjs,mts,cjs,cts}",
+    ],
+    rules: {
+      "no-console": "off",
+    },
   },
   ...tseslint.configs.recommended,
   ...svelte.configs.recommended.map((config) =>

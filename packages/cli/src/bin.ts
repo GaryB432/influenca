@@ -8,6 +8,7 @@ import { run } from "@optique/run";
 
 import { runAccession } from "./accession.js";
 import { runAnalyze } from "./analyze.js";
+import { printError } from "./theme.js";
 
 try {
   process.loadEnvFile();
@@ -50,7 +51,7 @@ const result = await run(or(accession, analyze), { programName: "influenca" });
 try {
   if (result.command === "accession") await runAccession(result);
   else await runAnalyze(result);
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
+} catch (thrown) {
+  printError(thrown instanceof Error ? thrown.message : thrown);
   process.exitCode = 1;
 }

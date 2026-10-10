@@ -2,7 +2,7 @@ import { outro, spinner, unicodeOr } from "@clack/prompts";
 
 import type { OnProgress } from "./ffmpeg.js";
 
-import { accent, dim } from "./theme.js";
+import { accent, dim, log } from "./theme.js";
 
 const BAR = unicodeOr("━", "=");
 const BAR_SIZE = 30;
@@ -24,8 +24,8 @@ export function startBar(total: number) {
         bar.stop(message);
         if (hint) outro(hint);
       } else {
-        console.log(message);
-        if (hint) console.log(hint);
+        log(message);
+        if (hint) log(hint);
       }
     },
     /** Runs one job, handing it a reporter for its own 0..1. */
