@@ -1,7 +1,8 @@
 node_modules
-dist
-.svelte-kit
-build
-tmp
+apps/web/.svelte-kit
+apps/web/build
+packages/cli/dist
+.DS_Store
 .env
-*.log
+Thumbs.db
+tmp

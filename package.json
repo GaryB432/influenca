@@ -1,10 +1,10 @@
 {
-  "name": "influenca-monorepo",
+  "name": "@influenca/monorepo",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter @influenca/cli build",
+    "build": "pnpm --recursive build",
     "dev:web": "pnpm --filter @influenca/web dev",
     "influenca": "node packages/cli/dist/bin.mjs",
     "lint": "eslint .",
