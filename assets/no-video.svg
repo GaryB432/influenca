@@ -1,0 +1,80 @@
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 1080 1080"
+    width="1080"
+    height="1080"
+  >
+    <!-- Solid Dark Background Cover -->
+    <rect width="1080" height="1080" fill="#121214" />
+
+    <!-- Central Technical Status Alignment Circle -->
+    <circle
+      cx="540"
+      cy="540"
+      r="220"
+      fill="none"
+      stroke="#27272a"
+      stroke-width="4"
+      stroke-dasharray="16, 12"
+    />
+
+    <!-- Camera Icon Component Group with a Slash Line -->
+    <g
+      transform="translate(540, 500)"
+      stroke="#ef4444"
+      stroke-width="24"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      fill="none"
+    >
+      <!-- Camera Lens Circle Contour -->
+      <circle cx="0" cy="20" r="45" stroke="#a1a1aa" stroke-width="20" />
+
+      <!-- Main Camera Chassis Frame Base Geometry -->
+      <path
+        d="M -120,90 L 120,90 L 120,-40 L 50,-40 L 30,-80 L -30,-80 L -50,-40 L -120,-40 Z"
+        stroke="#a1a1aa"
+        stroke-width="20"
+      />
+
+      <!-- Flash indicator dot component -->
+      <circle cx="80" cy="-10" r="2" fill="#a1a1aa" stroke="none" />
+
+      <!-- Sharp Diagonal Slash Line overlaying the icon structure -->
+      <line
+        x1="-160"
+        y1="-120"
+        x2="160"
+        y2="160"
+        stroke="#ef4444"
+        stroke-width="24"
+      />
+    </g>
+
+    <!-- Primary and Secondary Text Readouts -->
+    <text
+      x="540"
+      y="780"
+      fill="#f4f4f5"
+      font-family="system-ui, -apple-system, sans-serif"
+      font-size="44"
+      font-weight="700"
+      text-anchor="middle"
+      letter-spacing="2"
+    >
+      NO VIDEO AVAILABLE
+    </text>
+
+    <text
+      x="540"
+      y="840"
+      fill="#71717a"
+      font-family="system-ui, -apple-system, sans-serif"
+      font-size="28"
+      font-weight="500"
+      text-anchor="middle"
+      letter-spacing="1"
+    >
+      CAMERA SIGNAL LOST OR DISABLED
+    </text>
+  </svg>
