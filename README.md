@@ -228,7 +228,16 @@ pnpm dev:web
 # http://localhost:5173/view/<run-folder-name>   (/view for a --no-timestamp run)
 ```
 
-Lists a run's files with their frames and durations, read from the manifest.
+Shows each file in a run with a player, a thumbnail, what the analysis measured
+and what was said. Videos play with their transcript as captions. Each file
+carries its manifest id, the number it goes by in the CLI.
+
+Each file also shows where it sits on disk, with a button to copy the path, for
+when you want it in a project. Under WSL the Windows form of the path is there
+too.
+
+It only reads a run folder. Thumbnails are made with ffmpeg when first asked
+for and held in memory.
 
 ## Layout
 

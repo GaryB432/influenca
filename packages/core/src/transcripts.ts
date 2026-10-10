@@ -24,3 +24,14 @@ export type Transcripts = {
   entries: Record<string, Transcript>;
   version: 1;
 };
+
+/** Pure: what a .vtt says, with the header and cue timings taken out. */
+export function vttText(vtt: string): string {
+  return vtt
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(
+      (line) => line && !line.startsWith("WEBVTT") && !line.includes("-->"),
+    )
+    .join(" ");
+}

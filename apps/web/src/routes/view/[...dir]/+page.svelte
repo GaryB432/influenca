@@ -1,13 +1,44 @@
 <script lang="ts">
-  import { formatDuration } from "@influenca/core";
+  import {
+    type EntryAnalysis,
+    formatDuration,
+    type ManifestEntry,
+    type Transcript,
+  } from "@influenca/core";
 
   let { data } = $props();
-  const { manifest, run, summary } = $derived(data);
+  const { files, run, summary } = $derived(data);
+
+  let copied = $state<string>();
+
+  async function copy(path: string) {
+    await navigator.clipboard.writeText(path);
+    copied = path;
+    setTimeout(() => {
+      if (copied === path) copied = undefined;
+    }, 1500);
+  }
+
+  function facts(e: ManifestEntry, a: EntryAnalysis = {}, t?: Transcript): string[] {
+    const share = (sec: number, of: number) => `${Math.round((sec / of) * 100)}%`;
+    return [
+      e.kind,
+      ...(e.kind === "image" ? [] : [formatDuration(e.durationSec)]),
+      ...(e.width && e.height ? [`${e.width}×${e.height}`] : []),
+      ...(e.kind === "image" || a.stillSec === undefined ? [] : [`still ${share(a.stillSec, e.durationSec)}`]),
+      ...(e.kind === "image" || a.silentSec === undefined ? [] : [`silent ${share(a.silentSec, e.durationSec)}`]),
+      ...(t?.status === "done" ? [`${t.words} words (${t.language})`] : []),
+      ...(t?.status === "silent" ? ["nothing to hear"] : []),
+      ...(t?.status === "failed" ? ["transcript failed"] : []),
+      ...(e.metaSource === "estimated" ? ["estimated"] : []),
+    ];
+  }
 </script>
 
 <svelte:head><title>{run} · Influenca</title></svelte:head>
 
 <main>
+  <p class="back"><a href="/">All runs</a></p>
   <h1>{run}</h1>
   <p class="totals">
     {summary.counts.video} video, {summary.counts.audio} audio, {summary.counts.image} images.
@@ -15,21 +46,35 @@
     {#if summary.estimated}Files that could not be probed show estimated frames and durations.{/if}
   </p>
 
-  <table>
-    <thead>
-      <tr><th>File</th><th>Type</th><th>Frames</th><th>Duration</th></tr>
-    </thead>
-    <tbody>
-      {#each manifest.entries as e (e.id)}
-        <tr>
-          <td>{e.outputName}</td>
-          <td>{e.kind}</td>
-          <td>{e.kind === "audio" ? "" : e.frameCount}</td>
-          <td>{e.kind === "image" ? "" : formatDuration(e.durationSec)}</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
+  {#each files as { analysis, entry: e, paths, poster, said, src, transcript, vttSrc } (e.id)}
+    <article>
+      <div class="media">
+        {#if e.kind === "video"}
+          <!-- Metadata only: nothing of the picture is fetched until play. -->
+          <!-- svelte-ignore a11y_media_has_caption (a file that was not transcribed has none to offer) -->
+          <video controls {poster} preload="metadata" {src}>
+            {#if vttSrc}<track default kind="captions" label="Transcript" src={vttSrc} />{/if}
+          </video>
+        {:else if e.kind === "audio"}
+          <audio controls preload="none" {src}></audio>
+        {:else}
+          <img alt={e.outputName} loading="lazy" {src} />
+        {/if}
+      </div>
+      <div class="about">
+        <h2><span class="id">{e.id}</span>{e.outputName}</h2>
+        {#if e.sourceName !== e.outputName}<p class="from">from {e.sourceName}</p>{/if}
+        <p class="facts">{facts(e, analysis, transcript).join(" · ")}</p>
+        {#each paths as path (path)}
+          <p class="path">
+            <code>{path}</code>
+            <button onclick={() => copy(path)}>{copied === path ? "Copied" : "Copy"}</button>
+          </p>
+        {/each}
+        {#if said}<p class="said">{said}</p>{/if}
+      </div>
+    </article>
+  {/each}
 </main>
 
 <style>
@@ -41,30 +86,87 @@
     color-scheme: light dark;
   }
   main {
-    max-width: 52rem;
-    margin: 3rem auto;
+    max-width: 60rem;
+    margin: 2rem auto 3rem;
     padding: 0 1rem;
   }
   h1 {
+    margin-top: 0;
     font-size: 1.4rem;
     overflow-wrap: anywhere;
   }
-  .totals {
+  .back {
+    margin: 0;
+  }
+  .totals,
+  .from,
+  .facts {
     color: light-dark(#555, #aaa);
   }
-  table {
+  article {
+    display: grid;
+    gap: 0.75rem 1.25rem;
+    padding: 1.25rem 0;
+    border-top: 1px solid light-dark(#ddd, #333);
+  }
+  @media (min-width: 44rem) {
+    article {
+      grid-template-columns: 22rem 1fr;
+    }
+  }
+  video,
+  img {
+    display: block;
     width: 100%;
-    border-collapse: collapse;
+    max-height: 24rem;
+    object-fit: contain;
+    background: #000;
+    border-radius: 0.3rem;
   }
-  th,
-  td {
-    padding: 0.4rem 0.6rem;
-    text-align: left;
-    border-bottom: 1px solid light-dark(#ddd, #333);
+  audio {
+    width: 100%;
   }
-  td:nth-child(n + 3),
-  th:nth-child(n + 3) {
-    text-align: right;
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+  }
+  /* The number a file goes by in the CLI. */
+  .id {
+    display: inline-block;
+    min-width: 1.5rem;
+    margin-right: 0.5rem;
+    padding: 0 0.3rem;
     font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: light-dark(#fff, #16181a);
+    background: light-dark(#555, #aaa);
+    border-radius: 0.3rem;
+  }
+  .from,
+  .facts {
+    margin: 0.2rem 0 0;
+    font-size: 0.9rem;
+  }
+  .path {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    margin: 0.3rem 0 0;
+    font-size: 0.85rem;
+  }
+  .path code {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .path button {
+    flex: none;
+    min-width: 4rem;
+    font: inherit;
+  }
+  .said {
+    max-height: 9rem;
+    margin: 0.6rem 0 0;
+    overflow-y: auto;
   }
 </style>
