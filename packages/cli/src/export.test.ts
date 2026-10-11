@@ -28,6 +28,11 @@ describe("slug", () => {
     );
     expect(slug("Agnes, if you get it")).toBe("agnes-if-you-get-it");
     expect(slug("Café: été 2026")).toBe("café-été-2026");
+  });
+
+  it("drops emoji, which are neither letters nor numbers", () => {
+    expect(slug("Agnes 👵 if you get it")).toBe("agnes-if-you-get-it");
+    expect(slug("🎉🎂")).toBe("");
     expect(slug("a/b\\c: d?")).toBe("a-b-c-d");
     expect(slug("...trailing. ")).toBe("trailing");
   });
@@ -106,6 +111,12 @@ describe("runExport", () => {
     expect(await readFile(join(to, "pool-b-roll.jpg"), "utf8")).toBe("pic1");
     // The run still has everything, under the names it had.
     expect(await readdir(run)).toContain("PXL_1.JPG");
+  });
+
+  it("keeps the file's own name when the title has nothing to make one from", async () => {
+    await updateEntry(run, "3", { title: "🎉🎂" });
+    await runExport({ inDir: run, to });
+    expect(await readdir(to)).toEqual(["PXL_3.jpg"]);
   });
 
   it("copies only the ones asked for", async () => {

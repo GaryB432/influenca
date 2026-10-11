@@ -1,6 +1,6 @@
 import { readManifest, readTranscripts } from "@influenca/core/node";
 import { access, copyFile, mkdir, rename, rm } from "node:fs/promises";
-import { extname, join, resolve } from "node:path";
+import { extname, join, parse, resolve } from "node:path";
 
 import { copy } from "./copy.js";
 import { invocation } from "./invocation.js";
@@ -51,7 +51,8 @@ export async function runExport(opts: ExportOptions): Promise<void> {
   let copied = 0;
   try {
     for (const [i, e] of titled.entries()) {
-      const stem = slug(e.title ?? "");
+      // A title with no letter or number in it, all emoji say, leaves nothing to name a file by.
+      const stem = slug(e.title ?? "") || parse(e.outputName).name;
       const target = `${stem}${extname(e.outputName).toLowerCase()}`;
       const dest = join(to, target);
       if (await exists(dest)) {
