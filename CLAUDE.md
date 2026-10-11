@@ -17,6 +17,13 @@ The rules that keep this working:
 
 The web app has the same kind of boundary of its own: `src/lib/server` is server-only, and SvelteKit does enforce that one. Import it as `#lib/server/...` (SvelteKit 3 dropped `$lib`; the `#lib` mapping is in `apps/web/package.json`).
 
+## Options are whole before a command runs
+
+`runAccession`, `runTranscribe` and `runAnalyze` take a typed options object that is already complete and valid. Where it came from does not matter to them: the parser in `bin.ts`, a test, anything else. They do not prompt, re-check flags against each other or print usage, and they throw when the work itself cannot be done.
+
+- Rules about which flags go together belong in the parser, where they also show in the usage line: `or(...)` for one-of, `negatableFlag` for on/off pairs.
+- Prompting for a missing argument belongs there too, and happens before any command starts.
+
 ## How the CLI talks
 
 Every command is laid out the same way, so intake, accession, transcribe and analyze read as one tool:

@@ -5,6 +5,7 @@ import { map, optional, withDefault } from "@optique/core/modifiers";
 import {
   argument,
   command,
+  flag,
   negatableFlag,
   option,
 } from "@optique/core/primitives";
@@ -59,10 +60,21 @@ const analyze = command(
     object({
       inDir: optional(argument(string({ metavar: "OUT_DIR" }))), // defaults to the latest run
       language: withDefault(option("-l", "--language", string()), "english"),
-      minimal: option("--minimal"),
-      redo: option("--redo"),
+      // One at most: --minimal measures nothing, --redo measures everything again.
+      measuring: withDefault(
+        or(
+          map(flag("--minimal"), () => "minimal" as const),
+          map(flag("--redo"), () => "redo" as const),
+        ),
+        "usual" as const,
+      ),
     }),
-    (v) => ({ ...v, command: "analyze" as const }),
+    ({ measuring, ...v }) => ({
+      ...v,
+      command: "analyze" as const,
+      minimal: measuring === "minimal",
+      redo: measuring === "redo",
+    }),
   ),
 );
 
