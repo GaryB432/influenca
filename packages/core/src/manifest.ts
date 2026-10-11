@@ -40,8 +40,8 @@ export type VideoEntry = EntryBase & {
 export type Curation = {
   /** Unwanted. The file itself is still in the run folder. */
   deleted?: boolean;
-  /** What you call the file once you have seen what is in it. Its name on disk stays outputName. */
-  name?: string;
+  /** What you call the file once you have seen what is in it, as you would say it: "Pool b-roll". Its name on disk stays outputName. */
+  title?: string;
 };
 
 type EntryBase = Curation & {
@@ -55,6 +55,20 @@ type EntryBase = Curation & {
   sourceName: string; // filename in the intake dir
   width?: number;
 };
+
+/**
+ * Pure: reads a manifest saved while the title was still called `name`. The old field is
+ * taken as the title, and the next save writes it under the new one.
+ */
+export function withTitles(manifest: Manifest): Manifest {
+  for (const entry of manifest.entries as (ManifestEntry & {
+    name?: string;
+  })[]) {
+    if (entry.name !== undefined) entry.title ??= entry.name;
+    delete entry.name;
+  }
+  return manifest;
+}
 
 /** Shape check for the envelope only; entries are trusted once the version matches. */
 export function isManifest(value: unknown): value is Manifest {

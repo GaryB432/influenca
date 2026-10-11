@@ -11,6 +11,7 @@ import {
   type Manifest,
   MANIFEST_FILENAME,
   type Run,
+  withTitles,
 } from "./manifest.js";
 import { type Transcripts, TRANSCRIPTS_FILENAME } from "./transcripts.js";
 
@@ -60,12 +61,12 @@ export async function readManifest(dir: string): Promise<Manifest> {
       `${path} is not a version 1 manifest (written by an older influenca?)`,
     );
   }
-  return manifest;
+  return withTitles(manifest);
 }
 
 /**
  * Saves what you have set about one entry, and resolves with the manifest as it now
- * stands. Only what is given changes. A blank name or a mark that is off is left out of
+ * stands. Only what is given changes. A blank title or a mark that is off is left out of
  * the file rather than stored. No file on disk is renamed or removed.
  */
 export async function updateEntry(
@@ -80,8 +81,8 @@ export async function updateEntry(
 
   if (changes.deleted === true) entry.deleted = true;
   else if (changes.deleted === false) delete entry.deleted;
-  if (changes.name?.trim()) entry.name = changes.name.trim();
-  else if (changes.name !== undefined) delete entry.name;
+  if (changes.title?.trim()) entry.title = changes.title.trim();
+  else if (changes.title !== undefined) delete entry.title;
 
   // Written beside, then renamed, so a save that is cut short never leaves half a manifest.
   await writeFile(`${path}.tmp`, JSON.stringify(manifest, null, 2));

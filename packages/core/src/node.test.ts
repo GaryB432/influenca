@@ -1,4 +1,4 @@
-import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -56,28 +56,46 @@ describe("updateEntry", () => {
     expect(await readManifest(dir)).toEqual(manifest);
   });
 
-  it("names an entry, trimmed, and keeps the name it has on disk", async () => {
-    await updateEntry(dir, "1", { name: "  running-unit-tests " });
+  it("gives an entry a title, trimmed, and keeps the name it has on disk", async () => {
+    await updateEntry(dir, "1", { title: "  running-unit-tests " });
     expect((await readManifest(dir)).entries[0]).toEqual({
       ...manifest.entries[0],
-      name: "running-unit-tests",
+      title: "running-unit-tests",
     });
   });
 
-  it("keeps a name and a delete mark side by side", async () => {
-    await updateEntry(dir, "2", { name: "blurry" });
+  it("keeps a title and a delete mark side by side", async () => {
+    await updateEntry(dir, "2", { title: "blurry" });
     await updateEntry(dir, "2", { deleted: true });
     expect((await readManifest(dir)).entries[1]).toMatchObject({
       deleted: true,
-      name: "blurry",
       outputName: "b.jpg",
+      title: "blurry",
     });
   });
 
-  it("takes the name off when it is blanked, back to the manifest accession wrote", async () => {
-    await updateEntry(dir, "1", { name: "running-unit-tests" });
-    await updateEntry(dir, "1", { name: "   " });
+  it("takes the title off when it is blanked, back to the manifest accession wrote", async () => {
+    await updateEntry(dir, "1", { title: "running-unit-tests" });
+    await updateEntry(dir, "1", { title: "   " });
     expect(await readManifest(dir)).toEqual(manifest);
+  });
+
+  it("reads a manifest saved when the title was called name, and saves it as title", async () => {
+    const old = structuredClone(manifest) as Manifest & {
+      entries: { name?: string }[];
+    };
+    old.entries[0]!.name = "from before";
+    await writeFile(join(dir, MANIFEST_FILENAME), JSON.stringify(old));
+
+    expect((await readManifest(dir)).entries[0]).toMatchObject({
+      title: "from before",
+    });
+    await updateEntry(dir, "2", { deleted: true });
+    const saved = JSON.parse(
+      await readFile(join(dir, MANIFEST_FILENAME), "utf8"),
+    ) as { entries: Record<string, unknown>[] };
+    expect(saved.entries[0]).toMatchObject({ title: "from before" });
+    expect(saved.entries[0]).not.toHaveProperty("name");
   });
 
   it("rejects an id the run does not have, changing nothing", async () => {
