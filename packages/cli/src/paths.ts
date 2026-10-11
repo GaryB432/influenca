@@ -1,7 +1,11 @@
 import { MANIFEST_FILENAME } from "@influenca/core";
-import { listRuns } from "@influenca/core/node";
+import { listRuns, userEnvFile } from "@influenca/core/node";
 import { stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
+
+/** Where a missing setting can go: the places bin.ts reads, nearest first. */
+export const howToSet = (name: string) =>
+  `Set ${name} in the environment, in .env in this folder, or in ${userEnvFile()}`;
 
 export async function latestRun(root: string): Promise<string> {
   if (await hasManifest(root)) return root; // a --no-timestamp run
@@ -13,7 +17,7 @@ export async function latestRun(root: string): Promise<string> {
 export function mediaDir(): string {
   const dir = process.env.INFLUENCA_MEDIA_DIR;
   if (!dir) {
-    throw new Error("Set INFLUENCA_MEDIA_DIR in .env (or pass --out-dir).");
+    throw new Error(`${howToSet("INFLUENCA_MEDIA_DIR")}, or pass --out-dir.`);
   }
   return resolve(dir);
 }

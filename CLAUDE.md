@@ -7,15 +7,20 @@ Notes for agents working in this repo. The README covers usage; this covers what
 `packages/core` is imported by both the CLI and the web app, and part of the web app runs in the browser. So it is split by what the code may touch, not by topic.
 
 - `@influenca/core` (`src/index.ts`): types, filename constants and pure functions such as `summarize`, `formatDuration`, `isManifest` and `vttText`. Safe to import anywhere, including `.svelte` files.
-- `@influenca/core/node` (`src/node.ts`): everything that touches the filesystem, such as `readManifest`, `readAnalysis`, `readTranscripts`, `listRuns` and `readJSON`. Server and CLI only.
+- `@influenca/core/node` (`src/node.ts`): everything that touches the filesystem, such as `readManifest`, `readAnalysis`, `readTranscripts`, `listRuns`, `readJSON` and `loadEnv`. Server and CLI only.
 
 The rules that keep this working:
 
-- Nothing reachable from `index.ts` may import a `node:` built-in. `json.ts` does, which is why it is exported only through `node.ts`.
+- Nothing reachable from `index.ts` may import a `node:` built-in. `json.ts` and `env.ts` do, which is why they are exported only through `node.ts`.
 - In `apps/web`, only server files (`+page.server.ts`, `+server.ts`, anything under `src/lib/server`) may import `@influenca/core/node`. A `.svelte` file or a plain `+page.ts` may not.
-- Nothing enforces either rule. A wrong import shows up as a failed web build or a browser error, not a lint error.
+- The CLI is published; core is not. tsdown bundles core into `packages/cli/dist/bin.mjs` (`alwaysBundle` in `tsdown.config.ts`), so core is a `devDependency` of the CLI. As a runtime dependency it would make the published package uninstallable.
+- Nothing enforces the first two rules. A wrong import shows up as a failed web build or a browser error, not a lint error.
 
 The web app has the same kind of boundary of its own: `src/lib/server` is server-only, and SvelteKit does enforce that one. Import it as `#lib/server/...` (SvelteKit 3 dropped `$lib`; the `#lib` mapping is in `apps/web/package.json`).
+
+## Settings
+
+`INFLUENCA_MEDIA_DIR` and `OPENAI_API_KEY` come from the first place that has them: the environment, `.env` in the current folder, then `~/.config/influenca/.env`. `loadEnv` and `userEnvFile` in `packages/core/src/env.ts` do this for both the CLI (`bin.ts`) and the web app (`src/lib/server/media.ts`). Nothing else reads `.env` files.
 
 ## The JSON files in a run folder
 

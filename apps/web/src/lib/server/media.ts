@@ -1,14 +1,9 @@
+import { loadEnv, userEnvFile } from "@influenca/core/node";
 import { resolve, sep } from "node:path";
 
-// Same repo-root .env the CLI reads. Server-only: lives under $lib/server.
-for (const file of [".env", "../../.env"]) {
-  try {
-    process.loadEnvFile(file);
-    break;
-  } catch {
-    // try the next location
-  }
-}
+// The same settings the CLI reads: the repo-root .env, from wherever the server was
+// started, then the per-user file. Server-only: lives under lib/server.
+loadEnv(".env", "../../.env", userEnvFile());
 
 export function mediaRoot(): string {
   const dir = process.env.INFLUENCA_MEDIA_DIR;

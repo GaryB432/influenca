@@ -13,6 +13,7 @@ import {
 } from "./manifest.js";
 import { type Transcripts, TRANSCRIPTS_FILENAME } from "./transcripts.js";
 
+export { loadEnv, userEnvFile } from "./env.js";
 export { readJSON } from "./json.js";
 
 /** Every folder directly under root that holds a readable manifest, newest name first. */
