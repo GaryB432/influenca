@@ -1,4 +1,5 @@
 import {
+  formatDuration,
   type ManifestEntry,
   type Transcript,
   type Transcripts,
@@ -8,9 +9,10 @@ import { readManifest, readTranscripts } from "@influenca/core/node";
 import { rename, writeFile } from "node:fs/promises";
 import { join, parse, resolve } from "node:path";
 
-import { startBar } from "./bar.js";
+import { invocation } from "./invocation.js";
+import { type RowState, startTable } from "./live.js";
 import { latestRun, mediaDir } from "./paths.js";
-import { accent, dim, log, warn } from "./theme.js";
+import { accent, dim, log, next } from "./theme.js";
 import { RejectedError, transcribe, WHISPER_MODEL } from "./whisper.js";
 
 export type TranscribeOptions = {
@@ -28,6 +30,7 @@ export async function runTranscribe(opts: TranscribeOptions): Promise<void> {
   if ((await transcribeRun(dir, opts.redo)) === 0) {
     log(dim("Nothing left to transcribe; pass --redo to send it again."));
   }
+  next(`${invocation()} analyze ${/\s/.test(dir) ? `"${dir}"` : dir}`);
 }
 
 /**
@@ -59,13 +62,27 @@ export async function transcribeRun(
   const names = vttNames(media);
   const path = join(dir, TRANSCRIPTS_FILENAME);
   const made: Transcript[] = [];
-  const bar = startBar(todo.reduce((sum, e) => sum + e.durationSec, 0));
+  // Every file with sound gets a row, so what was done before shows beside what is done now.
+  const heardable = media.filter((e) => e.kind === "audio" || e.hasAudio);
+  log(
+    `Transcribing ${todo.length} of ${heardable.length} with ${WHISPER_MODEL}`,
+  );
+  const table = startTable(
+    heardable.map((e) => ({
+      cells: [e.id, e.outputName, e.kind, formatDuration(e.durationSec)],
+      weight: todo.includes(e) ? e.durationSec : 0,
+    })),
+  );
   try {
-    for (const e of todo) {
+    for (const [i, e] of heardable.entries()) {
+      const before = transcripts.entries[e.id];
+      if (before) {
+        table.set(i, outcome(before).tail, outcome(before).state);
+        continue;
+      }
       const vttName = names.get(e.id) ?? `${e.outputName}.vtt`;
-      const transcript = await bar.job(
-        e.durationSec,
-        e.outputName,
+      const transcript = await table.run(
+        i,
         async (report): Promise<Transcript> => {
           try {
             const heard = await transcribe(
@@ -92,6 +109,7 @@ export async function transcribeRun(
             };
           }
         },
+        outcome,
       );
       made.push((transcripts.entries[e.id] = transcript));
       // After every file, so a run that is stopped has paid for nothing it lost. Written
@@ -99,23 +117,17 @@ export async function transcribeRun(
       await writeFile(`${path}.tmp`, JSON.stringify(transcripts, null, 2));
       await rename(`${path}.tmp`, path);
     }
-  } catch (error) {
-    bar.fail("Transcription failed");
-    throw error;
+  } finally {
+    table.end();
   }
 
   const count = (status: Transcript["status"]) =>
     made.filter((t) => t.status === status).length;
-  bar.finish(
+  log(
     `Transcribed ${count("done")} of ${todo.length} files` +
-      (count("silent") ? `, ${count("silent")} with nothing to hear` : ""),
+      (count("silent") ? `, ${count("silent")} with nothing to hear` : "") +
+      (count("failed") ? `, ${count("failed")} turned down` : ""),
   );
-  for (const e of todo) {
-    const t = transcripts.entries[e.id];
-    if (t?.status === "failed") {
-      warn(`  ${e.outputName}: not transcribed: ${t.reason}`);
-    }
-  }
   return todo.length;
 }
 
@@ -134,4 +146,17 @@ export function vttNames(media: Media[]): Map<string, string> {
       return [e.id, free ? plain : `${e.outputName}.vtt`];
     }),
   );
+}
+
+/** What a transcript leaves on its file's row. */
+function outcome(t: Transcript): { state: RowState; tail: string } {
+  if (t.status === "silent")
+    return { state: "skipped", tail: "nothing to hear" };
+  if (t.status === "failed") {
+    return { state: "failed", tail: `not transcribed: ${t.reason}` };
+  }
+  return {
+    state: "done",
+    tail: `${t.words} words${t.words === 0 ? "" : ` (${t.language})`}`,
+  };
 }

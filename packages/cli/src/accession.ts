@@ -19,13 +19,13 @@ import { pipeline } from "node:stream/promises";
 
 import type { OnProgress } from "./ffmpeg.js";
 
-import { say, startBar } from "./bar.js";
 import { convert } from "./convert.js";
 import { classify, type IntakeFile, planEntries } from "./entries.js";
 import { invocation } from "./invocation.js";
+import { startTable } from "./live.js";
 import { hasManifest, mediaDir, stamp } from "./paths.js";
 import { applyProbe, isFfprobeMissing, probe } from "./probe.js";
-import { accent, log, warn } from "./theme.js";
+import { accent, log, next, warn } from "./theme.js";
 import { transcribeRun } from "./transcribe.js";
 
 export type AccessionOptions = {
@@ -51,6 +51,7 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
     );
   }
 
+  log(accent(outDir));
   const files = await listIntake(inDir, opts.verbose);
   const planned = planEntries(files);
   if (planned.length === 0) {
@@ -58,28 +59,31 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
   }
   const sources = await probeEntries(inDir, planned);
 
-  for (const e of sources) {
-    const line = `${e.sourceName} -> ${e.outputName} (${describe(e)})`;
-    if (opts.dryRun) log(`[dry-run] ${line}`);
-    else if (opts.verbose) log(`• ${line}`);
-  }
+  // Each file is weighted by its input size.
+  const table = startTable(
+    sources.map((e) => ({
+      cells: [e.id, e.sourceName, ...describe(e)],
+      weight: e.bytes,
+    })),
+  );
   if (opts.dryRun) {
+    sources.forEach((e, i) => table.set(i, `would be ${how(e)}`, "skipped"));
+    table.end();
     log(`[dry-run] ${sources.length} file(s) would be written to ${outDir}`);
     return;
   }
 
-  const totalBytes = sources.reduce((sum, e) => sum + e.bytes, 0);
   await mkdir(outDir, { recursive: true });
-  // Each file is weighted by its input size.
-  const bar = startBar(totalBytes);
   try {
     const entries: ManifestEntry[] = [];
-    for (const e of sources) {
+    for (const [i, e] of sources.entries()) {
       const src = join(inDir, e.sourceName);
       const dest = join(outDir, e.outputName);
       entries.push(
-        await bar.job(e.bytes, e.sourceName, (report) =>
-          bringIn(e, src, dest, report),
+        await table.run(
+          i,
+          (report) => bringIn(e, src, dest, report),
+          () => how(e),
         ),
       );
     }
@@ -93,11 +97,10 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
       join(outDir, MANIFEST_FILENAME),
       JSON.stringify(manifest, null, 2),
     );
-  } catch (error) {
-    bar.fail("Accession failed");
-    throw error;
+  } finally {
+    table.end();
   }
-  bar.finish(`Wrote ${sources.length} entries to ${accent(outDir)}`);
+  log(`Wrote ${sources.length} entries to ${accent(outDir)}`);
 
   const quoted = /\s/.test(outDir) ? `"${outDir}"` : outDir;
   if (opts.transcribe) {
@@ -111,7 +114,7 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
       warn(`To finish: ${invocation()} transcribe ${quoted}`);
     }
   }
-  say(`Next: ${accent(`${invocation()} analyze ${quoted}`)}`);
+  next(`${invocation()} analyze ${quoted}`);
 }
 
 /**
@@ -196,13 +199,21 @@ async function copy(
   );
 }
 
-function describe(e: ManifestEntry): string {
-  const parts: string[] = [e.kind];
-  if (e.kind !== "image") parts.push(formatDuration(e.durationSec));
-  if (e.kind === "video") parts.push(`${e.frameCount} frames`);
-  if (e.width && e.height) parts.push(`${e.width}x${e.height}`);
-  if (e.metaSource === "estimated") parts.push("estimated");
-  return parts.join(", ");
+/** What is known of a file before it is brought in, as the cells that follow its name. */
+function describe(e: ManifestEntry): string[] {
+  return [
+    e.kind,
+    e.kind === "image" ? "" : formatDuration(e.durationSec),
+    (e.width && e.height ? `${e.width}x${e.height}` : "") +
+      (e.metaSource === "estimated" ? " estimated" : ""),
+  ];
+}
+
+/** What accession does with a file, in the past tense: it reads as the result once done. */
+function how(e: ManifestEntry): string {
+  if (e.outputName === e.sourceName) return "copied";
+  const verb = classify(e.sourceName)?.rewrap ? "rewrapped as" : "converted to";
+  return `${verb} ${e.outputName}`;
 }
 
 async function listIntake(
