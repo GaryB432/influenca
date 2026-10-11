@@ -6,7 +6,7 @@ import {
   type Transcripts,
   TRANSCRIPTS_FILENAME,
 } from "@influenca/core";
-import { readJSON } from "@influenca/core/node";
+import { readJSON, setName } from "@influenca/core/node";
 import { execFileSync } from "node:child_process";
 import {
   copyFile,
@@ -352,6 +352,34 @@ describe("accession + analyze", () => {
       vi.stubEnv("OPENAI_API_KEY", "");
       await expect(runTranscribe({ inDir: outDir })).rejects.toThrow(
         /OPENAI_API_KEY/,
+      );
+    });
+
+    it("transcribe shows the names given on the web page, beside the filenames", async () => {
+      await setName(outDir, "3", "toast");
+      await runTranscribe({ inDir: outDir });
+      expect(process.stdout.write).toHaveBeenCalledWith(
+        expect.stringMatching(/^ {2}1 {2} {5} {2}a\.mp4 {2}video/),
+      );
+      expect(process.stdout.write).toHaveBeenCalledWith(
+        expect.stringMatching(/^ {2}3 {2}toast {2}c\.mp3 {2}audio/),
+      );
+    });
+
+    it("analyze shows the names given on the web page, beside the filenames", async () => {
+      await runAnalyze({ inDir: outDir, language: "english", minimal: false });
+      expect(process.stdout.write).toHaveBeenCalledWith(
+        expect.stringMatching(/^ {2}1 {2}a\.mp4 {2}video/),
+      );
+
+      await setName(outDir, "1", "mary-eating");
+      await runAnalyze({ inDir: outDir, language: "english", minimal: false });
+      expect(process.stdout.write).toHaveBeenCalledWith(
+        expect.stringMatching(/^ {2}1 {2}mary-eating {2}a\.mp4 {2}video/),
+      );
+      // A file with no name keeps its place in the columns.
+      expect(process.stdout.write).toHaveBeenCalledWith(
+        expect.stringMatching(/^ {2}3 {2} {11} {2}c\.mp3 {2}audio/),
       );
     });
 
