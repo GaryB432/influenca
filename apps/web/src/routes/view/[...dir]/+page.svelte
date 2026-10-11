@@ -21,6 +21,26 @@
     }, 1500);
   }
 
+  /**
+   * Holds a video's thumbnail and metadata back until its card is near the screen. A run
+   * can hold dozens of clips, and a browser only keeps a few connections open to one
+   * server, so asking for all of them at once makes the ones in view wait their turn.
+   */
+  function whenNear(video: HTMLVideoElement, poster: string | undefined) {
+    const near = new IntersectionObserver(
+      ([card]) => {
+        if (!card?.isIntersecting) return;
+        if (poster) video.poster = poster;
+        video.preload = "metadata";
+        near.disconnect();
+      },
+      // Early enough that a card is ready, and has taken its full height, before it scrolls in.
+      { rootMargin: "600px 0px" },
+    );
+    near.observe(video);
+    return { destroy: () => near.disconnect() };
+  }
+
   function facts(e: ManifestEntry, a: EntryAnalysis = {}, t?: Transcript): string[] {
     const share = (sec: number, of: number) => `${Math.round((sec / of) * 100)}%`;
     return [
@@ -54,9 +74,9 @@
     <article class:deleted={e.deleted}>
       <div class="media">
         {#if e.kind === "video"}
-          <!-- Metadata only: enough for the player to show the clip's length, and nothing of the picture until play. -->
+          <!-- Starts with nothing fetched. Near the screen it gets its thumbnail and enough metadata to show its length; the picture itself waits for play. -->
           <!-- svelte-ignore a11y_media_has_caption (a file that was not transcribed has none to offer) -->
-          <video controls {poster} preload="metadata" {src}>
+          <video controls preload="none" {src} use:whenNear={poster}>
             {#if vttSrc}<track default kind="captions" label="Transcript" src={vttSrc} />{/if}
           </video>
         {:else if e.kind === "audio"}
@@ -78,14 +98,15 @@
         {/each}
         {#if said}<p class="said">{said}</p>{/if}
         <!-- What you know the clip as, now that you have seen it. The file keeps its name on disk. -->
-        <form action="?/name" method="POST" use:enhance={() => ({ update }) => update({ reset: false })}>
+        <form action="?/curate" method="POST" use:enhance={() => ({ update }) => update({ reset: false })}>
           <input name="id" type="hidden" value={e.id} />
-          <input aria-label="Name for {e.outputName}" name="name" placeholder="Name it: mary-eating" value={e.name ?? ""} />
+          <input aria-label="Name for {e.outputName}" name="name" placeholder="Name this clip" value={e.name ?? ""} />
           <button>Save</button>
         </form>
         <!-- Only marks the manifest entry; the file stays in the run folder. -->
-        <form action={e.deleted ? "?/restore" : "?/delete"} method="POST" use:enhance>
+        <form action="?/curate" method="POST" use:enhance>
           <input name="id" type="hidden" value={e.id} />
+          <input name="deleted" type="hidden" value={e.deleted ? "false" : "true"} />
           {#if e.deleted}<span class="mark">Deleted</span>{/if}
           <button>{e.deleted ? "Restore" : "Delete"}</button>
         </form>
