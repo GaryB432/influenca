@@ -114,10 +114,10 @@ Or start it from a WSL terminal, with `pwsh.exe` on the Windows `PATH`:
 pwsh.exe -File "$(wslpath -w ./scripts/intake-android.ps1)"
 ```
 
-It copies into your WSL home and prints a path you can paste there:
+It copies into your WSL home and prints the next command, to paste at the repo root:
 
 ```
-influenca accession "/home/you/.local/state/influenca/2059-05-20_00-00-00/pixel-9-pro"
+pnpm influenca accession "/home/you/.local/state/influenca/2059-05-20_00-00-00/pixel-9-pro"
 ```
 
 ## Accession

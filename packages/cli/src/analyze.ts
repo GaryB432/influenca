@@ -17,6 +17,7 @@ import { rename, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 import { startBar } from "./bar.js";
+import { invocation } from "./invocation.js";
 import { measure } from "./measure.js";
 import { latestRun, mediaDir } from "./paths.js";
 import { accent, dim, log } from "./theme.js";
@@ -58,7 +59,9 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
   log(
     transcripts
       ? `Total words: ${words}`
-      : dim("No transcripts; run `influenca transcribe` for what was said."),
+      : dim(
+          `No transcripts; run \`${invocation()} transcribe\` for what was said.`,
+        ),
   );
   if (existing) {
     log(
