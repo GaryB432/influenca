@@ -22,16 +22,26 @@ const VIDEO_ARGS = [
   "+faststart", // playable in a browser before it has fully loaded
 ];
 const AUDIO_ARGS = ["-c:a", "libmp3lame", "-q:a", "2"];
+// Nothing is decoded, so nothing is lost and it runs at the speed of a copy.
+const REWRAP_ARGS = ["-c", "copy", "-movflags", "+faststart"];
 
-/** Transcodes src into dest, whose extension picks the container. Overwrites dest. */
+/**
+ * Transcodes src into dest, whose extension picks the container. Overwrites dest.
+ * A rewrap moves the streams across as they are instead of encoding them again.
+ */
 export async function convert(
   src: string,
   dest: string,
   kind: "audio" | "video",
   durationSec: number,
   onProgress: OnProgress,
+  rewrap = false,
 ): Promise<void> {
-  const codec = kind === "video" ? VIDEO_ARGS : AUDIO_ARGS;
+  const codec = rewrap
+    ? REWRAP_ARGS
+    : kind === "video"
+      ? VIDEO_ARGS
+      : AUDIO_ARGS;
   const args = [
     "-v",
     "error",

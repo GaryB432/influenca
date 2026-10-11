@@ -1,7 +1,8 @@
 <#
 .SYNOPSIS
-    Copies the newest camera media from an Android phone (MTP) into a timestamped
-    influenca intake directory and prints the WSL-native accession command.
+    Copies the newest camera media from whichever phone or tablet is plugged in
+    (MTP) into a timestamped influenca intake directory and prints the WSL-native
+    accession command.
 
 .DESCRIPTION
     Uses the Windows Shell COM API to enumerate MTP devices — the same mechanism
@@ -19,7 +20,8 @@
 
 .PARAMETER PhoneName
     Optional. Partial or full name of the phone as it appears in "This PC"
-    (e.g. "Pixel", "Galaxy"). Defaults to the first MTP device found.
+    (e.g. "Pixel", "Galaxy"). Defaults to the device that is plugged in; with
+    more than one, you are asked which.
 
 .PARAMETER Extensions
     Optional. Comma-separated file extensions to copy.
@@ -103,20 +105,13 @@ Write-Host ""
 $shell    = New-Object -ComObject Shell.Application
 $thisPC   = $shell.Namespace(0x11)   # CSIDL_DRIVES  ("This PC")
 
-$phone = $null
-foreach ($item in $thisPC.Items()) {
-    $name = $item.Name
-    # MTP devices report themselves as portable devices; they won't have a drive
-    # letter Path, so we filter for that heuristic AND apply the optional name filter.
-    $isPortable = ($item.Path -notmatch '^[A-Za-z]:')
-    $nameMatches = ($PhoneName -eq "") -or ($name -like "*$PhoneName*")
-    if ($isPortable -and $nameMatches) {
-        $phone = $item
-        break
-    }
-}
+# MTP devices report themselves as portable devices; they won't have a drive
+# letter Path, so we filter for that heuristic AND apply the optional name filter.
+$devices = @($thisPC.Items() | Where-Object {
+    ($_.Path -notmatch '^[A-Za-z]:') -and (($PhoneName -eq "") -or ($_.Name -like "*$PhoneName*"))
+})
 
-if ($null -eq $phone) {
+if ($devices.Count -eq 0) {
     $hint = if ($PhoneName -ne "") { " matching '$PhoneName'" } else { "" }
     Write-Fail "No MTP device found$hint."
     Write-Host "  • Ensure the phone is connected and you selected 'File Transfer' (MTP) mode."
@@ -124,12 +119,21 @@ if ($null -eq $phone) {
     exit 1
 }
 
+$phone = $devices[0]
+if ($devices.Count -gt 1) {
+    # More than one is plugged in, so ask. Each is picked by its number.
+    $choices = for ($i = 0; $i -lt $devices.Count; $i++) {
+        [System.Management.Automation.Host.ChoiceDescription]::new("&$($i + 1) $($devices[$i].Name)")
+    }
+    $phone = $devices[$Host.UI.PromptForChoice("", "Which device?", $choices, 0)]
+}
+
 $phoneFriendlyName = $phone.Name
 $phoneSlug         = ConvertTo-KebabCase $phoneFriendlyName
 Write-Ok "Found phone: $phoneFriendlyName  →  slug: $phoneSlug"
 
 # ---------------------------------------------------------------------------
-# 2. Find the DCIM folder (walk: phone → Internal Storage → DCIM)
+# 2. Find the camera folder (walk: phone → Internal Storage → DCIM)
 # ---------------------------------------------------------------------------
 
 function Find-ShellFolder ([object]$parentFolder, [string]$targetName) {
@@ -159,17 +163,21 @@ if ($null -eq $storageFolder) {
     $storageFolder = $phoneFolder
 }
 
-$dcimFolder = Find-ShellFolder $storageFolder "DCIM"
-if ($null -eq $dcimFolder) {
-    Write-Fail "DCIM folder not found on $phoneFriendlyName."
+$mediaFolder = Find-ShellFolder $storageFolder "DCIM"
+if ($null -ne $mediaFolder) {
+    Write-Step "Found DCIM on $phoneFriendlyName"
+} elseif (@($storageFolder.Items()).Count -gt 0) {
+    # Some devices show no DCIM folder. This iPad's dated camera folders sit at the top.
+    Write-Step "No DCIM folder on $phoneFriendlyName; scanning all of its storage"
+    $mediaFolder = $storageFolder
+} else {
+    Write-Fail "Nothing to read on $phoneFriendlyName."
     Write-Host "  • Make sure the phone is unlocked and File Transfer mode is active."
     exit 1
 }
 
-Write-Step "Found DCIM on $phoneFriendlyName"
-
 # ---------------------------------------------------------------------------
-# 3. Collect matching files recursively from DCIM
+# 3. Collect matching files recursively from the camera folder
 # ---------------------------------------------------------------------------
 
 $allowedExts = $Extensions -split ',' | ForEach-Object { ".$($_.Trim())" }
@@ -200,10 +208,10 @@ function Collect-MediaItems ([object]$folder, [ref]$results) {
     }
 }
 
-Write-Step "Scanning DCIM for media files (MaxAgeDays=$MaxAgeDays)..."
+Write-Step "Scanning for media files (MaxAgeDays=$MaxAgeDays)..."
 $mediaItems = [System.Collections.Generic.List[object]]::new()
 $listRef    = [ref]$mediaItems
-Collect-MediaItems $dcimFolder $listRef
+Collect-MediaItems $mediaFolder $listRef
 
 if ($mediaItems.Count -eq 0) {
     $ageNote = if ($MaxAgeDays -gt 0) { " in the last $MaxAgeDays day(s)" } else { "" }

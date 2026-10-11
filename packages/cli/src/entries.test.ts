@@ -8,6 +8,14 @@ describe("classify", () => {
     expect(classify("take.wav")?.kind).toBe("audio");
     expect(classify("notes.txt")).toBeUndefined();
   });
+
+  it("rewraps mov as mp4", () => {
+    expect(classify("IMG_0010.MOV")).toEqual({
+      convertTo: ".mp4",
+      kind: "video",
+      rewrap: true,
+    });
+  });
 });
 
 describe("planEntries", () => {
