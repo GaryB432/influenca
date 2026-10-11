@@ -304,8 +304,7 @@ foreach ($f in $copiedFiles) {
     Write-Host "  $($f.Name)" -ForegroundColor DarkGray
 }
 
+# The same closing line the CLI ends on: plain, with the command to paste in its accent.
 Write-Host ""
-Write-Host "✨ Next step — paste into your WSL terminal:" -ForegroundColor White
-Write-Host ""
-Write-Host "  pnpm influenca accession `"$destPosix`"" -ForegroundColor Green
-Write-Host ""
+Write-Host "Next: " -NoNewline
+Write-Host "pnpm influenca accession `"$destPosix`"" -ForegroundColor Cyan
