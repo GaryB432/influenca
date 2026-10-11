@@ -76,6 +76,15 @@ cp .env.example .env   # set INFLUENCA_MEDIA_DIR, where runs are kept
 pnpm build
 ```
 
+Each setting is taken from the first place that has it:
+
+1. the environment
+2. `.env` in the folder you run from
+3. `~/.config/influenca/.env` (under `$XDG_CONFIG_HOME` if that is set)
+
+The third is what lets `influenca` work from any folder. Keep it readable only
+by you (`chmod 600`), since it holds your OpenAI key.
+
 ## Intake
 
 Accession takes any folder. These two scripts fill one from a device and print
@@ -154,7 +163,7 @@ folder is read, and files of other types are left behind (`--verbose` lists them
 Once the manifest is written, accession sends the sound of each file to OpenAI's
 `whisper-1` and writes what comes back as WebVTT beside the file, under the
 name players look for: `VID00010.vtt` for `VID00010.mp4`. It needs
-`OPENAI_API_KEY` in `.env`. Without one, or if OpenAI cannot be reached, the
+`OPENAI_API_KEY`. Without one, or if OpenAI cannot be reached, the
 run is still kept and accession tells you how to finish:
 
 ```sh

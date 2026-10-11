@@ -9,7 +9,7 @@ import { rename, writeFile } from "node:fs/promises";
 import { join, parse, resolve } from "node:path";
 
 import { startBar } from "./bar.js";
-import { latestRun, mediaDir } from "./paths.js";
+import { howToSet, latestRun, mediaDir } from "./paths.js";
 import { accent, dim, log, warn } from "./theme.js";
 import { RejectedError, transcribe, WHISPER_MODEL } from "./whisper.js";
 
@@ -54,7 +54,7 @@ export async function transcribeRun(
   );
   if (todo.length === 0) return 0;
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("Set OPENAI_API_KEY in .env to transcribe.");
+  if (!apiKey) throw new Error(`${howToSet("OPENAI_API_KEY")} to transcribe.`);
 
   const names = vttNames(media);
   const path = join(dir, TRANSCRIPTS_FILENAME);

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { loadEnv, userEnvFile } from "@influenca/core/node";
 import { prompt } from "@optique/clack";
 import { object, or } from "@optique/core/constructs";
 import { map, optional, withDefault } from "@optique/core/modifiers";
@@ -16,11 +17,8 @@ import { runAnalyze } from "./analyze.js";
 import { printError } from "./theme.js";
 import { runTranscribe } from "./transcribe.js";
 
-try {
-  process.loadEnvFile();
-} catch {
-  // no .env, fine
-}
+// Nearest first: the environment, then .env in this folder, then the per-user file.
+loadEnv(".env", userEnvFile());
 
 const accession = command(
   "accession",
