@@ -16,6 +16,23 @@ export default defineConfig([
     ...perfectionist.configs["recommended-natural"],
   },
   {
+    // Sorting is for sets with no order of their own: imports, object keys, unions.
+    // A module's members and a type's fields stay in the order that reads best.
+    files: ["**/*.{js,mjs,cjs,ts,mts,cts,svelte}"],
+    rules: {
+      "perfectionist/sort-interfaces": "off",
+      "perfectionist/sort-modules": "off",
+      "perfectionist/sort-object-types": "off",
+    },
+  },
+  {
+    // The order of a parser's keys is the order of its usage line and help.
+    files: ["packages/cli/src/bin.ts"],
+    rules: {
+      "perfectionist/sort-objects": "off",
+    },
+  },
+  {
     rules: {
       "no-console": [
         "warn",

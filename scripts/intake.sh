@@ -81,7 +81,7 @@ ls "$DEST_DIR"
 
 echo "✅ Intake complete!"
 
-printf "✨ Next Steps: %s %s %s\n" \
-  "$(tput setaf 81)packages/cli/dist/bin.mjs accession" \
-  "$(tput setaf 121)$DEST_DIR$(tput sgr0)"
+# The same closing line the CLI ends on: plain, with the command to paste in its accent.
+printf 'Next: %spnpm influenca accession "%s"%s\n' \
+  "$(tput setaf 14)" "$DEST_DIR" "$(tput sgr0)"
 

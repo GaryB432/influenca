@@ -45,7 +45,15 @@ export async function readAnalysis(dir: string): Promise<Analysis | undefined> {
 /** Reads a run folder's manifest, rejecting files this version cannot read. */
 export async function readManifest(dir: string): Promise<Manifest> {
   const path = join(dir, MANIFEST_FILENAME);
-  const manifest = await readJSON<unknown>(path);
+  const manifest = await readJSON<unknown>(path).catch((error: unknown) => {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    throw new Error(
+      `No ${MANIFEST_FILENAME} in ${dir}; it is not a run folder.`,
+      {
+        cause: error,
+      },
+    );
+  });
   if (!isManifest(manifest)) {
     throw new Error(
       `${path} is not a version 1 manifest (written by an older influenca?)`,

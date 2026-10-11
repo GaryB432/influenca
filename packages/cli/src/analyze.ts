@@ -16,11 +16,11 @@ import {
 import { rename, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
-import { startBar } from "./bar.js";
 import { invocation } from "./invocation.js";
+import { startTable } from "./live.js";
 import { measure } from "./measure.js";
 import { latestRun, mediaDir } from "./paths.js";
-import { accent, dim, log } from "./theme.js";
+import { accent, dim, log, next } from "./theme.js";
 
 export type AnalyzeOptions = {
   inDir?: string;
@@ -46,16 +46,35 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
   log(`Total duration: ${formatDuration(s.totalDurationSec)}`);
 
   const existing = opts.redo ? undefined : await readAnalysis(dir);
-  const analysis = existing ?? (await measureRun(dir, manifest));
   const transcripts = await readTranscripts(dir);
-  let words = 0;
-  for (const e of manifest.entries) {
-    const t = transcripts?.entries[e.id];
-    if (t?.status === "done") words += t.words;
-    log(
-      `  ${[e.outputName, e.kind, ...details(e, analysis.entries[e.id]), ...said(t, opts.language)].join("  ")}`,
-    );
+  const found = (e: ManifestEntry, a?: EntryAnalysis) =>
+    [
+      ...measured(e, a),
+      ...said(transcripts?.entries[e.id], opts.language),
+    ].join("  ");
+
+  const table = startTable(
+    manifest.entries.map((e) => ({
+      cells: [e.id, e.outputName, e.kind, size(e)],
+      weight: e.kind === "image" ? 0 : e.durationSec,
+    })),
+  );
+  try {
+    if (existing) {
+      manifest.entries.forEach((e, i) =>
+        table.set(i, found(e, existing.entries[e.id])),
+      );
+    } else {
+      await measureRun(dir, manifest, table, found);
+    }
+  } finally {
+    table.end();
   }
+
+  const words = manifest.entries.reduce((sum, e) => {
+    const t = transcripts?.entries[e.id];
+    return sum + (t?.status === "done" ? t.words : 0);
+  }, 0);
   log(
     transcripts
       ? `Total words: ${words}`
@@ -63,11 +82,13 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
           `No transcripts; run \`${invocation()} transcribe\` for what was said.`,
         ),
   );
-  if (existing) {
-    log(
-      dim(`Analysis from ${existing.createdAt}; pass --redo to measure again.`),
-    );
-  }
+  log(
+    existing
+      ? dim(
+          `Analysis from ${existing.createdAt}; pass --redo to measure again.`,
+        )
+      : `Wrote analysis to ${accent(join(dir, ANALYSIS_FILENAME))}`,
+  );
   if (s.estimated) {
     log(
       dim(
@@ -75,15 +96,15 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
       ),
     );
   }
+  // The viewer is a script of this repo, so it is only offered when that is where we are.
+  if (invocation().startsWith("pnpm ")) next("pnpm dev:web");
 }
 
-function details(e: ManifestEntry, a: EntryAnalysis = {}): string[] {
-  if (e.kind === "image") return ["1 frame"];
+/** What analyze worked out about one file, as the cells that follow its name and size. */
+function measured(e: ManifestEntry, a: EntryAnalysis = {}): string[] {
+  if (e.kind === "image") return [];
   const share = (sec: number) => `${Math.round((sec / e.durationSec) * 100)}%`;
   return [
-    e.kind === "video"
-      ? `${e.frameCount} frames`
-      : formatDuration(e.durationSec),
     // At fixed quality a busier picture costs more bits, so this doubles as a rough activity hint.
     ...(e.kind === "video"
       ? [`${((e.bytes * 8) / e.durationSec / 1e6).toFixed(1)} Mb/s`]
@@ -93,9 +114,13 @@ function details(e: ManifestEntry, a: EntryAnalysis = {}): string[] {
   ];
 }
 
-/** Measures every video and audio file in the run and writes the analysis file beside the manifest. */
-async function measureRun(dir: string, manifest: Manifest): Promise<Analysis> {
-  const media = manifest.entries.filter((e) => e.kind !== "image");
+/** Measures every video and audio file in the run, row by row, and writes the analysis file beside the manifest. */
+async function measureRun(
+  dir: string,
+  manifest: Manifest,
+  table: ReturnType<typeof startTable>,
+  found: (e: ManifestEntry, a?: EntryAnalysis) => string,
+): Promise<void> {
   const path = join(dir, ANALYSIS_FILENAME);
   const analysis: Analysis = {
     createdAt: new Date().toISOString(),
@@ -103,29 +128,24 @@ async function measureRun(dir: string, manifest: Manifest): Promise<Analysis> {
     version: 1,
   };
 
-  const bar = startBar(media.reduce((sum, e) => sum + e.durationSec, 0));
-  try {
-    for (const e of media) {
-      const has = {
-        audio: e.kind === "audio" || e.hasAudio === true,
-        video: e.kind === "video",
-      };
-      analysis.entries[e.id] = await bar.job(
-        e.durationSec,
-        e.outputName,
-        (report) =>
-          measure(join(dir, e.outputName), has, e.durationSec, report),
-      );
+  for (const [i, e] of manifest.entries.entries()) {
+    if (e.kind === "image") {
+      table.set(i, found(e));
+      continue;
     }
-    // Write beside, then rename, so an interrupted run never leaves half a file.
-    await writeFile(`${path}.tmp`, JSON.stringify(analysis, null, 2));
-    await rename(`${path}.tmp`, path);
-  } catch (error) {
-    bar.fail("Analysis failed");
-    throw error;
+    const has = {
+      audio: e.kind === "audio" || e.hasAudio === true,
+      video: e.kind === "video",
+    };
+    analysis.entries[e.id] = await table.run(
+      i,
+      (report) => measure(join(dir, e.outputName), has, e.durationSec, report),
+      (a) => found(e, a),
+    );
   }
-  bar.finish(`Wrote analysis to ${accent(path)}`);
-  return analysis;
+  // Write beside, then rename, so an interrupted run never leaves half a file.
+  await writeFile(`${path}.tmp`, JSON.stringify(analysis, null, 2));
+  await rename(`${path}.tmp`, path);
 }
 
 /** How much was said, which is its own hint of what a file holds. */
@@ -136,4 +156,12 @@ function said(t: Transcript | undefined, primary: string): string[] {
   const other =
     t.words === 0 || t.language === primary ? "" : ` (${t.language})`;
   return [`${t.words} words${other}`];
+}
+
+/** How long a file is, in the unit that suits its kind. */
+function size(e: ManifestEntry): string {
+  if (e.kind === "image") return "1 frame";
+  return e.kind === "video"
+    ? `${e.frameCount} frames`
+    : formatDuration(e.durationSec);
 }

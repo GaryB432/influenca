@@ -11,11 +11,11 @@ const format = (value: unknown): string => {
 
 const stream = (
   method: "error" | "log" | "warn",
-  style: Parameters<typeof styleText>[0],
+  style: Parameters<typeof styleText>[0] | undefined,
   ...values: unknown[]
 ): void => {
   const message = values.map(format).join(" ");
-  const rendered = styleText(style, message);
+  const rendered = style ? styleText(style, message) : message;
 
   const target =
     method === "error"
@@ -27,13 +27,19 @@ const stream = (
   target.write(`${rendered}\n`);
 };
 
-/** One accent for the whole CLI. styleText drops the color for pipes and NO_COLOR. */
+/**
+ * One accent for the whole CLI, kept for what you act on: a path, a command, the meter
+ * that is moving. Everything else is plain. styleText drops the color for pipes and NO_COLOR.
+ */
 export const accent = (s: string) => styleText("cyanBright", s);
 
 export const dim = (s: string) => styleText("dim", s);
 
 export const log = (...values: unknown[]) =>
-  stream("log", "cyanBright", ...values);
+  stream("log", undefined, ...values);
+
+/** The closing line of a command: the one to run next, ready to paste. */
+export const next = (command: string) => log(`Next: ${accent(command)}`);
 
 export const warn = (...values: unknown[]) =>
   stream("warn", "yellow", ...values);

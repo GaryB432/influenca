@@ -17,6 +17,27 @@ The rules that keep this working:
 
 The web app has the same kind of boundary of its own: `src/lib/server` is server-only, and SvelteKit does enforce that one. Import it as `#lib/server/...` (SvelteKit 3 dropped `$lib`; the `#lib` mapping is in `apps/web/package.json`).
 
+## Options are whole before a command runs
+
+`runAccession`, `runTranscribe` and `runAnalyze` take a typed options object that is already complete and valid. Where it came from does not matter to them: the parser in `bin.ts`, a test, anything else. They do not prompt, re-check flags against each other or print usage, and they throw when the work itself cannot be done.
+
+- Rules about which flags go together belong in the parser, where they also show in the usage line: `or(...)` for one-of, `negatableFlag` for on/off pairs.
+- Prompting for a missing argument belongs there too, and happens before any command starts.
+
+## How the CLI talks
+
+Every command is laid out the same way, so intake, accession, transcribe and analyze read as one tool:
+
+1. the folder it is working on, in the accent
+2. a table with a row per file (`startTable` in `packages/cli/src/live.ts`)
+3. a plain line saying what was written
+4. `Next: <command>` with the command in the accent (`next` in `theme.ts`), spelled the way the CLI was started (`invocation.ts`)
+
+- Body text is plain. The accent (cyan) is for what the reader acts on: a path, a command, the meter that is moving. Dim is for notes; yellow and red are for warnings and errors, which go to stderr.
+- Print through `log`, `warn`, `printError` and `next` in `theme.ts`, never `console`.
+- Nothing else may write to stdout while a table is live; put what happened to a file on its row.
+- The intake scripts in `scripts/` end on the same `Next:` line.
+
 ## The JSON files in a run folder
 
 A run folder holds the kept media plus three hidden JSON files. The manifest is the source of truth; the other two are sidecars that point into it by entry `id`. Each file has exactly one writer.
