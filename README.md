@@ -274,6 +274,30 @@ file itself.
 Apart from those two it only reads a run folder. Thumbnails are made with ffmpeg when first asked
 for and held in memory.
 
+## Export
+
+```sh
+pnpm influenca export --to ~/projects/garden-party/media   # from the newest run
+pnpm influenca export /path/to/run --to /some/folder
+pnpm influenca export --to /some/folder --only 3 --only 7  # by number, without being asked
+```
+
+```
+✓  1  pool b-roll  PXL_20261010_175159748.mp4  copied as pool-b-roll.mp4
+✓  4  candles      PXL_20261011_043342083.mp4  copied as candles.mp4
+```
+
+Copies the files you have named on the web page into a folder, under those
+names, with their subtitles beside them. Naming a file is how you pick it:
+unnamed files and deleted ones stay behind. At a terminal you are shown the
+named files to tick; a script gets all of them.
+
+- The run is left as it is. Export copies, and never moves or renames.
+- A name is made fit for a filename: `pool b-roll` becomes `pool-b-roll.mp4`.
+- A file already in the folder under that name is left alone, so exporting
+  again brings only what is new.
+- Leave `--to` off and you are asked for the folder.
+
 ## Development
 
 Working on influenca is the same clone and the same folder. Nothing is

@@ -22,7 +22,7 @@ The web app has the same kind of boundary of its own: `src/lib/server` is server
 `runAccession`, `runTranscribe` and `runAnalyze` take a typed options object that is already complete and valid. Where it came from does not matter to them: the parser in `bin.ts`, a test, anything else. They do not prompt, re-check flags against each other or print usage, and they throw when the work itself cannot be done.
 
 - Rules about which flags go together belong in the parser, where they also show in the usage line: `or(...)` for one-of, `negatableFlag` for on/off pairs.
-- Prompting for a missing argument belongs there too, and happens before any command starts.
+- Prompting for a missing argument belongs there too, and happens before any command starts. Prompts go through optique's wrapper (`prompt` from `@optique/clack`), not clack directly; a prompt whose choices come from another argument uses `derivePromptConfig`, as `export`'s tick list does.
 
 ## How the CLI talks
 

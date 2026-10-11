@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { prompt } from "@optique/clack";
 import { object, or } from "@optique/core/constructs";
+import { dependency } from "@optique/core/dependency";
 import {
   commandLine,
   envVar,
@@ -8,7 +9,7 @@ import {
   message,
   optionName,
 } from "@optique/core/message";
-import { map, optional, withDefault } from "@optique/core/modifiers";
+import { map, multiple, optional, withDefault } from "@optique/core/modifiers";
 import {
   argument,
   command,
@@ -17,6 +18,7 @@ import {
   option,
 } from "@optique/core/primitives";
 import { string } from "@optique/core/valueparser";
+import { derivePromptConfig } from "@optique/prompt";
 import { run } from "@optique/run";
 
 import { runAccession } from "./accession.js";
@@ -24,7 +26,7 @@ import { runAnalyze } from "./analyze.js";
 import { runExport } from "./export.js";
 import { invocation } from "./invocation.js";
 import { latestRun, mediaDir } from "./paths.js";
-import { pickNamed } from "./pick.js";
+import { namedChoices } from "./pick.js";
 import { printError } from "./theme.js";
 import { runTranscribe } from "./transcribe.js";
 
@@ -153,26 +155,62 @@ const analyze = command(
   },
 );
 
+// The tick list below is made from the run, so the run is something it can depend on.
+const exportRun = dependency(string({ metavar: "RUN_DIR" }));
+
 const exporting = command(
   "export",
   map(
     object({
-      inDir: runDir(),
+      inDir: optional(
+        argument(exportRun, {
+          description: message`A run folder. Defaults to the newest run under ${envVar("INFLUENCA_MEDIA_DIR")}.`,
+        }),
+      ),
       to: prompt(
         option("--to", string({ metavar: "DIR" }), {
           description: message`The folder to copy into. Made if it is not there.`,
         }),
         { message: "Copy the named files to which folder?", type: "text" },
       ),
-      all: option("--all", {
-        description: message`Copy every named file without asking which.`,
-      }),
+      // Which files is a question for a person at a terminal; a script gets them all.
+      only: prompt(
+        multiple(
+          option("--only", string({ metavar: "ID" }), {
+            description: message`Copy just this file, by its number. Give it again for more.`,
+          }),
+          { min: 1 },
+        ),
+        derivePromptConfig(
+          exportRun,
+          async (given) => {
+            const options = await namedChoices(
+              given || (await latestRun(mediaDir())),
+            );
+            return {
+              message: "Copy which? Space ticks one, a ticks them all.",
+              options,
+              // With one named file or none there is nothing to choose between, so nothing is asked.
+              ...(options.length < 2 && {
+                prompter: () => Promise.resolve(options.map((o) => o.value)),
+              }),
+              required: options.length > 0,
+              type: "multiselect" as const,
+            };
+          },
+          {
+            defaultValue: () => "",
+            otherwise: [],
+            when: () => process.stdin.isTTY === true,
+          },
+        ),
+      ),
     }),
     (v) => ({ ...v, command: "export" as const }),
   ),
   {
     brief: message`Copy the files you have named into a folder, under those names.`,
-    description: message`Takes every file of a run that has a name and is not marked deleted, and copies it out as that name, with its subtitles. The run is left as it is.`,
+    description: message`Takes the files of a run that have a name and are not marked deleted, and copies them out under those names, with their subtitles. The run is left as it is.`,
   },
 );
 
@@ -190,11 +228,10 @@ try {
   if (result.command === "accession") await runAccession(result);
   else if (result.command === "transcribe") await runTranscribe(result);
   else if (result.command === "export") {
-    // Which files is a question for a person at a terminal; a script gets them all.
-    const inDir = result.inDir ?? (await latestRun(mediaDir()));
-    const only =
-      result.all || !process.stdin.isTTY ? undefined : await pickNamed(inDir);
-    await runExport({ ...result, inDir, only });
+    await runExport({
+      ...result,
+      only: result.only.length > 0 ? [...result.only] : undefined,
+    });
   } else await runAnalyze(result);
 } catch (thrown) {
   printError(thrown instanceof Error ? thrown.message : thrown);
