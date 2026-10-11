@@ -67,15 +67,31 @@ Transcribing is the only step that uses the network or costs money. It happens
 after the manifest is written, so a run is whole before anything is sent, and
 nothing that goes wrong with OpenAI can cost you the run.
 
-## Setup
+## Getting started
 
-Needs a recent Node (developed on 24), pnpm, and `ffmpeg` with `ffprobe` on your `PATH`.
+Influenca is run from a clone of this repository; it is not installed. Its
+settings sit in a `.env` at the root of the clone, so that is where every
+command here is typed.
+
+It needs a recent Node (developed on 24), pnpm, and `ffmpeg` with `ffprobe` on
+your `PATH`.
 
 ```sh
+git clone https://github.com/GaryB432/influenca.git
+cd influenca
 pnpm install
 cp .env.example .env   # set INFLUENCA_MEDIA_DIR, where runs are kept
                        # and OPENAI_API_KEY, to have what is said transcribed
 pnpm build
+pnpm influenca --help
+```
+
+The command runs what was last built. After pulling changes, or changing the
+code, build again:
+
+```sh
+git pull
+pnpm install && pnpm build
 ```
 
 ## Intake
@@ -239,7 +255,7 @@ dimensions and codecs, plus `sourceName`, the name it arrived under.
 
 ```sh
 pnpm dev:web
-# http://localhost:5173/view/<run-folder-name>   (/view for a --no-timestamp run)
+# http://localhost:4000/view/<run-folder-name>   (/view for a --no-timestamp run)
 ```
 
 Shows each file in a run with a player, a thumbnail, what the analysis measured
@@ -259,7 +275,12 @@ file itself.
 Apart from those two it only reads a run folder. Thumbnails are made with ffmpeg when first asked
 for and held in memory.
 
-## Layout
+## Development
+
+Working on influenca is the same clone and the same folder. Nothing is
+published and there is nothing to link.
+
+### Layout
 
 | Path              | What                                                        |
 | ----------------- | ----------------------------------------------------------- |
@@ -267,9 +288,21 @@ for and held in memory.
 | `packages/cli`    | The `influenca` command                                     |
 | `apps/web`        | SvelteKit viewer                                            |
 | `scripts/e2e.sh`  | Builds, then runs accession and analyze on a generated clip |
-| `scripts/intake*` | Fill an intake folder from an SD card or an Android phone   |
+| `scripts/intake*` | Fill an intake folder from an SD card, a phone or a tablet  |
 
-## Checks
+`CLAUDE.md` holds the rules the code relies on, for people as much as for
+agents: who may write which file, how options reach a command and how the
+CLI talks.
+
+### Building
+
+```sh
+pnpm build                            # everything, once
+pnpm --filter @influenca/cli dev      # rebuild the CLI as you edit it
+pnpm dev:web                          # the viewer, reloading as you edit it
+```
+
+### Checks
 
 ```sh
 pnpm lint && pnpm typecheck && pnpm test
@@ -277,3 +310,4 @@ sh scripts/e2e.sh
 ```
 
 The tests and the e2e script generate small real clips, so they need ffmpeg too.
+Run all four before opening a pull request.
