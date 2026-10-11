@@ -4,13 +4,21 @@ import { basename, extname } from "node:path";
 
 export type IntakeFile = { bytes: number; name: string };
 
-/** Files with a convertTo are transcoded; the rest are kept as they arrived. */
-type KindInfo = { convertTo?: string; kind: ManifestEntry["kind"] };
+/**
+ * Files with a convertTo are transcoded; the rest are kept as they arrived. A rewrap
+ * changes only the container: the picture and sound inside are carried over untouched.
+ */
+type KindInfo = {
+  convertTo?: string;
+  kind: ManifestEntry["kind"];
+  rewrap?: true;
+};
 
 const KINDS: Record<string, KindInfo> = {
   ".avi": { convertTo: ".mp4", kind: "video" },
   ".jpeg": { kind: "image" },
   ".jpg": { kind: "image" },
+  ".mov": { convertTo: ".mp4", kind: "video", rewrap: true },
   ".mp4": { kind: "video" },
   ".wav": { convertTo: ".mp3", kind: "audio" },
 };

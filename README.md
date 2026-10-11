@@ -14,12 +14,12 @@ like. Each step writes to a file of its own, so the manifest stays a fixed recor
 
 ```mermaid
 flowchart TD
-  intake[/"Intake folder<br/>avi, mp4, wav, jpg"/]
+  intake[/"Intake folder<br/>avi, mov, mp4, wav, jpg"/]
 
   subgraph accession ["influenca accession"]
     direction TB
     probe["Probe each file<br/>(ffprobe, milliseconds)"]
-    convert["Convert avi to mp4, wav to mp3<br/>(ffmpeg encode: the slow part)"]
+    convert["Convert avi to mp4, wav to mp3<br/>(ffmpeg encode: the slow part)<br/>Rewrap mov as mp4 (no encode)"]
     copy["Copy mp4 and jpg unchanged"]
     verify["Probe the result,<br/>check its duration"]
     probe --> convert --> verify
@@ -91,13 +91,14 @@ card:
 ./scripts/intake.sh g
 ```
 
-### Android phone (MTP)
+### Phone or tablet (MTP)
 
 Phones are reached through the Windows Shell, so this one runs in PowerShell 7
-on Windows:
+on Windows. It takes whichever device is plugged in, and asks which if there
+is more than one:
 
 ```powershell
-# First phone found, last 7 days of camera files
+# The device that is plugged in, last 7 days of camera files
 pwsh.exe -File scripts\intake-android.ps1
 
 # A phone by partial name, last 3 days
@@ -132,11 +133,12 @@ pnpm influenca accession /path/to/intake --no-transcribe # keep the files, send 
 Leave the intake folder off and you are asked for it. Only the top level of the
 folder is read, and files of other types are left behind (`--verbose` lists them).
 
-| Arrives as              | Kept as   | How                               |
-| ----------------------- | --------- | --------------------------------- |
-| `.avi`                  | `.mp4`    | Converted to H.264 with AAC sound |
-| `.wav`                  | `.mp3`    | Converted                         |
-| `.mp4`, `.jpg`, `.jpeg` | unchanged | Copied under its own name         |
+| Arrives as              | Kept as   | How                                               |
+| ----------------------- | --------- | ------------------------------------------------- |
+| `.avi`                  | `.mp4`    | Converted to H.264 with AAC sound                 |
+| `.wav`                  | `.mp3`    | Converted                                         |
+| `.mov`                  | `.mp4`    | Rewrapped: same picture and sound, not re-encoded |
+| `.mp4`, `.jpg`, `.jpeg` | unchanged | Copied under its own name                         |
 
 - The converted file is the only copy influenca keeps, so the encode settings
   favour quality over size. They live in `packages/cli/src/convert.ts`.

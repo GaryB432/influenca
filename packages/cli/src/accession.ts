@@ -53,7 +53,7 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
   const files = await listIntake(inDir, opts.verbose);
   const planned = planEntries(files);
   if (planned.length === 0) {
-    throw new Error(`No supported media (avi, mp4, wav, jpg) in ${inDir}`);
+    throw new Error(`No supported media (avi, mov, mp4, wav, jpg) in ${inDir}`);
   }
   const sources = await probeEntries(inDir, planned);
 
@@ -152,7 +152,14 @@ async function convertAndCheck(
   part: string,
   report: OnProgress,
 ): Promise<ManifestEntry> {
-  await convert(src, part, e.kind, e.durationSec, report);
+  await convert(
+    src,
+    part,
+    e.kind,
+    e.durationSec,
+    report,
+    classify(e.sourceName)?.rewrap,
+  );
 
   // The manifest describes the converted file, and a probe that disagrees with the
   // source means the conversion cannot be trusted as the only copy.

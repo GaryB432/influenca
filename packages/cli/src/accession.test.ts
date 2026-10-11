@@ -115,6 +115,31 @@ describe("accession + analyze", () => {
     ]);
   });
 
+  it("rewraps mov as mp4 without encoding it again", async () => {
+    // MPEG-4 video is not what a conversion would produce, so finding it kept shows nothing was re-encoded.
+    execFileSync("ffmpeg", [
+      "-v",
+      "error",
+      "-i",
+      join(fixtures, "a.avi"),
+      "-c:v",
+      "mpeg4",
+      "-c:a",
+      "aac",
+      join(inDir, "d.MOV"),
+    ]);
+    await runAccession({ ...base, inDir, outDir });
+    expect(await readdir(outDir)).toContain("d.mp4");
+    const m = await readJSON<Manifest>(join(outDir, MANIFEST_FILENAME));
+    expect(m.entries.find((e) => e.sourceName === "d.MOV")).toMatchObject({
+      frameCount: 30,
+      hasAudio: true,
+      metaSource: "ffprobe",
+      outputName: "d.mp4",
+      videoCodec: "mpeg4",
+    });
+  });
+
   it("stops without a manifest when a file cannot be converted", async () => {
     await writeFile(join(inDir, "d.avi"), "not a video");
     await expect(runAccession({ ...base, inDir, outDir })).rejects.toThrow(
