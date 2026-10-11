@@ -76,9 +76,9 @@ describe("identify", () => {
   });
 
   it("puts the given names first once any file has one, blank for the rest", () => {
-    const named = [{ ...entries[0]!, name: "mary-eating" }, entries[1]!];
+    const named = [{ ...entries[0]!, name: "pool-b-roll" }, entries[1]!];
     expect(named.map(identify(named))).toEqual([
-      ["1", "mary-eating", "a.mp4"],
+      ["1", "pool-b-roll", "a.mp4"],
       ["2", "", "b.jpg"],
     ]);
   });
