@@ -2,6 +2,21 @@
 
 Notes for agents working in this repo. The README covers usage; this covers what the code assumes.
 
+## Core has two entry points
+
+`packages/core` is imported by both the CLI and the web app, and part of the web app runs in the browser. So it is split by what the code may touch, not by topic.
+
+- `@influenca/core` (`src/index.ts`): types, filename constants and pure functions such as `summarize`, `formatDuration`, `isManifest` and `vttText`. Safe to import anywhere, including `.svelte` files.
+- `@influenca/core/node` (`src/node.ts`): everything that touches the filesystem, such as `readManifest`, `readAnalysis`, `readTranscripts`, `listRuns` and `readJSON`. Server and CLI only.
+
+The rules that keep this working:
+
+- Nothing reachable from `index.ts` may import a `node:` built-in. `json.ts` does, which is why it is exported only through `node.ts`.
+- In `apps/web`, only server files (`+page.server.ts`, `+server.ts`, anything under `src/lib/server`) may import `@influenca/core/node`. A `.svelte` file or a plain `+page.ts` may not.
+- Nothing enforces either rule. A wrong import shows up as a failed web build or a browser error, not a lint error.
+
+The web app has the same kind of boundary of its own: `src/lib/server` is server-only, and SvelteKit does enforce that one. Import it as `#lib/server/...` (SvelteKit 3 dropped `$lib`; the `#lib` mapping is in `apps/web/package.json`).
+
 ## The JSON files in a run folder
 
 A run folder holds the kept media plus three hidden JSON files. The manifest is the source of truth; the other two are sidecars that point into it by entry `id`. Each file has exactly one writer.
@@ -36,7 +51,7 @@ A run folder holds the kept media plus three hidden JSON files. The manifest is 
 
 ### Reading them
 
-- Readers are in `packages/core/src/node.ts`, kept apart from the main entry so browser code can import core.
+- Readers are in `packages/core/src/node.ts`; see the two entry points above.
 - A missing or wrong-version manifest throws. A missing or wrong-version sidecar reads as `undefined`.
 - `analyze` joins all three and never calls OpenAI.
 - The web app (`apps/web`) reads all three plus the `.vtt` files, and writes nothing. `/media/...` serves kept files with byte ranges; `/poster/...` makes a JPEG frame with ffmpeg.

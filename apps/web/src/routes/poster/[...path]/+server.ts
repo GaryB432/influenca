@@ -3,9 +3,9 @@ import { execFile } from "node:child_process";
 import { stat } from "node:fs/promises";
 import { promisify } from "node:util";
 
-import type { RequestHandler } from "./$types";
+import { mediaRoot, resolveInsideRoot } from "#lib/server/media.js";
 
-import { mediaRoot, resolveInsideRoot } from "../../../lib/server/media.js";
+import type { RequestHandler } from "./$types";
 
 const run = promisify(execFile);
 

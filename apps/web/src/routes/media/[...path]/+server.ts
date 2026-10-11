@@ -4,9 +4,9 @@ import { stat } from "node:fs/promises";
 import { extname } from "node:path";
 import { Readable } from "node:stream";
 
-import type { RequestHandler } from "./$types";
+import { mediaRoot, resolveInsideRoot } from "#lib/server/media.js";
 
-import { mediaRoot, resolveInsideRoot } from "../../../lib/server/media.js";
+import type { RequestHandler } from "./$types";
 
 // Only what a run folder keeps for viewing; the .influenca files are not served.
 const TYPES: Record<string, string> = {

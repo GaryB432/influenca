@@ -2,9 +2,9 @@ import { type Run, summarize } from "@influenca/core";
 import { listRuns, readManifest } from "@influenca/core/node";
 import { error } from "@sveltejs/kit";
 
-import type { PageServerLoad } from "./$types";
+import { mediaRoot } from "#lib/server/media.js";
 
-import { mediaRoot } from "../lib/server/media.js";
+import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async () => {
   let root: string;

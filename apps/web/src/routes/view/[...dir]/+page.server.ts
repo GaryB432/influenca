@@ -9,13 +9,13 @@ import { error } from "@sveltejs/kit";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { PageServerLoad } from "./$types";
-
 import {
   mediaRoot,
   resolveInsideRoot,
   windowsPath,
-} from "../../../lib/server/media.js";
+} from "#lib/server/media.js";
+
+import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params }) => {
   let root: string;
