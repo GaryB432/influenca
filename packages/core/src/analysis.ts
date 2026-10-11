@@ -16,12 +16,4 @@ export type EntryAnalysis = {
   silentSec?: number;
   /** Seconds in which the picture did not change, for video. */
   stillSec?: number;
-  transcript?: Transcript;
-};
-
-export type Transcript = {
-  language?: string;
-  model: string;
-  status: "done" | "failed";
-  vttName: string;
 };

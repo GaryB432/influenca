@@ -19,25 +19,29 @@ import { pipeline } from "node:stream/promises";
 
 import type { OnProgress } from "./ffmpeg.js";
 
-import { startBar } from "./bar.js";
+import { say, startBar } from "./bar.js";
 import { convert } from "./convert.js";
 import { classify, type IntakeFile, planEntries } from "./entries.js";
 import { hasManifest, mediaDir, stamp } from "./paths.js";
 import { applyProbe, isFfprobeMissing, probe } from "./probe.js";
 import { accent, log, warn } from "./theme.js";
+import { transcribeRun } from "./transcribe.js";
 
 export type AccessionOptions = {
   dryRun: boolean;
   inDir: string;
-  noTimestamp: boolean;
   outDir?: string;
+  /** Put the run in its own time-stamped folder under the output dir, not in the output dir itself. */
+  timestamp: boolean;
+  /** Send what was kept to Whisper. Off keeps the files and stops there. */
+  transcribe: boolean;
   verbose: boolean;
 };
 
 export async function runAccession(opts: AccessionOptions): Promise<void> {
   const inDir = resolve(opts.inDir);
   const base = resolve(opts.outDir ?? mediaDir());
-  const outDir = opts.noTimestamp ? base : join(base, stamp());
+  const outDir = opts.timestamp ? join(base, stamp()) : base;
 
   if (await hasManifest(outDir)) {
     throw new Error(
@@ -92,10 +96,21 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
     bar.fail("Accession failed");
     throw error;
   }
-  bar.finish(
-    `Wrote ${sources.length} entries to ${accent(outDir)}`,
-    `Next: ${accent(`influenca analyze ${/\s/.test(outDir) ? `"${outDir}"` : outDir}`)}`,
-  );
+  bar.finish(`Wrote ${sources.length} entries to ${accent(outDir)}`);
+
+  const quoted = /\s/.test(outDir) ? `"${outDir}"` : outDir;
+  if (opts.transcribe) {
+    // The run is whole from here on: the manifest is written, and nothing below can undo it.
+    try {
+      await transcribeRun(outDir);
+    } catch (error) {
+      warn(
+        `Kept, but not all transcribed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      warn(`To finish: influenca transcribe ${quoted}`);
+    }
+  }
+  say(`Next: ${accent(`influenca analyze ${quoted}`)}`);
 }
 
 /**

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "clean": "mv .env ~/tempenv && git clean -dfx && mv ~/tempenv .env",
     "build": "pnpm --recursive build",
     "dev:web": "pnpm --filter @influenca/web dev",
     "influenca": "node packages/cli/dist/bin.mjs",
