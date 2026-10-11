@@ -54,7 +54,7 @@
     <article class:deleted={e.deleted}>
       <div class="media">
         {#if e.kind === "video"}
-          <!-- Metadata only: nothing of the picture is fetched until play. -->
+          <!-- Metadata only: enough for the player to show the clip's length, and nothing of the picture until play. -->
           <!-- svelte-ignore a11y_media_has_caption (a file that was not transcribed has none to offer) -->
           <video controls {poster} preload="metadata" {src}>
             {#if vttSrc}<track default kind="captions" label="Transcript" src={vttSrc} />{/if}

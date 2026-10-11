@@ -110,6 +110,11 @@ pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Pixel" -MaxAgeDays 3
 pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Galaxy" -MaxAgeDays 0
 ```
 
+Videos, sound and JPEG stills are copied. A Live Photo is a still with a short
+clip under the same name; only the still is taken unless you pass
+`-KeepLiveClips`. Stills an iPhone or iPad offers as HEIC are not copied, and
+the script tells you which setting on the device makes them JPEGs.
+
 Or start it from a WSL terminal, with `pwsh.exe` on the Windows `PATH`:
 
 ```sh
