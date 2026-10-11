@@ -75,9 +75,6 @@ importers:
 
   packages/cli:
     dependencies:
-      '@clack/prompts':
-        specifier: ^1.8.1
-        version: 1.8.1
       '@influenca/core':
         specifier: workspace:*
         version: link:../core
