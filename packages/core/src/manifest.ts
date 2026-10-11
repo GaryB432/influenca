@@ -14,9 +14,8 @@ export type ImageEntry = EntryBase & {
 };
 
 /**
- * The record of one run: written once by accession, when everything is in. Its entries
- * are not edited after, except for what you decide about a file on the web page:
- * `deleted` and `name`.
+ * What a run holds: written by accession, when everything is in. It drives the web page,
+ * and what you set there while curating is saved back into its entries.
  */
 export type Manifest = {
   createdAt: string; // ISO
@@ -37,17 +36,21 @@ export type VideoEntry = EntryBase & {
   videoCodec?: string;
 };
 
-type EntryBase = {
+/** What you set about a file on the web page. The rest of an entry is what accession found. */
+export type Curation = {
+  /** Unwanted. The file itself is still in the run folder. */
+  deleted?: boolean;
+  /** What you call the file once you have seen what is in it. Its name on disk stays outputName. */
+  name?: string;
+};
+
+type EntryBase = Curation & {
   bytes: number;
   capturedAt?: string; // ISO; EXIF for images, container creation_time for media
-  /** Marked as unwanted on the web page. The file itself is still in the run folder. */
-  deleted?: boolean;
   height?: number;
   id: string;
   /** "estimated" until ffprobe fills in real numbers. */
   metaSource: "estimated" | "ffprobe";
-  /** What you call the file once you have seen what is in it: "mary-eating". Its name on disk stays outputName. */
-  name?: string;
   outputName: string; // filename in the output dir
   sourceName: string; // filename in the intake dir
   width?: number;
