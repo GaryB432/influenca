@@ -22,6 +22,7 @@ import type { OnProgress } from "./ffmpeg.js";
 import { say, startBar } from "./bar.js";
 import { convert } from "./convert.js";
 import { classify, type IntakeFile, planEntries } from "./entries.js";
+import { invocation } from "./invocation.js";
 import { hasManifest, mediaDir, stamp } from "./paths.js";
 import { applyProbe, isFfprobeMissing, probe } from "./probe.js";
 import { accent, log, warn } from "./theme.js";
@@ -107,10 +108,10 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
       warn(
         `Kept, but not all transcribed: ${error instanceof Error ? error.message : String(error)}`,
       );
-      warn(`To finish: influenca transcribe ${quoted}`);
+      warn(`To finish: ${invocation()} transcribe ${quoted}`);
     }
   }
-  say(`Next: ${accent(`influenca analyze ${quoted}`)}`);
+  say(`Next: ${accent(`${invocation()} analyze ${quoted}`)}`);
 }
 
 /**

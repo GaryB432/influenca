@@ -12,8 +12,8 @@
     Run this from PowerShell 7 on Windows (pwsh.exe), or from WSL via:
         pwsh.exe -File "$(wslpath -w ./scripts/intake-android.ps1)"
 
-    After copying, the script prints a ready-to-paste WSL command:
-        influenca accession "/home/.../.local/state/influenca/<timestamp>/<phone-slug>"
+    After copying, the script prints a WSL command, ready to paste at the repo root:
+        pnpm influenca accession "/home/.../.local/state/influenca/<timestamp>/<phone-slug>"
 
     The WSL path is resolved using `wsl.exe wslpath` so no Windows paths leak
     into the printed command.
@@ -307,5 +307,5 @@ foreach ($f in $copiedFiles) {
 Write-Host ""
 Write-Host "✨ Next step — paste into your WSL terminal:" -ForegroundColor White
 Write-Host ""
-Write-Host "  influenca accession `"$destPosix`"" -ForegroundColor Green
+Write-Host "  pnpm influenca accession `"$destPosix`"" -ForegroundColor Green
 Write-Host ""
