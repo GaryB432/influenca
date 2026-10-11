@@ -86,8 +86,8 @@
         {/if}
       </div>
       <div class="about">
-        <h2><span class="id">{e.id}</span>{e.name ?? e.outputName}</h2>
-        {#if e.name}<p class="from">{e.outputName}</p>{/if}
+        <h2><span class="id">{e.id}</span>{e.title ?? e.outputName}</h2>
+        {#if e.title}<p class="from">{e.outputName}</p>{/if}
         {#if e.sourceName !== e.outputName}<p class="from">from {e.sourceName}</p>{/if}
         <p class="facts">{facts(e, analysis, transcript).join(" · ")}</p>
         {#each paths as path (path)}
@@ -100,7 +100,7 @@
         <!-- What you know the clip as, now that you have seen it. The file keeps its name on disk. -->
         <form action="?/update" method="POST" use:enhance={() => ({ update }) => update({ reset: false })}>
           <input name="id" type="hidden" value={e.id} />
-          <input aria-label="Name for {e.outputName}" name="name" placeholder="Name this clip" value={e.name ?? ""} />
+          <input aria-label="Title for {e.outputName}" name="title" placeholder="Give it a title" value={e.title ?? ""} />
           <button>Save</button>
         </form>
         <!-- Only marks the manifest entry; the file stays in the run folder. -->
@@ -214,10 +214,10 @@
     margin-top: 0.7rem;
   }
   form button,
-  form input[name="name"] {
+  form input[name="title"] {
     font: inherit;
   }
-  form input[name="name"] {
+  form input[name="title"] {
     flex: 1;
     min-width: 0;
     max-width: 22rem;

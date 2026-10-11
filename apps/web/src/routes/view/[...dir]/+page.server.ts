@@ -4,6 +4,7 @@ import {
   MANIFEST_FILENAME,
   summarize,
   vttText,
+  withTitles,
 } from "@influenca/core";
 import {
   readAnalysis,
@@ -47,6 +48,7 @@ export const load: PageServerLoad = async ({ params }) => {
   if (!isManifest(manifest)) {
     error(422, `${MANIFEST_FILENAME} in ${where} is not a version 1 manifest`);
   }
+  withTitles(manifest);
 
   const [analysis, transcripts] = await Promise.all([
     readAnalysis(dir),
@@ -90,7 +92,7 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-  /** Saves what a form on the page sets about the entry it names: its name, or whether it is unwanted. */
+  /** Saves what a form on the page sets about the entry it names: its title, or whether it is unwanted. */
   update: async ({ params, request, url }) => {
     // SvelteKit turns away form posts from other sites, but not under `vite dev`, which is
     // how this app is run. A browser names the page a post came from; a script has no need to.
@@ -104,11 +106,11 @@ export const actions: Actions = {
     const id = form.get("id");
     if (typeof id !== "string" || id === "")
       return fail(400, { message: "No entry named" });
-    const name = form.get("name");
+    const title = form.get("title");
     const deleted = form.get("deleted");
     const changes: Curation = {
       ...(typeof deleted === "string" && { deleted: deleted === "true" }),
-      ...(typeof name === "string" && { name }),
+      ...(typeof title === "string" && { title }),
     };
     try {
       await updateEntry(dir, id, changes);

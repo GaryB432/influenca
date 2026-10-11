@@ -9,7 +9,7 @@ last, and writes a **manifest** of what it kept. The intake is never touched and
 is yours to keep or wipe. On the way in, what is said in each file is written
 down as subtitles. **Analyze** then studies what is inside, as often as you
 like. Each step writes to a file of its own. The manifest then drives the web
-page, where you curate: give a file a name, or mark the ones you do not want.
+page, where you curate: give a file a title, or mark the ones you do not want.
 
 ## How it works
 
@@ -266,7 +266,7 @@ when you want it in a project. Under WSL the Windows form of the path is there
 too.
 
 This is also where you say what a file is. Watch `PXL_20261010_175159748.mp4`,
-type `pool-b-roll` and **Save**, and the page shows it under that name from then
+type `Pool b-roll` and **Save**, and the page shows it under that title from then
 on. **Delete** marks a file as unwanted and dims it; **Restore** takes the mark
 off. Both are recorded in the manifest, and neither renames or removes the
 file itself.
@@ -283,17 +283,18 @@ pnpm influenca export --to /some/folder --only 3 --only 7  # by number, without 
 ```
 
 ```
-✓  1  pool b-roll  PXL_20261010_175159748.mp4  copied as pool-b-roll.mp4
-✓  4  candles      PXL_20261011_043342083.mp4  copied as candles.mp4
+✓  1  Pool b-roll  PXL_20261010_175159748.mp4  copied as pool-b-roll.mp4
+✓  4  Candles      PXL_20261011_043342083.mp4  copied as candles.mp4
 ```
 
-Copies the files you have named on the web page into a folder, under those
-names, with their subtitles beside them. Naming a file is how you pick it:
-unnamed files and deleted ones stay behind. At a terminal you are shown the
-named files to tick; a script gets all of them.
+Copies the files you have given a title on the web page into a folder, each
+under a filename made from its title, with its subtitles beside it. Giving a
+file a title is how you pick it: untitled files and deleted ones stay behind.
+At a terminal you are shown the titled files to tick; a script gets all of them.
 
 - The run is left as it is. Export copies, and never moves or renames.
-- A name is made fit for a filename: `pool b-roll` becomes `pool-b-roll.mp4`.
+- The filename is the title in lowercase with hyphens for spaces: `Pool b-roll`
+  becomes `pool-b-roll.mp4`.
 - A file already in the folder under that name is left alone, so exporting
   again brings only what is new.
 - Leave `--to` off and you are asked for the folder.
