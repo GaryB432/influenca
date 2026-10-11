@@ -10,31 +10,32 @@ import { accent, dim, log } from "./theme.js";
 
 export type ExportOptions = {
   inDir?: string;
-  /** Ids of the named files to copy. Left off, every named file goes. */
+  /** Ids of the titled files to copy. Left off, every titled file goes. */
   only?: string[];
-  /** The folder the named files are copied into. Made if it is not there. */
+  /** The folder the titled files are copied into. Made if it is not there. */
   to: string;
 };
 
 /**
- * Copies the files of a run that you have given a name, under that name, into a folder
- * of your choosing: PXL_20261010_175159748.mp4 arrives as pool-b-roll.mp4, with its
- * subtitles beside it. Naming a file is how you pick it. The run is left as it is.
+ * Copies the files of a run that you have given a title into a folder of your choosing,
+ * each under a filename made from its title: "Pool b-roll" arrives as pool-b-roll.mp4,
+ * with its subtitles beside it. Giving a file a title is how you pick it. The run is
+ * left as it is.
  */
 export async function runExport(opts: ExportOptions): Promise<void> {
   const dir = opts.inDir ? resolve(opts.inDir) : await latestRun(mediaDir());
   const to = resolve(opts.to);
   const manifest = await readManifest(dir);
   const transcripts = await readTranscripts(dir);
-  const named = manifest.entries.filter(
-    (e) => e.name && !e.deleted && (opts.only?.includes(e.id) ?? true),
+  const titled = manifest.entries.filter(
+    (e) => e.title && !e.deleted && (opts.only?.includes(e.id) ?? true),
   );
 
   log(accent(dir));
-  if (named.length === 0) {
+  if (titled.length === 0) {
     log(
       dim(
-        `Nothing has a name yet. Name the files you want on the web page (\`pnpm dev:web\`), then \`${invocation()} export\` again.`,
+        `Nothing has a title yet. Give the files you want one on the web page (\`pnpm dev:web\`), then \`${invocation()} export\` again.`,
       ),
     );
     return;
@@ -42,15 +43,15 @@ export async function runExport(opts: ExportOptions): Promise<void> {
 
   await mkdir(to, { recursive: true });
   const table = startTable(
-    named.map((e) => ({
-      cells: [e.id, e.name ?? "", e.outputName],
+    titled.map((e) => ({
+      cells: [e.id, e.title ?? "", e.outputName],
       weight: e.bytes,
     })),
   );
   let copied = 0;
   try {
-    for (const [i, e] of named.entries()) {
-      const stem = fileName(e.name ?? "");
+    for (const [i, e] of titled.entries()) {
+      const stem = slug(e.title ?? "");
       const target = `${stem}${extname(e.outputName).toLowerCase()}`;
       const dest = join(to, target);
       if (await exists(dest)) {
@@ -81,13 +82,17 @@ export async function runExport(opts: ExportOptions): Promise<void> {
   } finally {
     table.end();
   }
-  log(`Copied ${copied} of ${named.length} named files to ${accent(to)}`);
+  log(`Copied ${copied} of ${titled.length} titled files to ${accent(to)}`);
 }
 
-/** Pure: a name as typed, made fit to be a filename on Windows as well as here. */
-export function fileName(name: string): string {
-  return name
+/**
+ * Pure: a title as typed, turned into the stem of a filename: lowercase, with hyphens for
+ * spaces and for anything a folder on Windows or here would refuse.
+ */
+export function slug(title: string): string {
+  return title
     .trim()
+    .toLowerCase()
     .replaceAll(/[<>:"/\\|?*\p{Cc}]+/gu, "-")
     .replaceAll(/\s+/g, "-")
     .replaceAll(/-{2,}/g, "-")

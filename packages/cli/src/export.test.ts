@@ -14,19 +14,20 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { fileName, runExport } from "./export.js";
+import { runExport, slug } from "./export.js";
 
-describe("fileName", () => {
-  it("leaves a tidy name alone", () => {
-    expect(fileName("pool-b-roll")).toBe("pool-b-roll");
+describe("slug", () => {
+  it("is the title in lowercase with hyphens for spaces", () => {
+    expect(slug("Pool b-roll")).toBe("pool-b-roll");
+    expect(slug("Mary had a little lamb")).toBe("mary-had-a-little-lamb");
   });
 
   it("makes anything typed into something a folder will take", () => {
-    expect(fileName('  Uncle Bob & "the grill" <3  ')).toBe(
-      "Uncle-Bob-&-the-grill-3",
+    expect(slug('  Uncle Bob & "the grill" <3  ')).toBe(
+      "uncle-bob-&-the-grill-3",
     );
-    expect(fileName("a/b\\c: d?")).toBe("a-b-c-d");
-    expect(fileName("...trailing. ")).toBe("trailing");
+    expect(slug("a/b\\c: d?")).toBe("a-b-c-d");
+    expect(slug("...trailing. ")).toBe("trailing");
   });
 });
 
@@ -87,11 +88,11 @@ describe("runExport", () => {
     await rm(root, { force: true, recursive: true });
   });
 
-  it("copies the named files under their names, with subtitles, and leaves the rest", async () => {
-    await updateEntry(run, "1", { name: "pool b-roll" });
-    await updateEntry(run, "2", { name: "blurry" });
+  it("copies the titled files under names made from their titles, with subtitles, and leaves the rest", async () => {
+    await updateEntry(run, "1", { title: "Pool b-roll" });
+    await updateEntry(run, "2", { title: "blurry" });
     await updateEntry(run, "2", { deleted: true });
-    await updateEntry(run, "3", { name: "cake" });
+    await updateEntry(run, "3", { title: "cake" });
 
     await runExport({ inDir: run, to });
 
@@ -106,18 +107,18 @@ describe("runExport", () => {
   });
 
   it("copies only the ones asked for", async () => {
-    await updateEntry(run, "3", { name: "cake" });
-    await updateEntry(run, "4", { name: "candles" });
+    await updateEntry(run, "3", { title: "cake" });
+    await updateEntry(run, "4", { title: "candles" });
     await runExport({ inDir: run, only: ["4"], to });
     expect(await readdir(to)).toEqual(["candles.jpg"]);
   });
 
   it("does not write over a file that is already there", async () => {
-    await updateEntry(run, "3", { name: "cake" });
+    await updateEntry(run, "3", { title: "cake" });
     await runExport({ inDir: run, to });
     await writeFile(join(to, "cake.jpg"), "edited since");
 
-    await updateEntry(run, "4", { name: "candles" });
+    await updateEntry(run, "4", { title: "candles" });
     await runExport({ inDir: run, to });
 
     expect(await readFile(join(to, "cake.jpg"), "utf8")).toBe("edited since");
@@ -127,10 +128,10 @@ describe("runExport", () => {
     );
   });
 
-  it("says so, and makes no folder, when nothing has a name", async () => {
+  it("says so, and makes no folder, when nothing has a title", async () => {
     await runExport({ inDir: run, to });
     expect(process.stdout.write).toHaveBeenCalledWith(
-      expect.stringContaining("Nothing has a name yet"),
+      expect.stringContaining("Nothing has a title yet"),
     );
     await expect(readdir(to)).rejects.toThrow();
   });

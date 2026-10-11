@@ -68,17 +68,17 @@ describe("identify", () => {
     { bytes: 1, name: "b.jpg" },
   ]);
 
-  it("is the number and the name on disk when nothing has been named", () => {
+  it("is the number and the name on disk when nothing has a title", () => {
     expect(entries.map(identify(entries))).toEqual([
       ["1", "a.mp4"],
       ["2", "b.jpg"],
     ]);
   });
 
-  it("puts the given names first once any file has one, blank for the rest", () => {
-    const named = [{ ...entries[0]!, name: "pool-b-roll" }, entries[1]!];
-    expect(named.map(identify(named))).toEqual([
-      ["1", "pool-b-roll", "a.mp4"],
+  it("puts the titles first once any file has one, blank for the rest", () => {
+    const titled = [{ ...entries[0]!, title: "Pool b-roll" }, entries[1]!];
+    expect(titled.map(identify(titled))).toEqual([
+      ["1", "Pool b-roll", "a.mp4"],
       ["2", "", "b.jpg"],
     ]);
   });

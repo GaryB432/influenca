@@ -84,13 +84,13 @@ export function planEntries(files: IntakeFile[]): ManifestEntry[] {
 export const round3 = (n: number) => Math.round(n * 1000) / 1000;
 
 /**
- * The cells that say which file a row is about: its number, what you called it on the web
- * page, and its name on disk. The name goes first because it is how you know the file,
- * and its column is only there once something in the run has a name.
+ * The cells that say which file a row is about: its number, the title you gave it on the
+ * web page, and its name on disk. The title goes first because it is how you know the
+ * file, and its column is only there once something in the run has one.
  */
 export function identify(
   entries: ManifestEntry[],
 ): (e: ManifestEntry) => string[] {
-  const named = entries.some((e) => e.name);
-  return (e) => [e.id, ...(named ? [e.name ?? ""] : []), e.outputName];
+  const titled = entries.some((e) => e.title);
+  return (e) => [e.id, ...(titled ? [e.title ?? ""] : []), e.outputName];
 }

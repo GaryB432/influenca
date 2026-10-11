@@ -26,7 +26,7 @@ import { runAnalyze } from "./analyze.js";
 import { runExport } from "./export.js";
 import { invocation } from "./invocation.js";
 import { latestRun, mediaDir } from "./paths.js";
-import { namedChoices } from "./pick.js";
+import { titledChoices } from "./pick.js";
 import { printError } from "./theme.js";
 import { runTranscribe } from "./transcribe.js";
 
@@ -171,7 +171,7 @@ const exporting = command(
         option("--to", string({ metavar: "DIR" }), {
           description: message`The folder to copy into. Made if it is not there.`,
         }),
-        { message: "Copy the named files to which folder?", type: "text" },
+        { message: "Copy the titled files to which folder?", type: "text" },
       ),
       // Which files is a question for a person at a terminal; a script gets them all.
       only: prompt(
@@ -184,7 +184,7 @@ const exporting = command(
         derivePromptConfig(
           exportRun,
           async (given) => {
-            const options = await namedChoices(
+            const options = await titledChoices(
               given || (await latestRun(mediaDir())),
             );
             return {
@@ -209,8 +209,8 @@ const exporting = command(
     (v) => ({ ...v, command: "export" as const }),
   ),
   {
-    brief: message`Copy the files you have named into a folder, under those names.`,
-    description: message`Takes the files of a run that have a name and are not marked deleted, and copies them out under those names, with their subtitles. The run is left as it is.`,
+    brief: message`Copy the files you have given a title into a folder, named after their titles.`,
+    description: message`Takes the files of a run that have a title and are not marked deleted, and copies each out under a filename made from its title, with its subtitles. The run is left as it is.`,
   },
 );
 
