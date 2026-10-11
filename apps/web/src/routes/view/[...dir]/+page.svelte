@@ -98,13 +98,13 @@
         {/each}
         {#if said}<p class="said">{said}</p>{/if}
         <!-- What you know the clip as, now that you have seen it. The file keeps its name on disk. -->
-        <form action="?/curate" method="POST" use:enhance={() => ({ update }) => update({ reset: false })}>
+        <form action="?/update" method="POST" use:enhance={() => ({ update }) => update({ reset: false })}>
           <input name="id" type="hidden" value={e.id} />
           <input aria-label="Name for {e.outputName}" name="name" placeholder="Name this clip" value={e.name ?? ""} />
           <button>Save</button>
         </form>
         <!-- Only marks the manifest entry; the file stays in the run folder. -->
-        <form action="?/curate" method="POST" use:enhance>
+        <form action="?/update" method="POST" use:enhance>
           <input name="id" type="hidden" value={e.id} />
           <input name="deleted" type="hidden" value={e.deleted ? "false" : "true"} />
           {#if e.deleted}<span class="mark">Deleted</span>{/if}

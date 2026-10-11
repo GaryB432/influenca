@@ -6,7 +6,7 @@ import {
   type Transcripts,
   TRANSCRIPTS_FILENAME,
 } from "@influenca/core";
-import { curate, readJSON } from "@influenca/core/node";
+import { readJSON, updateEntry } from "@influenca/core/node";
 import { execFileSync } from "node:child_process";
 import {
   copyFile,
@@ -356,7 +356,7 @@ describe("accession + analyze", () => {
     });
 
     it("transcribe shows the names given on the web page, beside the filenames", async () => {
-      await curate(outDir, "3", { name: "toast" });
+      await updateEntry(outDir, "3", { name: "toast" });
       await runTranscribe({ inDir: outDir });
       expect(process.stdout.write).toHaveBeenCalledWith(
         expect.stringMatching(/^ {2}1 {2} {5} {2}a\.mp4 {2}video/),
@@ -372,7 +372,7 @@ describe("accession + analyze", () => {
         expect.stringMatching(/^ {2}1 {2}a\.mp4 {2}video/),
       );
 
-      await curate(outDir, "1", { name: "pool-b-roll" });
+      await updateEntry(outDir, "1", { name: "pool-b-roll" });
       await runAnalyze({ inDir: outDir, language: "english", minimal: false });
       expect(process.stdout.write).toHaveBeenCalledWith(
         expect.stringMatching(/^ {2}1 {2}pool-b-roll {2}a\.mp4 {2}video/),

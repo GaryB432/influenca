@@ -6,10 +6,10 @@ import {
   vttText,
 } from "@influenca/core";
 import {
-  curate,
   readAnalysis,
   readJSON,
   readTranscripts,
+  updateEntry,
 } from "@influenca/core/node";
 import { error, fail } from "@sveltejs/kit";
 import { readFile } from "node:fs/promises";
@@ -91,7 +91,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 export const actions: Actions = {
   /** Saves what a form on the page sets about the entry it names: its name, or whether it is unwanted. */
-  curate: async ({ params, request, url }) => {
+  update: async ({ params, request, url }) => {
     // SvelteKit turns away form posts from other sites, but not under `vite dev`, which is
     // how this app is run. A browser names the page a post came from; a script has no need to.
     const from = request.headers.get("origin");
@@ -111,7 +111,7 @@ export const actions: Actions = {
       ...(typeof name === "string" && { name }),
     };
     try {
-      await curate(dir, id, changes);
+      await updateEntry(dir, id, changes);
     } catch (e) {
       return fail(404, { message: e instanceof Error ? e.message : String(e) });
     }

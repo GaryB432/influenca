@@ -48,7 +48,7 @@ A run folder holds the kept media plus three hidden JSON files. The manifest is 
 - `{ version: 1, createdAt, entries: ManifestEntry[] }`.
 - Written once, after every file is copied or converted. Accession refuses to run if one already exists in the output dir.
 - It drives the web page, and what you set there while curating is saved back into its entries: `name` (what you call a file once you have seen it, such as `pool-b-roll`) and `deleted` (you do not want it). These are the `Curation` type in `packages/core/src/manifest.ts`; a new thing to record about a file is a new field there. Neither touches the file on disk, which keeps its `outputName`.
-- `curate` in `packages/core/src/node.ts` is the one function that saves a manifest after accession. It changes only the fields it is given and writes through a temporary file, so a save cut short cannot leave half a manifest.
+- `updateEntry` in `packages/core/src/node.ts` is the one function that saves a manifest after accession. It changes only the fields it is given and writes through a temporary file, so a save cut short cannot leave half a manifest.
 - Entry base: `id`, `sourceName` (intake name), `outputName` (run-folder name), `bytes`, `metaSource`, optional `width`, `height`, `capturedAt`.
 - `video`: `durationSec`, `fps`, `frameCount`, optional `hasAudio`, `videoCodec`.
 - `audio`: `durationSec`, optional `audioCodec`, `channels`, `sampleRate`.
@@ -77,4 +77,4 @@ A run folder holds the kept media plus three hidden JSON files. The manifest is 
 - Readers are in `packages/core/src/node.ts`; see the two entry points above.
 - A missing or wrong-version manifest throws. A missing or wrong-version sidecar reads as `undefined`.
 - `analyze` joins all three and never calls OpenAI.
-- The web app (`apps/web`) reads all three plus the `.vtt` files, and saves what you curate through one form action on the run page, `curate`. The action checks the post's origin itself, because SvelteKit does not under `vite dev`.
+- The web app (`apps/web`) reads all three plus the `.vtt` files, and saves what you curate through one form action on the run page, `update`. The action checks the post's origin itself, because SvelteKit does not under `vite dev`.

@@ -68,7 +68,7 @@ export async function readManifest(dir: string): Promise<Manifest> {
  * stands. Only what is given changes. A blank name or a mark that is off is left out of
  * the file rather than stored. No file on disk is renamed or removed.
  */
-export async function curate(
+export async function updateEntry(
   dir: string,
   id: string,
   changes: Curation,
