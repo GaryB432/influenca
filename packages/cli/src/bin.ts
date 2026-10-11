@@ -2,7 +2,12 @@
 import { prompt } from "@optique/clack";
 import { object, or } from "@optique/core/constructs";
 import { map, optional, withDefault } from "@optique/core/modifiers";
-import { argument, command, option } from "@optique/core/primitives";
+import {
+  argument,
+  command,
+  negatableFlag,
+  option,
+} from "@optique/core/primitives";
 import { string } from "@optique/core/valueparser";
 import { run } from "@optique/run";
 
@@ -26,9 +31,22 @@ const accession = command(
         message: "Intake folder?",
         type: "text",
       }),
-      noTimestamp: option("--no-timestamp"),
-      noTranscribe: option("--no-transcribe"),
       outDir: optional(option("--out-dir", string({ metavar: "PATH" }))), // defaults to INFLUENCA_MEDIA_DIR
+      // Both are on unless switched off with --no-timestamp or --no-transcribe.
+      timestamp: withDefault(
+        negatableFlag({
+          negative: ["--no-timestamp"],
+          positive: ["--timestamp"],
+        }),
+        true,
+      ),
+      transcribe: withDefault(
+        negatableFlag({
+          negative: ["--no-transcribe"],
+          positive: ["--transcribe"],
+        }),
+        true,
+      ),
       verbose: option("--verbose"),
     }),
     (v) => ({ ...v, command: "accession" as const }),

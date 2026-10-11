@@ -30,17 +30,18 @@ import { transcribeRun } from "./transcribe.js";
 export type AccessionOptions = {
   dryRun: boolean;
   inDir: string;
-  noTimestamp: boolean;
-  /** Keep the files and stop there, sending nothing to Whisper. */
-  noTranscribe: boolean;
   outDir?: string;
+  /** Put the run in its own time-stamped folder under the output dir, not in the output dir itself. */
+  timestamp: boolean;
+  /** Send what was kept to Whisper. Off keeps the files and stops there. */
+  transcribe: boolean;
   verbose: boolean;
 };
 
 export async function runAccession(opts: AccessionOptions): Promise<void> {
   const inDir = resolve(opts.inDir);
   const base = resolve(opts.outDir ?? mediaDir());
-  const outDir = opts.noTimestamp ? base : join(base, stamp());
+  const outDir = opts.timestamp ? join(base, stamp()) : base;
 
   if (await hasManifest(outDir)) {
     throw new Error(
@@ -98,7 +99,7 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
   bar.finish(`Wrote ${sources.length} entries to ${accent(outDir)}`);
 
   const quoted = /\s/.test(outDir) ? `"${outDir}"` : outDir;
-  if (!opts.noTranscribe) {
+  if (opts.transcribe) {
     // The run is whole from here on: the manifest is written, and nothing below can undo it.
     try {
       await transcribeRun(outDir);

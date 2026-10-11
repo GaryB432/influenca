@@ -41,8 +41,8 @@ describe("accession + analyze", () => {
   let outDir: string;
   const base = {
     dryRun: false,
-    noTimestamp: true,
-    noTranscribe: true,
+    timestamp: false,
+    transcribe: false,
     verbose: false,
   };
 
@@ -134,7 +134,7 @@ describe("accession + analyze", () => {
   });
 
   it("puts a timestamped run in a subfolder", async () => {
-    await runAccession({ ...base, inDir, noTimestamp: false, outDir });
+    await runAccession({ ...base, inDir, outDir, timestamp: true });
     const [run] = await readdir(outDir);
     expect(run).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z$/);
   });
@@ -218,8 +218,8 @@ describe("accession + analyze", () => {
       await runAccession({
         ...base,
         inDir,
-        noTranscribe: false,
         outDir: fresh,
+        transcribe: true,
       });
       expect((await readdir(fresh)).toSorted()).toEqual([
         MANIFEST_FILENAME,
@@ -238,8 +238,8 @@ describe("accession + analyze", () => {
       await runAccession({
         ...base,
         inDir,
-        noTranscribe: false,
         outDir: fresh,
+        transcribe: true,
       });
       expect((await readdir(fresh)).toSorted()).toEqual([
         MANIFEST_FILENAME,
@@ -354,7 +354,7 @@ describe("accession + analyze", () => {
     });
 
     it("analyze without a folder picks the latest readable run", async () => {
-      await runAccession({ ...base, inDir, noTimestamp: false, outDir });
+      await runAccession({ ...base, inDir, outDir, timestamp: true });
       vi.stubEnv("INFLUENCA_MEDIA_DIR", outDir);
       await runAnalyze({ language: "english", minimal: true });
       expect(process.stdout.write).toHaveBeenCalledWith(
