@@ -191,9 +191,14 @@ pnpm influenca analyze -l spanish      # the language you expect to hear (defaul
 ```
 
 ```
-  AUD00000.mp3  audio  00:02:22  silent 44%  212 words
-  VID00010.mp4  video  491 frames  21.1 Mb/s  still 0%  silent 0%  9 words (spanish)
+✓   1  AUD00000.mp3  audio  00:02:22    silent 44%  212 words
+✓  10  VID00010.mp4  video  491 frames  21.1 Mb/s  still 0%  silent 0%  9 words (spanish)
 ```
+
+Every file has a row from the start, and each fills in as it is measured. The
+number is the file's manifest id, the same one the web page shows. Accession
+and transcribe draw their work the same way. Piped to a file, each row is
+written once, when it is done.
 
 - **still**: share of a video in which the picture did not change for two
   seconds or more.
