@@ -1,6 +1,6 @@
 // Everything in core that touches the filesystem. The main entry stays free of Node
 // built-ins so the web app's browser code can import it.
-import { readdir } from "node:fs/promises";
+import { readdir, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { type Analysis, ANALYSIS_FILENAME } from "./analysis.js";
@@ -9,6 +9,7 @@ import {
   isManifest,
   type Manifest,
   MANIFEST_FILENAME,
+  type ManifestEntry,
   type Run,
 } from "./manifest.js";
 import { type Transcripts, TRANSCRIPTS_FILENAME } from "./transcripts.js";
@@ -59,6 +60,51 @@ export async function readManifest(dir: string): Promise<Manifest> {
       `${path} is not a version 1 manifest (written by an older influenca?)`,
     );
   }
+  return manifest;
+}
+
+/** Marks one entry as deleted, or takes the mark off. No file is removed. */
+export function setDeleted(
+  dir: string,
+  id: string,
+  deleted: boolean,
+): Promise<Manifest> {
+  return decide(dir, id, (entry) => {
+    if (deleted) entry.deleted = true;
+    else delete entry.deleted; // absent, not false, so an untouched manifest and a restored one match
+  });
+}
+
+/** Gives one entry the name you know it by, or takes the name off when it is blank. No file is renamed. */
+export function setName(
+  dir: string,
+  id: string,
+  name: string,
+): Promise<Manifest> {
+  return decide(dir, id, (entry) => {
+    if (name.trim()) entry.name = name.trim();
+    else delete entry.name;
+  });
+}
+
+/**
+ * Records something you have decided about one entry, and resolves with the manifest as
+ * it now stands. This is the only way a manifest changes once accession has written it.
+ * What accession recorded is not for changing here: only `deleted` and `name` are.
+ */
+async function decide(
+  dir: string,
+  id: string,
+  change: (entry: Pick<ManifestEntry, "deleted" | "name">) => void,
+): Promise<Manifest> {
+  const manifest = await readManifest(dir);
+  const path = join(dir, MANIFEST_FILENAME);
+  const entry = manifest.entries.find((e) => e.id === id);
+  if (!entry) throw new Error(`No entry ${id} in ${path}`);
+  change(entry);
+  // Written beside, then renamed: this is the one file a run cannot have rebuilt.
+  await writeFile(`${path}.tmp`, JSON.stringify(manifest, null, 2));
+  await rename(`${path}.tmp`, path);
   return manifest;
 }
 

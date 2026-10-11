@@ -13,7 +13,11 @@ export type ImageEntry = EntryBase & {
   kind: "image";
 };
 
-/** The record of one run: written once by accession, when everything is in, and not edited after. */
+/**
+ * The record of one run: written once by accession, when everything is in. Its entries
+ * are not edited after, except for what you decide about a file on the web page:
+ * `deleted` and `name`.
+ */
 export type Manifest = {
   createdAt: string; // ISO
   entries: ManifestEntry[];
@@ -36,10 +40,14 @@ export type VideoEntry = EntryBase & {
 type EntryBase = {
   bytes: number;
   capturedAt?: string; // ISO; EXIF for images, container creation_time for media
+  /** Marked as unwanted on the web page. The file itself is still in the run folder. */
+  deleted?: boolean;
   height?: number;
   id: string;
   /** "estimated" until ffprobe fills in real numbers. */
   metaSource: "estimated" | "ffprobe";
+  /** What you call the file once you have seen what is in it: "mary-eating". Its name on disk stays outputName. */
+  name?: string;
   outputName: string; // filename in the output dir
   sourceName: string; // filename in the intake dir
   width?: number;

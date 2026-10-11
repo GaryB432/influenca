@@ -4,8 +4,14 @@ import {
   summarize,
   vttText,
 } from "@influenca/core";
-import { readAnalysis, readJSON, readTranscripts } from "@influenca/core/node";
-import { error } from "@sveltejs/kit";
+import {
+  readAnalysis,
+  readJSON,
+  readTranscripts,
+  setDeleted,
+  setName,
+} from "@influenca/core/node";
+import { error, fail } from "@sveltejs/kit";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -15,7 +21,7 @@ import {
   windowsPath,
 } from "#lib/server/media.js";
 
-import type { PageServerLoad } from "./$types";
+import type { Actions, PageServerLoad, RequestEvent } from "./$types";
 
 export const load: PageServerLoad = async ({ params }) => {
   let root: string;
@@ -81,4 +87,36 @@ export const load: PageServerLoad = async ({ params }) => {
     run: params.dir || ".",
     summary: summarize(manifest),
   };
+};
+
+/** Records what a form says about the entry it names. The file is left as it is. */
+async function decide(
+  { params, request, url }: RequestEvent,
+  record: (dir: string, id: string, form: FormData) => Promise<unknown>,
+) {
+  // SvelteKit turns away form posts from other sites, but not under `vite dev`, which is
+  // how this app is run. A browser names the page a post came from; a script has no need to.
+  const from = request.headers.get("origin");
+  if (from && from !== url.origin)
+    error(403, "Cross-site posts are not accepted");
+  const dir = resolveInsideRoot(mediaRoot(), params.dir);
+  if (!dir) error(400, "Invalid path");
+  const form = await request.formData();
+  const id = form.get("id");
+  if (typeof id !== "string" || id === "")
+    return fail(400, { message: "No entry named" });
+  try {
+    await record(dir, id, form);
+  } catch (e) {
+    return fail(404, { message: e instanceof Error ? e.message : String(e) });
+  }
+}
+
+export const actions: Actions = {
+  delete: (event) => decide(event, (dir, id) => setDeleted(dir, id, true)),
+  name: (event) =>
+    decide(event, (dir, id, form) =>
+      setName(dir, id, String(form.get("name") ?? "")),
+    ),
+  restore: (event) => decide(event, (dir, id) => setDeleted(dir, id, false)),
 };

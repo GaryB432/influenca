@@ -8,7 +8,9 @@ The model is a museum's. A pile of files left on the doorstep is the **intake**.
 last, and writes a **manifest** of what it kept. The intake is never touched and
 is yours to keep or wipe. On the way in, what is said in each file is written
 down as subtitles. **Analyze** then studies what is inside, as often as you
-like. Each step writes to a file of its own, so the manifest stays a fixed record.
+like. Each step writes to a file of its own, so the manifest stays a fixed record
+of what was kept. The one thing added to it later is what you decide on the web
+page: a name for a file, or that you do not want it.
 
 ## How it works
 
@@ -243,7 +245,13 @@ Each file also shows where it sits on disk, with a button to copy the path, for
 when you want it in a project. Under WSL the Windows form of the path is there
 too.
 
-It only reads a run folder. Thumbnails are made with ffmpeg when first asked
+This is also where you say what a file is. Watch `PXL_20261010_175159748.mp4`,
+type `mary-eating` and **Save**, and the page shows it under that name from then
+on. **Delete** marks a file as unwanted and dims it; **Restore** takes the mark
+off. Both are recorded in the manifest, and neither renames or removes the
+file itself.
+
+Apart from those two it only reads a run folder. Thumbnails are made with ffmpeg when first asked
 for and held in memory.
 
 ## Layout

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
   import {
     type EntryAnalysis,
     formatDuration,
@@ -6,8 +7,9 @@
     type Transcript,
   } from "@influenca/core";
 
-  let { data } = $props();
+  let { data, form } = $props();
   const { files, run, summary } = $derived(data);
+  const deleted = $derived(files.filter((f) => f.entry.deleted).length);
 
   let copied = $state<string>();
 
@@ -44,10 +46,12 @@
     {summary.counts.video} video, {summary.counts.audio} audio, {summary.counts.image} images.
     {summary.totalFrames} frames, {formatDuration(summary.totalDurationSec)}.
     {#if summary.estimated}Files that could not be probed show estimated frames and durations.{/if}
+    {#if deleted}{deleted} marked deleted.{/if}
   </p>
+  {#if form?.message}<p class="problem">{form.message}</p>{/if}
 
   {#each files as { analysis, entry: e, paths, poster, said, src, transcript, vttSrc } (e.id)}
-    <article>
+    <article class:deleted={e.deleted}>
       <div class="media">
         {#if e.kind === "video"}
           <!-- Metadata only: nothing of the picture is fetched until play. -->
@@ -62,7 +66,8 @@
         {/if}
       </div>
       <div class="about">
-        <h2><span class="id">{e.id}</span>{e.outputName}</h2>
+        <h2><span class="id">{e.id}</span>{e.name ?? e.outputName}</h2>
+        {#if e.name}<p class="from">{e.outputName}</p>{/if}
         {#if e.sourceName !== e.outputName}<p class="from">from {e.sourceName}</p>{/if}
         <p class="facts">{facts(e, analysis, transcript).join(" · ")}</p>
         {#each paths as path (path)}
@@ -72,6 +77,18 @@
           </p>
         {/each}
         {#if said}<p class="said">{said}</p>{/if}
+        <!-- What you know the clip as, now that you have seen it. The file keeps its name on disk. -->
+        <form action="?/name" method="POST" use:enhance={() => ({ update }) => update({ reset: false })}>
+          <input name="id" type="hidden" value={e.id} />
+          <input aria-label="Name for {e.outputName}" name="name" placeholder="Name it: mary-eating" value={e.name ?? ""} />
+          <button>Save</button>
+        </form>
+        <!-- Only marks the manifest entry; the file stays in the run folder. -->
+        <form action={e.deleted ? "?/restore" : "?/delete"} method="POST" use:enhance>
+          <input name="id" type="hidden" value={e.id} />
+          {#if e.deleted}<span class="mark">Deleted</span>{/if}
+          <button>{e.deleted ? "Restore" : "Delete"}</button>
+        </form>
       </div>
     </article>
   {/each}
@@ -163,6 +180,34 @@
     flex: none;
     min-width: 4rem;
     font: inherit;
+  }
+  /* Still there to play and to restore, but out of the way. */
+  .deleted .media,
+  .deleted .about > :not(form) {
+    opacity: 0.4;
+  }
+  form {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    margin-top: 0.7rem;
+  }
+  form button,
+  form input[name="name"] {
+    font: inherit;
+  }
+  form input[name="name"] {
+    flex: 1;
+    min-width: 0;
+    max-width: 22rem;
+    padding: 0.2rem 0.4rem;
+  }
+  .mark {
+    font-size: 0.9rem;
+    color: light-dark(#a33, #e88);
+  }
+  .problem {
+    color: light-dark(#a33, #e88);
   }
   .said {
     max-height: 9rem;
