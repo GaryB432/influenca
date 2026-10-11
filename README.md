@@ -277,7 +277,7 @@ for and held in memory.
 ## Export
 
 ```sh
-pnpm influenca export --to ~/projects/garden-party/media   # from the newest run
+pnpm influenca export --to ~/projects/garden-party/media   # asks which run
 pnpm influenca export /path/to/run --to /some/folder
 pnpm influenca export --to /some/folder --only 3 --only 7  # by number, without being asked
 ```
@@ -292,9 +292,12 @@ under a filename made from its title, with its subtitles beside it. Giving a
 file a title is how you pick it: untitled files and deleted ones stay behind.
 At a terminal you are shown the titled files to tick; a script gets all of them.
 
+Leave the run off and you are asked which, from the same list as the front page
+of the web app. A script is not asked, and gets the newest run.
+
 - The run is left as it is. Export copies, and never moves or renames.
-- The filename is the title in lowercase with hyphens for spaces: `Pool b-roll`
-  becomes `pool-b-roll.mp4`.
+- The filename is the title in lowercase, with a hyphen wherever it has spaces
+  or punctuation: `Pool b-roll` becomes `pool-b-roll.mp4`.
 - A file already in the folder under that name is left alone, so exporting
   again brings only what is new.
 - Leave `--to` off and you are asked for the folder.

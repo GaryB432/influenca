@@ -24,8 +24,10 @@ describe("slug", () => {
 
   it("makes anything typed into something a folder will take", () => {
     expect(slug('  Uncle Bob & "the grill" <3  ')).toBe(
-      "uncle-bob-&-the-grill-3",
+      "uncle-bob-the-grill-3",
     );
+    expect(slug("Agnes, if you get it")).toBe("agnes-if-you-get-it");
+    expect(slug("Café: été 2026")).toBe("café-été-2026");
     expect(slug("a/b\\c: d?")).toBe("a-b-c-d");
     expect(slug("...trailing. ")).toBe("trailing");
   });

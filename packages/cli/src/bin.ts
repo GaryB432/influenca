@@ -26,7 +26,7 @@ import { runAnalyze } from "./analyze.js";
 import { runExport } from "./export.js";
 import { invocation } from "./invocation.js";
 import { latestRun, mediaDir } from "./paths.js";
-import { titledChoices } from "./pick.js";
+import { runChoices, titledChoices } from "./pick.js";
 import { printError } from "./theme.js";
 import { runTranscribe } from "./transcribe.js";
 
@@ -157,15 +157,26 @@ const analyze = command(
 
 // The tick list below is made from the run, so the run is something it can depend on.
 const exportRun = dependency(string({ metavar: "RUN_DIR" }));
+// The runs to offer when export is not told which. Read here, and only for export,
+// because a prompt's choices have to be in hand when the parser is put together.
+const runs = process.argv[2] === "export" ? await runChoices() : [];
 
 const exporting = command(
   "export",
   map(
     object({
-      inDir: optional(
+      // Blank when nobody is there to ask: runExport then takes the newest run.
+      inDir: prompt(
         argument(exportRun, {
-          description: message`A run folder. Defaults to the newest run under ${envVar("INFLUENCA_MEDIA_DIR")}.`,
+          description: message`A run folder. Left off, you are asked which run under ${envVar("INFLUENCA_MEDIA_DIR")}.`,
         }),
+        {
+          message: "Export from which run?",
+          options: runs,
+          otherwise: "",
+          type: "select",
+          when: () => process.stdin.isTTY === true && runs.length > 0,
+        },
       ),
       to: prompt(
         option("--to", string({ metavar: "DIR" }), {
@@ -230,6 +241,7 @@ try {
   else if (result.command === "export") {
     await runExport({
       ...result,
+      inDir: result.inDir || undefined,
       only: result.only.length > 0 ? [...result.only] : undefined,
     });
   } else await runAnalyze(result);

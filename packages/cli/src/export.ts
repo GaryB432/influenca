@@ -86,17 +86,15 @@ export async function runExport(opts: ExportOptions): Promise<void> {
 }
 
 /**
- * Pure: a title as typed, turned into the stem of a filename: lowercase, with hyphens for
- * spaces and for anything a folder on Windows or here would refuse.
+ * Pure: a title as typed, turned into the stem of a filename. Letters and numbers are
+ * kept, in lowercase, and each run of anything else becomes one hyphen: "Agnes, if you
+ * get it" is agnes-if-you-get-it.
  */
 export function slug(title: string): string {
   return title
-    .trim()
     .toLowerCase()
-    .replaceAll(/[<>:"/\\|?*\p{Cc}]+/gu, "-")
-    .replaceAll(/\s+/g, "-")
-    .replaceAll(/-{2,}/g, "-")
-    .replaceAll(/^[-.]+|[-.]+$/g, "");
+    .replaceAll(/[^\p{L}\p{N}]+/gu, "-")
+    .replaceAll(/^-+|-+$/g, "");
 }
 
 const exists = (path: string) =>
