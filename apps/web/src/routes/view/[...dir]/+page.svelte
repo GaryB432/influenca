@@ -7,8 +7,6 @@
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
 
   let copied = $state<string>();
-  let titled = $state<boolean>(false);
-  let titling = $state<boolean>(false);
 
   async function copy(path: string) {
     await navigator.clipboard.writeText(path);
@@ -62,12 +60,21 @@
 
 <svelte:head><title>{run} · Influenca</title></svelte:head>
 
+{#snippet copy_button(path: string)}
+  <p class="path">
+    <code>{path}</code>
+    <button onclick={() => copy(path)}>
+      {copied === path ? "Copied" : "Copy"}
+    </button>
+  </p>
+{/snippet}
+
 <main>
   <p class="back"><a href="/">All runs</a></p>
   <h1>{run}</h1>
   <p class="totals">
-    {summary.counts.video} video, {summary.counts.audio} audio, {summary.counts
-      .image} images.
+    {summary.counts.video} video, {summary.counts.audio}
+    audio, {summary.counts.image} images.
     {summary.totalFrames} frames, {formatDuration(summary.totalDurationSec)}.
     {#if summary.estimated}Files that could not be probed show estimated frames
       and durations.{/if}
@@ -82,12 +89,9 @@
           <!-- Starts with nothing fetched. Near the screen it gets its thumbnail and enough metadata to show its length; the picture itself waits for play. -->
           <!-- svelte-ignore a11y_media_has_caption (a file that was not transcribed has none to offer) -->
           <video controls preload="none" {src} use:whenNear={poster}>
-            {#if vttSrc}<track
-                default
-                kind="captions"
-                label="Transcript"
-                src={vttSrc}
-              />{/if}
+            {#if vttSrc}
+              <track default kind="captions" label="Transcript" src={vttSrc} />
+            {/if}
           </video>
         {:else if e.kind === "audio"}
           <audio controls preload="none" {src}></audio>
@@ -96,25 +100,25 @@
         {/if}
       </div>
       <div class="about">
-        <h2>
-          <span class={{ id: true, titled, titling }}>{e.id}</span>{e.title ??
-            e.outputName}
-        </h2>
-        {#if e.title}<p class="from">{e.outputName}</p>{/if}
-        {#if e.sourceName !== e.outputName}<p class="from">
+        <h2><span class="id">{e.id}</span>{e.title ?? e.outputName}</h2>
+        {#if e.title}
+          <p class="from">
+            {e.outputName}
+          </p>
+        {/if}
+        {#if e.sourceName !== e.outputName}
+          <p class="from">
             from {e.sourceName}
-          </p>{/if}
+          </p>
+        {/if}
         <p class="facts">{facts(e).join(" · ")}</p>
         {#each paths as path (path)}
-          <p class="path">
-            <code>{path}</code>
-            <button onclick={() => copy(path)}
-              >{copied === path ? "Copied" : "Copy"}</button
-            >
-          </p>
+          {@render copy_button(path)}
         {/each}
-        {#if said}<p class="said">{said}</p>{/if}
-        <!-- What you know the clip as, now that you have seen it. The file keeps its name on disk. -->
+        {#if said}
+          <p class="said">{said}</p>
+        {/if}
+
         <form
           action="?/update"
           method="POST"
@@ -219,6 +223,9 @@
   .facts {
     margin: 0.2rem 0 0;
     font-size: 0.9rem;
+  }
+  .from {
+    background-color: whitesmoke;
   }
   .path {
     display: flex;
