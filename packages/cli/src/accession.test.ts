@@ -1,11 +1,4 @@
-import {
-  type Analysis,
-  ANALYSIS_FILENAME,
-  type Manifest,
-  MANIFEST_FILENAME,
-  type Transcripts,
-  TRANSCRIPTS_FILENAME,
-} from "@influenca/core";
+import { type Manifest, MANIFEST_FILENAME } from "@influenca/core";
 import { readJSON, updateEntry } from "@influenca/core/node";
 import { execFileSync } from "node:child_process";
 import {
@@ -188,10 +181,19 @@ describe("accession + analyze", () => {
     );
   });
 
-  it("analyze writes its measurements beside the manifest and reuses them", async () => {
+  it("analyze saves its measurements on the manifest's entries and reuses them", async () => {
     await runAccession({ ...base, inDir, outDir });
-    const before = await readJSON<Manifest>(join(outDir, MANIFEST_FILENAME));
-    const read = () => readJSON<Analysis>(join(outDir, ANALYSIS_FILENAME));
+    const manifest = () => readJSON<Manifest>(join(outDir, MANIFEST_FILENAME));
+    const before = await manifest();
+    const read = async () => {
+      const m = await manifest();
+      return {
+        createdAt: m.analyzedAt,
+        entries: Object.fromEntries(
+          m.entries.filter((e) => e.analysis).map((e) => [e.id, e.analysis]),
+        ),
+      };
+    };
 
     await runAnalyze({ inDir: outDir, language: "english", minimal: false });
     const first = await read();
@@ -199,9 +201,14 @@ describe("accession + analyze", () => {
       1: { silentSec: 0, stillSec: 0 },
       3: { silentSec: 0 },
     });
-    expect(await readJSON<Manifest>(join(outDir, MANIFEST_FILENAME))).toEqual(
-      before,
-    );
+    // What accession wrote is all still there: only the measurements were added.
+    const after = await manifest();
+    expect({
+      ...after,
+      analyzedAt: undefined,
+      entries: after.entries.map((e) => ({ ...e, analysis: undefined })),
+    }).toEqual(before);
+    expect(await readdir(outDir)).toHaveLength(4);
 
     await runAnalyze({ inDir: outDir, language: "english", minimal: false });
     expect((await read()).createdAt).toBe(first.createdAt);
@@ -222,8 +229,16 @@ describe("accession + analyze", () => {
       text: "Hello there.",
     };
     const VTT = "WEBVTT\n\n00:00:00.000 --> 00:00:01.500\nHello there.\n";
-    const read = () =>
-      readJSON<Transcripts>(join(outDir, TRANSCRIPTS_FILENAME));
+    const read = async () => {
+      const m = await readJSON<Manifest>(join(outDir, MANIFEST_FILENAME));
+      return {
+        entries: Object.fromEntries(
+          m.entries
+            .filter((e) => e.transcript)
+            .map((e) => [e.id, e.transcript]),
+        ),
+      };
+    };
     const reply = (body: unknown, status = 200) =>
       whisper.mockImplementation(() =>
         Promise.resolve(Response.json(body, { status })),
@@ -248,7 +263,6 @@ describe("accession + analyze", () => {
       });
       expect((await readdir(fresh)).toSorted()).toEqual([
         MANIFEST_FILENAME,
-        TRANSCRIPTS_FILENAME,
         "a.mp4",
         "a.vtt",
         "b.JPG",
@@ -418,7 +432,7 @@ describe("accession + analyze", () => {
     it("analyze names the problem when pointed at it", async () => {
       await expect(
         runAnalyze({ inDir: legacy, language: "english", minimal: true }),
-      ).rejects.toThrow(/not a version 1 manifest/);
+      ).rejects.toThrow(/not a manifest this influenca can read/);
     });
   });
 });

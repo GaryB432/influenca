@@ -1,6 +1,6 @@
 import type { Manifest } from "@influenca/core";
 
-import { MANIFEST_FILENAME, TRANSCRIPTS_FILENAME } from "@influenca/core";
+import { MANIFEST_FILENAME } from "@influenca/core";
 import { updateEntry } from "@influenca/core/node";
 import {
   mkdir,
@@ -59,25 +59,9 @@ describe("runExport", () => {
     const manifest: Manifest = {
       createdAt: "2059-05-20T00:00:00.000Z",
       entries: [
-        image("1", "PXL_1.JPG"),
-        image("2", "PXL_2.jpg"),
-        image("3", "PXL_3.jpg"),
-        image("4", "PXL_4.jpg"),
-      ],
-      version: 1,
-    };
-    await mkdir(run);
-    await writeFile(join(run, MANIFEST_FILENAME), JSON.stringify(manifest));
-    for (const e of manifest.entries) {
-      await writeFile(join(run, e.outputName), `pic${e.id}`);
-    }
-    await writeFile(join(run, "PXL_1.vtt"), "WEBVTT\n");
-    await writeFile(
-      join(run, TRANSCRIPTS_FILENAME),
-      JSON.stringify({
-        createdAt: manifest.createdAt,
-        entries: {
-          1: {
+        {
+          ...image("1", "PXL_1.JPG"),
+          transcript: {
             language: "english",
             model: "whisper-1",
             status: "done",
@@ -85,9 +69,18 @@ describe("runExport", () => {
             words: 0,
           },
         },
-        version: 1,
-      }),
-    );
+        image("2", "PXL_2.jpg"),
+        image("3", "PXL_3.jpg"),
+        image("4", "PXL_4.jpg"),
+      ],
+      version: 2,
+    };
+    await mkdir(run);
+    await writeFile(join(run, MANIFEST_FILENAME), JSON.stringify(manifest));
+    for (const e of manifest.entries) {
+      await writeFile(join(run, e.outputName), `pic${e.id}`);
+    }
+    await writeFile(join(run, "PXL_1.vtt"), "WEBVTT\n");
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
   });
   afterEach(async () => {
