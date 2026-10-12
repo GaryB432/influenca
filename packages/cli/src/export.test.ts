@@ -1,6 +1,6 @@
 import type { Manifest } from "@influenca/core";
 
-import { MANIFEST_FILENAME, TRANSCRIPTS_FILENAME } from "@influenca/core";
+import { MANIFEST_FILENAME } from "@influenca/core";
 import { updateEntry } from "@influenca/core/node";
 import {
   mkdir,
@@ -59,7 +59,16 @@ describe("runExport", () => {
     const manifest: Manifest = {
       createdAt: "2059-05-20T00:00:00.000Z",
       entries: [
-        image("1", "PXL_1.JPG"),
+        {
+          ...image("1", "PXL_1.JPG"),
+          transcript: {
+            language: "english",
+            model: "whisper-1",
+            status: "done",
+            vttName: "PXL_1.vtt",
+            words: 0,
+          },
+        },
         image("2", "PXL_2.jpg"),
         image("3", "PXL_3.jpg"),
         image("4", "PXL_4.jpg"),
@@ -72,22 +81,6 @@ describe("runExport", () => {
       await writeFile(join(run, e.outputName), `pic${e.id}`);
     }
     await writeFile(join(run, "PXL_1.vtt"), "WEBVTT\n");
-    await writeFile(
-      join(run, TRANSCRIPTS_FILENAME),
-      JSON.stringify({
-        createdAt: manifest.createdAt,
-        entries: {
-          1: {
-            language: "english",
-            model: "whisper-1",
-            status: "done",
-            vttName: "PXL_1.vtt",
-            words: 0,
-          },
-        },
-        version: 1,
-      }),
-    );
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
   });
   afterEach(async () => {
@@ -95,7 +88,7 @@ describe("runExport", () => {
     await rm(root, { force: true, recursive: true });
   });
 
-  it("copies the titled files under names made from their titles, with subtitles, and leaves the rest", async () => {
+  it("copies the titled files under names made from their titles, and leaves the rest", async () => {
     await updateEntry(run, "1", { title: "Pool b-roll" });
     await updateEntry(run, "2", { title: "blurry" });
     await updateEntry(run, "2", { deleted: true });
@@ -106,11 +99,24 @@ describe("runExport", () => {
     expect((await readdir(to)).toSorted()).toEqual([
       "cake.jpg",
       "pool-b-roll.jpg",
-      "pool-b-roll.vtt",
+      // No .vtt by default — VLC would auto-show it as captions otherwise.
     ]);
     expect(await readFile(join(to, "pool-b-roll.jpg"), "utf8")).toBe("pic1");
     // The run still has everything, under the names it had.
     expect(await readdir(run)).toContain("PXL_1.JPG");
+  });
+
+  it("copies the subtitle .vtt alongside the video when subtitles: true", async () => {
+    await updateEntry(run, "1", { title: "Pool b-roll" });
+    await updateEntry(run, "3", { title: "cake" });
+
+    await runExport({ inDir: run, subtitles: true, to });
+
+    expect((await readdir(to)).toSorted()).toEqual([
+      "cake.jpg",
+      "pool-b-roll.jpg",
+      "pool-b-roll.vtt",
+    ]);
   });
 
   it("keeps the file's own name when the title has nothing to make one from", async () => {

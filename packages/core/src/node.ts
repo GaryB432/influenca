@@ -3,17 +3,15 @@
 import { readdir, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { type Analysis, ANALYSIS_FILENAME } from "./analysis.js";
 import { readJSON } from "./json.js";
 import {
   type Curation,
+  type Findings,
   isManifest,
   type Manifest,
   MANIFEST_FILENAME,
   type Run,
-  withTitles,
 } from "./manifest.js";
-import { type Transcripts, TRANSCRIPTS_FILENAME } from "./transcripts.js";
 
 export { readJSON } from "./json.js";
 
@@ -34,17 +32,7 @@ export async function listRuns(root: string): Promise<Run[]> {
     .toSorted((a, b) => (a.name < b.name ? 1 : -1));
 }
 
-/** A run's analysis, or undefined if there is none yet or it is not one this version wrote. */
-export async function readAnalysis(dir: string): Promise<Analysis | undefined> {
-  const a = await readJSON<null | Partial<Analysis>>(
-    join(dir, ANALYSIS_FILENAME),
-  ).catch(() => null);
-  return a?.version === 1 && typeof a.entries === "object"
-    ? (a as Analysis)
-    : undefined;
-}
-
-/** Reads a run folder's manifest, rejecting files this version cannot read. */
+/** Reads a run folder's manifest, rejecting unsupported versions or missing entries. */
 export async function readManifest(dir: string): Promise<Manifest> {
   const path = join(dir, MANIFEST_FILENAME);
   const manifest = await readJSON<unknown>(path).catch((error: unknown) => {
@@ -58,46 +46,54 @@ export async function readManifest(dir: string): Promise<Manifest> {
   });
   if (!isManifest(manifest)) {
     throw new Error(
-      `${path} is not a version 1 manifest (written by an older influenca?)`,
+      `${path} is not a version 1 manifest with an entries array.`,
     );
   }
-  return withTitles(manifest);
-}
-
-/**
- * Saves what you have set about one entry, and resolves with the manifest as it now
- * stands. Only what is given changes. A blank title or a mark that is off is left out of
- * the file rather than stored. No file on disk is renamed or removed.
- */
-export async function updateEntry(
-  dir: string,
-  id: string,
-  changes: Curation,
-): Promise<Manifest> {
-  const manifest = await readManifest(dir);
-  const path = join(dir, MANIFEST_FILENAME);
-  const entry = manifest.entries.find((e) => e.id === id);
-  if (!entry) throw new Error(`No entry ${id} in ${path}`);
-
-  if (changes.deleted === true) entry.deleted = true;
-  else if (changes.deleted === false) delete entry.deleted;
-  if (changes.title?.trim()) entry.title = changes.title.trim();
-  else if (changes.title !== undefined) delete entry.title;
-
-  // Written beside, then renamed, so a save that is cut short never leaves half a manifest.
-  await writeFile(`${path}.tmp`, JSON.stringify(manifest, null, 2));
-  await rename(`${path}.tmp`, path);
   return manifest;
 }
 
-/** A run's transcripts record, or undefined if there is none yet or it is not one this version wrote. */
-export async function readTranscripts(
+/**
+ * Saves what has changed about one entry, and resolves with the manifest as it now
+ * stands. Only what is given changes. A blank title or a mark that is off is left out of
+ * the file rather than stored. No file on disk is renamed or removed.
+ */
+export function updateEntry(
   dir: string,
-): Promise<Transcripts | undefined> {
-  const t = await readJSON<null | Partial<Transcripts>>(
-    join(dir, TRANSCRIPTS_FILENAME),
-  ).catch(() => null);
-  return t?.version === 1 && typeof t.entries === "object"
-    ? (t as Transcripts)
-    : undefined;
+  id: string,
+  changes: Curation & Findings,
+): Promise<Manifest> {
+  return updateManifest(dir, (manifest) => {
+    const entry = manifest.entries.find((e) => e.id === id);
+    if (!entry) {
+      throw new Error(`No entry ${id} in ${join(dir, MANIFEST_FILENAME)}`);
+    }
+    if (changes.deleted === true) entry.deleted = true;
+    else if (changes.deleted === false) delete entry.deleted;
+    if (changes.title?.trim()) entry.title = changes.title.trim();
+    else if (changes.title !== undefined) delete entry.title;
+    if (changes.analysis) entry.analysis = changes.analysis;
+    if (changes.transcript) entry.transcript = changes.transcript;
+  });
+}
+
+/**
+ * The one way a manifest is saved once accession has written it. The file is read afresh,
+ * changed and written back whole, so the web page, transcribe and analyze can each be
+ * saving to the same run: none of them writes from a copy it has been holding. Two saves
+ * landing within the same few milliseconds could still cross, which is a risk taken for
+ * a tool one person runs.
+ */
+export async function updateManifest(
+  dir: string,
+  change: (manifest: Manifest) => void,
+): Promise<Manifest> {
+  const manifest = await readManifest(dir);
+  change(manifest);
+  const path = join(dir, MANIFEST_FILENAME);
+  // Written beside, under a name of this process's own, then renamed: a save that is cut
+  // short never leaves half a manifest, and two savers never share a half-written file.
+  const part = `${path}.${process.pid}.tmp`;
+  await writeFile(part, JSON.stringify(manifest, null, 2));
+  await rename(part, path);
+  return manifest;
 }
