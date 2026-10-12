@@ -22,7 +22,7 @@ The web app has the same kind of boundary of its own: `src/lib/server` is server
 `runAccession`, `runTranscribe` and `runAnalyze` take a typed options object that is already complete and valid. Where it came from does not matter to them: the parser in `bin.ts`, a test, anything else. They do not prompt, re-check flags against each other or print usage, and they throw when the work itself cannot be done.
 
 - Rules about which flags go together belong in the parser, where they also show in the usage line: `or(...)` for one-of, `negatableFlag` for on/off pairs.
-- Prompting for a missing argument belongs there too, and happens before any command starts.
+- Prompting for a missing argument belongs there too, and happens before any command starts. Prompts go through optique's wrapper (`prompt` from `@optique/clack`), not clack directly; a prompt whose choices come from another argument uses `derivePromptConfig`, as `export`'s tick list does.
 
 ## How the CLI talks
 
@@ -46,7 +46,9 @@ A run folder holds the kept media plus three hidden JSON files. The manifest is 
 
 - Types: `packages/core/src/manifest.ts`. Writer: `runAccession` in `packages/cli/src/accession.ts`.
 - `{ version: 1, createdAt, entries: ManifestEntry[] }`.
-- Written once, after every file is copied or converted, and never edited after. Accession refuses to run if one already exists in the output dir.
+- Written once, after every file is copied or converted. Accession refuses to run if one already exists in the output dir.
+- It drives the web page, and what you set there while curating is saved back into its entries: `title` (what you call a file once you have seen it, as you would say it, such as `Pool b-roll`) and `deleted` (you do not want it). These are the `Curation` type in `packages/core/src/manifest.ts`; a new thing to record about a file is a new field there. Neither touches the file on disk, which keeps its `outputName`. Export makes a filename from the title with `slug` in `packages/cli/src/export.ts`. A manifest saved while the title was still called `name` is read as if it said `title` (`withTitles`), and is written the new way on its next save.
+- `updateEntry` in `packages/core/src/node.ts` is the one function that saves a manifest after accession. It changes only the fields it is given and writes through a temporary file, so a save cut short cannot leave half a manifest.
 - Entry base: `id`, `sourceName` (intake name), `outputName` (run-folder name), `bytes`, `metaSource`, optional `width`, `height`, `capturedAt`.
 - `video`: `durationSec`, `fps`, `frameCount`, optional `hasAudio`, `videoCodec`.
 - `audio`: `durationSec`, optional `audioCodec`, `channels`, `sampleRate`.
@@ -75,4 +77,4 @@ A run folder holds the kept media plus three hidden JSON files. The manifest is 
 - Readers are in `packages/core/src/node.ts`; see the two entry points above.
 - A missing or wrong-version manifest throws. A missing or wrong-version sidecar reads as `undefined`.
 - `analyze` joins all three and never calls OpenAI.
-- The web app (`apps/web`) reads all three plus the `.vtt` files, and writes nothing. `/media/...` serves kept files with byte ranges; `/poster/...` makes a JPEG frame with ffmpeg.
+- The web app (`apps/web`) reads all three plus the `.vtt` files, and saves what you curate through one form action on the run page, `update`. The action checks the post's origin itself, because SvelteKit does not under `vite dev`.

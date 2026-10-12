@@ -13,7 +13,10 @@ export type ImageEntry = EntryBase & {
   kind: "image";
 };
 
-/** The record of one run: written once by accession, when everything is in, and not edited after. */
+/**
+ * What a run holds: written by accession, when everything is in. It drives the web page,
+ * and what you set there while curating is saved back into its entries.
+ */
 export type Manifest = {
   createdAt: string; // ISO
   entries: ManifestEntry[];
@@ -33,7 +36,15 @@ export type VideoEntry = EntryBase & {
   videoCodec?: string;
 };
 
-type EntryBase = {
+/** What you set about a file on the web page. The rest of an entry is what accession found. */
+export type Curation = {
+  /** Unwanted. The file itself is still in the run folder. */
+  deleted?: boolean;
+  /** What you call the file once you have seen what is in it, as you would say it: "Pool b-roll". Its name on disk stays outputName. */
+  title?: string;
+};
+
+type EntryBase = Curation & {
   bytes: number;
   capturedAt?: string; // ISO; EXIF for images, container creation_time for media
   height?: number;
@@ -44,6 +55,20 @@ type EntryBase = {
   sourceName: string; // filename in the intake dir
   width?: number;
 };
+
+/**
+ * Pure: reads a manifest saved while the title was still called `name`. The old field is
+ * taken as the title, and the next save writes it under the new one.
+ */
+export function withTitles(manifest: Manifest): Manifest {
+  for (const entry of manifest.entries as (ManifestEntry & {
+    name?: string;
+  })[]) {
+    if (entry.name !== undefined) entry.title ??= entry.name;
+    delete entry.name;
+  }
+  return manifest;
+}
 
 /** Shape check for the envelope only; entries are trusted once the version matches. */
 export function isManifest(value: unknown): value is Manifest {

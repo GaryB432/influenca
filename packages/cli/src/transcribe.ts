@@ -9,6 +9,7 @@ import { readManifest, readTranscripts } from "@influenca/core/node";
 import { rename, writeFile } from "node:fs/promises";
 import { join, parse, resolve } from "node:path";
 
+import { identify } from "./entries.js";
 import { invocation } from "./invocation.js";
 import { type RowState, startTable } from "./live.js";
 import { latestRun, mediaDir } from "./paths.js";
@@ -67,9 +68,10 @@ export async function transcribeRun(
   log(
     `Transcribing ${todo.length} of ${heardable.length} with ${WHISPER_MODEL}`,
   );
+  const identity = identify(manifest.entries);
   const table = startTable(
     heardable.map((e) => ({
-      cells: [e.id, e.outputName, e.kind, formatDuration(e.durationSec)],
+      cells: [...identity(e), e.kind, formatDuration(e.durationSec)],
       weight: todo.includes(e) ? e.durationSec : 0,
     })),
   );

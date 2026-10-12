@@ -8,7 +8,8 @@ The model is a museum's. A pile of files left on the doorstep is the **intake**.
 last, and writes a **manifest** of what it kept. The intake is never touched and
 is yours to keep or wipe. On the way in, what is said in each file is written
 down as subtitles. **Analyze** then studies what is inside, as often as you
-like. Each step writes to a file of its own, so the manifest stays a fixed record.
+like. Each step writes to a file of its own. The manifest then drives the web
+page, where you curate: give a file a title, or mark the ones you do not want.
 
 ## How it works
 
@@ -65,15 +66,31 @@ Transcribing is the only step that uses the network or costs money. It happens
 after the manifest is written, so a run is whole before anything is sent, and
 nothing that goes wrong with OpenAI can cost you the run.
 
-## Setup
+## Getting started
 
-Needs a recent Node (developed on 24), pnpm, and `ffmpeg` with `ffprobe` on your `PATH`.
+Influenca is run from a clone of this repository; it is not installed. Its
+settings sit in a `.env` at the root of the clone, so that is where every
+command here is typed.
+
+It needs a recent Node (developed on 24), pnpm, and `ffmpeg` with `ffprobe` on
+your `PATH`.
 
 ```sh
+git clone https://github.com/GaryB432/influenca.git
+cd influenca
 pnpm install
 cp .env.example .env   # set INFLUENCA_MEDIA_DIR, where runs are kept
                        # and OPENAI_API_KEY, to have what is said transcribed
 pnpm build
+pnpm influenca --help
+```
+
+The command runs what was last built. After pulling changes, or changing the
+code, build again:
+
+```sh
+git pull
+pnpm install && pnpm build
 ```
 
 ## Intake
@@ -107,6 +124,11 @@ pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Pixel" -MaxAgeDays 3
 # Every camera file, whatever its age
 pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Galaxy" -MaxAgeDays 0
 ```
+
+Videos, sound and JPEG stills are copied. A Live Photo is a still with a short
+clip under the same name; only the still is taken unless you pass
+`-KeepLiveClips`. Stills an iPhone or iPad offers as HEIC are not copied, and
+the script tells you which setting on the device makes them JPEGs.
 
 Or start it from a WSL terminal, with `pwsh.exe` on the Windows `PATH`:
 
@@ -232,7 +254,7 @@ dimensions and codecs, plus `sourceName`, the name it arrived under.
 
 ```sh
 pnpm dev:web
-# http://localhost:5173/view/<run-folder-name>   (/view for a --no-timestamp run)
+# http://localhost:4000/view/<run-folder-name>   (/view for a --no-timestamp run)
 ```
 
 Shows each file in a run with a player, a thumbnail, what the analysis measured
@@ -243,10 +265,49 @@ Each file also shows where it sits on disk, with a button to copy the path, for
 when you want it in a project. Under WSL the Windows form of the path is there
 too.
 
-It only reads a run folder. Thumbnails are made with ffmpeg when first asked
+This is also where you say what a file is. Watch `PXL_20261010_175159748.mp4`,
+type `Pool b-roll` and **Save**, and the page shows it under that title from then
+on. **Delete** marks a file as unwanted and dims it; **Restore** takes the mark
+off. Both are recorded in the manifest, and neither renames or removes the
+file itself.
+
+Apart from those two it only reads a run folder. Thumbnails are made with ffmpeg when first asked
 for and held in memory.
 
-## Layout
+## Export
+
+```sh
+pnpm influenca export --to ~/projects/garden-party/media   # asks which run
+pnpm influenca export /path/to/run --to /some/folder
+pnpm influenca export --to /some/folder --only 3 --only 7  # by number, without being asked
+```
+
+```
+✓  1  Pool b-roll  PXL_20261010_175159748.mp4  copied as pool-b-roll.mp4
+✓  4  Candles      PXL_20261011_043342083.mp4  copied as candles.mp4
+```
+
+Copies the files you have given a title on the web page into a folder, each
+under a filename made from its title, with its subtitles beside it. Giving a
+file a title is how you pick it: untitled files and deleted ones stay behind.
+At a terminal you are shown the titled files to tick; a script gets all of them.
+
+Leave the run off and you are asked which, from the same list as the front page
+of the web app. A script is not asked, and gets the newest run.
+
+- The run is left as it is. Export copies, and never moves or renames.
+- The filename is the title in lowercase, with a hyphen wherever it has spaces
+  or punctuation: `Pool b-roll` becomes `pool-b-roll.mp4`.
+- A file already in the folder under that name is left alone, so exporting
+  again brings only what is new.
+- Leave `--to` off and you are asked for the folder.
+
+## Development
+
+Working on influenca is the same clone and the same folder. Nothing is
+published and there is nothing to link.
+
+### Layout
 
 | Path              | What                                                        |
 | ----------------- | ----------------------------------------------------------- |
@@ -254,9 +315,21 @@ for and held in memory.
 | `packages/cli`    | The `influenca` command                                     |
 | `apps/web`        | SvelteKit viewer                                            |
 | `scripts/e2e.sh`  | Builds, then runs accession and analyze on a generated clip |
-| `scripts/intake*` | Fill an intake folder from an SD card or an Android phone   |
+| `scripts/intake*` | Fill an intake folder from an SD card, a phone or a tablet  |
 
-## Checks
+`CLAUDE.md` holds the rules the code relies on, for people as much as for
+agents: who may write which file, how options reach a command and how the
+CLI talks.
+
+### Building
+
+```sh
+pnpm build                            # everything, once
+pnpm --filter @influenca/cli dev      # rebuild the CLI as you edit it
+pnpm dev:web                          # the viewer, reloading as you edit it
+```
+
+### Checks
 
 ```sh
 pnpm lint && pnpm typecheck && pnpm test
@@ -264,3 +337,4 @@ sh scripts/e2e.sh
 ```
 
 The tests and the e2e script generate small real clips, so they need ffmpeg too.
+Run all four before opening a pull request.

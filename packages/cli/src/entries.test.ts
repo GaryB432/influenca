@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { classify, planEntries } from "./entries.js";
+import { classify, identify, planEntries } from "./entries.js";
 
 describe("classify", () => {
   it("is case-insensitive and rejects unknown types", () => {
@@ -59,5 +59,27 @@ describe("planEntries", () => {
         { bytes: 1, name: "CLIP.MP4" },
       ]),
     ).toThrow(/collision/);
+  });
+});
+
+describe("identify", () => {
+  const entries = planEntries([
+    { bytes: 1, name: "a.mp4" },
+    { bytes: 1, name: "b.jpg" },
+  ]);
+
+  it("is the number and the name on disk when nothing has a title", () => {
+    expect(entries.map(identify(entries))).toEqual([
+      ["1", "a.mp4"],
+      ["2", "b.jpg"],
+    ]);
+  });
+
+  it("puts the titles first once any file has one, blank for the rest", () => {
+    const titled = [{ ...entries[0]!, title: "Pool b-roll" }, entries[1]!];
+    expect(titled.map(identify(titled))).toEqual([
+      ["1", "Pool b-roll", "a.mp4"],
+      ["2", "", "b.jpg"],
+    ]);
   });
 });

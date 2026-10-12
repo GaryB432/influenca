@@ -4,7 +4,6 @@ import {
   MANIFEST_FILENAME,
   type ManifestEntry,
 } from "@influenca/core";
-import { createReadStream, createWriteStream } from "node:fs";
 import {
   access,
   mkdir,
@@ -15,11 +14,11 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
-import { pipeline } from "node:stream/promises";
 
 import type { OnProgress } from "./ffmpeg.js";
 
 import { convert } from "./convert.js";
+import { copy } from "./copy.js";
 import { classify, type IntakeFile, planEntries } from "./entries.js";
 import { invocation } from "./invocation.js";
 import { startTable } from "./live.js";
@@ -177,26 +176,6 @@ async function convertAndCheck(
     }
   }
   return { ...kept, bytes: (await stat(part)).size };
-}
-
-async function copy(
-  src: string,
-  dest: string,
-  bytes: number,
-  onProgress: OnProgress,
-): Promise<void> {
-  let copied = 0;
-  await pipeline(
-    createReadStream(src),
-    async function* (chunks: AsyncIterable<Buffer>) {
-      for await (const chunk of chunks) {
-        copied += chunk.length;
-        if (bytes > 0) onProgress(copied / bytes);
-        yield chunk;
-      }
-    },
-    createWriteStream(dest),
-  );
 }
 
 /** What is known of a file before it is brought in, as the cells that follow its name. */

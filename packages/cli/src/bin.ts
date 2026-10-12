@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { prompt } from "@optique/clack";
 import { object, or } from "@optique/core/constructs";
+import { dependency } from "@optique/core/dependency";
 import {
   commandLine,
   envVar,
@@ -8,7 +9,7 @@ import {
   message,
   optionName,
 } from "@optique/core/message";
-import { map, optional, withDefault } from "@optique/core/modifiers";
+import { map, multiple, optional, withDefault } from "@optique/core/modifiers";
 import {
   argument,
   command,
@@ -17,11 +18,15 @@ import {
   option,
 } from "@optique/core/primitives";
 import { string } from "@optique/core/valueparser";
+import { derivePromptConfig } from "@optique/prompt";
 import { run } from "@optique/run";
 
 import { runAccession } from "./accession.js";
 import { runAnalyze } from "./analyze.js";
+import { runExport } from "./export.js";
 import { invocation } from "./invocation.js";
+import { latestRun, mediaDir } from "./paths.js";
+import { runChoices, titledChoices } from "./pick.js";
 import { printError } from "./theme.js";
 import { runTranscribe } from "./transcribe.js";
 
@@ -150,11 +155,81 @@ const analyze = command(
   },
 );
 
+// The tick list below is made from the run, so the run is something it can depend on.
+const exportRun = dependency(string({ metavar: "RUN_DIR" }));
+// The runs to offer when export is not told which. Read here, and only for export,
+// because a prompt's choices have to be in hand when the parser is put together.
+const runs = process.argv[2] === "export" ? await runChoices() : [];
+
+const exporting = command(
+  "export",
+  map(
+    object({
+      // Blank when nobody is there to ask: runExport then takes the newest run.
+      inDir: prompt(
+        argument(exportRun, {
+          description: message`A run folder. Left off, you are asked which run under ${envVar("INFLUENCA_MEDIA_DIR")}.`,
+        }),
+        {
+          message: "Export from which run?",
+          options: runs,
+          otherwise: "",
+          type: "select",
+          when: () => process.stdin.isTTY === true && runs.length > 0,
+        },
+      ),
+      to: prompt(
+        option("--to", string({ metavar: "DIR" }), {
+          description: message`The folder to copy into. Made if it is not there.`,
+        }),
+        { message: "Copy the titled files to which folder?", type: "text" },
+      ),
+      // Which files is a question for a person at a terminal; a script gets them all.
+      only: prompt(
+        multiple(
+          option("--only", string({ metavar: "ID" }), {
+            description: message`Copy just this file, by its number. Give it again for more.`,
+          }),
+          { min: 1 },
+        ),
+        derivePromptConfig(
+          exportRun,
+          async (given) => {
+            const options = await titledChoices(
+              given || (await latestRun(mediaDir())),
+            );
+            return {
+              message: "Copy which? Space ticks one, a ticks them all.",
+              options,
+              // With one named file or none there is nothing to choose between, so nothing is asked.
+              ...(options.length < 2 && {
+                prompter: () => Promise.resolve(options.map((o) => o.value)),
+              }),
+              required: options.length > 0,
+              type: "multiselect" as const,
+            };
+          },
+          {
+            defaultValue: () => "",
+            otherwise: [],
+            when: () => process.stdin.isTTY === true,
+          },
+        ),
+      ),
+    }),
+    (v) => ({ ...v, command: "export" as const }),
+  ),
+  {
+    brief: message`Copy the files you have given a title into a folder, named after their titles.`,
+    description: message`Takes the files of a run that have a title and are not marked deleted, and copies each out under a filename made from its title, with its subtitles. The run is left as it is.`,
+  },
+);
+
 // Spelled the way it was started, so the usage and examples can be pasted back.
 const self = invocation();
-const result = await run(or(accession, transcribe, analyze), {
+const result = await run(or(accession, transcribe, analyze, exporting), {
   brief: message`Keep media off a camera or phone, then transcribe and measure it.`,
-  examples: message`${commandLine(`${self} accession /path/to/intake`)}${lineBreak()}${commandLine(`${self} accession /path/to/intake --no-transcribe --dry-run`)}${lineBreak()}${commandLine(`${self} transcribe`)}${lineBreak()}${commandLine(`${self} analyze --redo`)}`,
+  examples: message`${commandLine(`${self} accession /path/to/intake`)}${lineBreak()}${commandLine(`${self} accession /path/to/intake --no-transcribe --dry-run`)}${lineBreak()}${commandLine(`${self} transcribe`)}${lineBreak()}${commandLine(`${self} analyze --redo`)}${lineBreak()}${commandLine(`${self} export --to ~/projects/garden-party/media`)}`,
   help: "both",
   programName: self,
   showDefault: true,
@@ -163,7 +238,13 @@ const result = await run(or(accession, transcribe, analyze), {
 try {
   if (result.command === "accession") await runAccession(result);
   else if (result.command === "transcribe") await runTranscribe(result);
-  else await runAnalyze(result);
+  else if (result.command === "export") {
+    await runExport({
+      ...result,
+      inDir: result.inDir || undefined,
+      only: result.only.length > 0 ? [...result.only] : undefined,
+    });
+  } else await runAnalyze(result);
 } catch (thrown) {
   printError(thrown instanceof Error ? thrown.message : thrown);
   process.exitCode = 1;

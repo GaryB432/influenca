@@ -16,6 +16,7 @@ import {
 import { rename, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
+import { identify } from "./entries.js";
 import { invocation } from "./invocation.js";
 import { startTable } from "./live.js";
 import { measure } from "./measure.js";
@@ -53,9 +54,10 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
       ...said(transcripts?.entries[e.id], opts.language),
     ].join("  ");
 
+  const identity = identify(manifest.entries);
   const table = startTable(
     manifest.entries.map((e) => ({
-      cells: [e.id, e.outputName, e.kind, size(e)],
+      cells: [...identity(e), e.kind, size(e)],
       weight: e.kind === "image" ? 0 : e.durationSec,
     })),
   );

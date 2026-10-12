@@ -1,11 +1,18 @@
 import {
+  type Curation,
   isManifest,
   MANIFEST_FILENAME,
   summarize,
   vttText,
+  withTitles,
 } from "@influenca/core";
-import { readAnalysis, readJSON, readTranscripts } from "@influenca/core/node";
-import { error } from "@sveltejs/kit";
+import {
+  readAnalysis,
+  readJSON,
+  readTranscripts,
+  updateEntry,
+} from "@influenca/core/node";
+import { error, fail } from "@sveltejs/kit";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -15,7 +22,7 @@ import {
   windowsPath,
 } from "#lib/server/media.js";
 
-import type { PageServerLoad } from "./$types";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params }) => {
   let root: string;
@@ -41,6 +48,7 @@ export const load: PageServerLoad = async ({ params }) => {
   if (!isManifest(manifest)) {
     error(422, `${MANIFEST_FILENAME} in ${where} is not a version 1 manifest`);
   }
+  withTitles(manifest);
 
   const [analysis, transcripts] = await Promise.all([
     readAnalysis(dir),
@@ -81,4 +89,33 @@ export const load: PageServerLoad = async ({ params }) => {
     run: params.dir || ".",
     summary: summarize(manifest),
   };
+};
+
+export const actions: Actions = {
+  /** Saves what a form on the page sets about the entry it names: its title, or whether it is unwanted. */
+  update: async ({ params, request, url }) => {
+    // SvelteKit turns away form posts from other sites, but not under `vite dev`, which is
+    // how this app is run. A browser names the page a post came from; a script has no need to.
+    const from = request.headers.get("origin");
+    if (from && from !== url.origin)
+      error(403, "Cross-site posts are not accepted");
+    const dir = resolveInsideRoot(mediaRoot(), params.dir);
+    if (!dir) error(400, "Invalid path");
+
+    const form = await request.formData();
+    const id = form.get("id");
+    if (typeof id !== "string" || id === "")
+      return fail(400, { message: "No entry named" });
+    const title = form.get("title");
+    const deleted = form.get("deleted");
+    const changes: Curation = {
+      ...(typeof deleted === "string" && { deleted: deleted === "true" }),
+      ...(typeof title === "string" && { title }),
+    };
+    try {
+      await updateEntry(dir, id, changes);
+    } catch (e) {
+      return fail(404, { message: e instanceof Error ? e.message : String(e) });
+    }
+  },
 };

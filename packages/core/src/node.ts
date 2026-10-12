@@ -1,15 +1,17 @@
 // Everything in core that touches the filesystem. The main entry stays free of Node
 // built-ins so the web app's browser code can import it.
-import { readdir } from "node:fs/promises";
+import { readdir, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { type Analysis, ANALYSIS_FILENAME } from "./analysis.js";
 import { readJSON } from "./json.js";
 import {
+  type Curation,
   isManifest,
   type Manifest,
   MANIFEST_FILENAME,
   type Run,
+  withTitles,
 } from "./manifest.js";
 import { type Transcripts, TRANSCRIPTS_FILENAME } from "./transcripts.js";
 
@@ -59,6 +61,32 @@ export async function readManifest(dir: string): Promise<Manifest> {
       `${path} is not a version 1 manifest (written by an older influenca?)`,
     );
   }
+  return withTitles(manifest);
+}
+
+/**
+ * Saves what you have set about one entry, and resolves with the manifest as it now
+ * stands. Only what is given changes. A blank title or a mark that is off is left out of
+ * the file rather than stored. No file on disk is renamed or removed.
+ */
+export async function updateEntry(
+  dir: string,
+  id: string,
+  changes: Curation,
+): Promise<Manifest> {
+  const manifest = await readManifest(dir);
+  const path = join(dir, MANIFEST_FILENAME);
+  const entry = manifest.entries.find((e) => e.id === id);
+  if (!entry) throw new Error(`No entry ${id} in ${path}`);
+
+  if (changes.deleted === true) entry.deleted = true;
+  else if (changes.deleted === false) delete entry.deleted;
+  if (changes.title?.trim()) entry.title = changes.title.trim();
+  else if (changes.title !== undefined) delete entry.title;
+
+  // Written beside, then renamed, so a save that is cut short never leaves half a manifest.
+  await writeFile(`${path}.tmp`, JSON.stringify(manifest, null, 2));
+  await rename(`${path}.tmp`, path);
   return manifest;
 }
 

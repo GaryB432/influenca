@@ -25,7 +25,11 @@
 
 .PARAMETER Extensions
     Optional. Comma-separated file extensions to copy.
-    Defaults to: mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A
+    Defaults to: mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,jpg,JPG,jpeg,JPEG
+
+.PARAMETER KeepLiveClips
+    Optional. A Live Photo is a still and a short clip under the same name. By
+    default only the still is copied; this brings the clip as well.
 
 .PARAMETER MaxAgeDays
     Optional. Only copy files modified within this many days. Default: 7.
@@ -55,8 +59,9 @@
 [CmdletBinding()]
 param(
     [string]  $PhoneName  = "",
-    [string]  $Extensions = "mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A",
+    [string]  $Extensions = "mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,jpg,JPG,jpeg,JPEG",
     [int]     $MaxAgeDays = 7,
+    [switch]  $KeepLiveClips,
     [string]  $WslDistro  = ""
 )
 
@@ -183,13 +188,35 @@ if ($null -ne $mediaFolder) {
 $allowedExts = $Extensions -split ',' | ForEach-Object { ".$($_.Trim())" }
 $cutoffDate  = if ($MaxAgeDays -gt 0) { (Get-Date).AddDays(-$MaxAgeDays) } else { $null }
 
+# A Live Photo is two files under one name: the still, and a clip of a second or two
+# around it. The still is the photo, so the clip is left on the device.
+$stillExts = @(".jpg", ".jpeg", ".heic")
+$clipExts  = @(".mov")
+$script:liveClips = 0
+$script:heicStills = 0
+
 function Collect-MediaItems ([object]$folder, [ref]$results) {
-    foreach ($item in $folder.Items()) {
+    # Listed once: every pass over a folder is a round trip to the device.
+    $items  = @($folder.Items())
+    $stills = @{}
+    foreach ($item in $items) {
+        if (-not $item.IsFolder -and [System.IO.Path]::GetExtension($item.Name) -in $stillExts) {
+            $stills[[System.IO.Path]::GetFileNameWithoutExtension($item.Name)] = $true
+        }
+    }
+
+    foreach ($item in $items) {
         if ($item.IsFolder) {
             Collect-MediaItems $item.GetFolder() $results
         } else {
             $ext = [System.IO.Path]::GetExtension($item.Name)
+            if ($ext -eq ".heic" -and $ext -notin $allowedExts) { $script:heicStills++ }
             if ($ext -notin $allowedExts) { continue }
+            $stem = [System.IO.Path]::GetFileNameWithoutExtension($item.Name)
+            if (-not $KeepLiveClips -and $ext -in $clipExts -and $stills.ContainsKey($stem)) {
+                $script:liveClips++
+                continue
+            }
 
             # ModifyDate is detail column 3 for most Shell namespaces
             $modStr = $folder.GetDetailsOf($item, 3)
@@ -213,6 +240,12 @@ $mediaItems = [System.Collections.Generic.List[object]]::new()
 $listRef    = [ref]$mediaItems
 Collect-MediaItems $mediaFolder $listRef
 
+# Accession keeps .jpg, not .heic, so a still in that form would be copied for nothing.
+if ($script:heicStills -gt 0) {
+    Write-Warn "$($script:heicStills) still(s) are HEIC and were not copied."
+    Write-Host "  • On an iPhone or iPad: Settings > Photos > Transfer to Mac or PC > Automatic hands over JPEGs."
+}
+
 if ($mediaItems.Count -eq 0) {
     $ageNote = if ($MaxAgeDays -gt 0) { " in the last $MaxAgeDays day(s)" } else { "" }
     Write-Warn "No matching media files found on $phoneFriendlyName$ageNote."
@@ -221,6 +254,9 @@ if ($mediaItems.Count -eq 0) {
 }
 
 Write-Ok "Found $($mediaItems.Count) file(s) to copy"
+if ($script:liveClips -gt 0) {
+    Write-Step "Left $($script:liveClips) Live Photo clip(s) on the device (-KeepLiveClips brings them too)"
+}
 
 # ---------------------------------------------------------------------------
 # 4. Build the Windows destination path
