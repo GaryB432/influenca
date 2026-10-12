@@ -42,7 +42,7 @@ Every command is laid out the same way, so intake, accession, transcribe and ana
 
 A run folder holds the kept media, a `.vtt` beside each transcribed file, and one JSON file, `.influenca.json`, which holds everything known about the run.
 
-- Types: `packages/core/src/manifest.ts`. `{ createdAt, analyzedAt?, entries: ManifestEntry[] }`.
+- Types: `packages/core/src/manifest.ts`. `{ version: 1, createdAt, analyzedAt?, entries: ManifestEntry[] }`.
 - Accession writes it once, after every file is copied or converted, and refuses to run if one already exists in the output dir. After that each step adds to the entries:
   - `transcript`, by transcribe (`packages/cli/src/transcribe.ts`, Whisper call in `whisper.ts`): `done` (`language`, `model`, `vttName`, `words`), `failed` (`model`, `reason`) or `silent`. Saved after every file, because each one cost money to make.
   - `analysis`, by analyze (`packages/cli/src/analyze.ts`, thresholds in `measure.ts`): `silentSec?` (below -40 dB for a second or more, anything with audio) and `stillSec?` (picture frozen two seconds or more, video only). Images get none. Saved once at the end, with `analyzedAt` on the manifest; `--redo` measures again and `--minimal` neither measures nor saves. Percent shares, Mb/s and word totals are worked out at print time, not stored.
@@ -56,13 +56,13 @@ A run folder holds the kept media, a `.vtt` beside each transcribed file, and on
 
 ### Reading it
 
-- `readManifest` in `packages/core/src/node.ts` is the one reader, and `listRuns` uses it. A missing manifest, or one without an `entries` array, throws. Transcripts, analysis and curation are stored on each entry; there is no format version or legacy sidecar support.
+- `readManifest` in `packages/core/src/node.ts` is the one reader, and `listRuns` uses it. A missing manifest, one without an `entries` array, or one whose version is not `1` throws. Transcripts, analysis and curation are stored on each entry; legacy sidecars are not read.
 - Entry base: `id`, `sourceName` (intake name), `outputName` (run-folder name), `bytes`, `metaSource`, optional `width`, `height`, `capturedAt`.
 - `video`: `durationSec`, `fps`, `frameCount`, optional `hasAudio`, `videoCodec`.
 - `audio`: `durationSec`, optional `audioCodec`, `channels`, `sampleRate`.
 - `image`: `frameCount: 1`.
 - `id` is the 1-based position in the name-sorted intake listing, as a string (`planEntries` in `packages/cli/src/entries.ts`). It is unique only within a run.
 - `metaSource` is `"estimated"` (guessed from byte size) until ffprobe fills in real numbers, then `"ffprobe"`.
-- `isManifest` checks only the envelope: `entries` is an array.
+- `isManifest` checks only the envelope: version is `1` and `entries` is an array.
 - `analyze` never calls OpenAI; it only reads what transcribe left on the entries.
 - The web app (`apps/web`) reads the manifest and the `.vtt` files, and saves what you curate through one form action on the run page, `update`. The action checks the post's origin itself, because SvelteKit does not under `vite dev`.

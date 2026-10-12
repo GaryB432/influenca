@@ -32,7 +32,7 @@ export async function listRuns(root: string): Promise<Run[]> {
     .toSorted((a, b) => (a.name < b.name ? 1 : -1));
 }
 
-/** Reads a run folder's manifest, rejecting files without an entries array. */
+/** Reads a run folder's manifest, rejecting unsupported versions or missing entries. */
 export async function readManifest(dir: string): Promise<Manifest> {
   const path = join(dir, MANIFEST_FILENAME);
   const manifest = await readJSON<unknown>(path).catch((error: unknown) => {
@@ -45,9 +45,10 @@ export async function readManifest(dir: string): Promise<Manifest> {
     );
   });
   if (!isManifest(manifest)) {
-    throw new Error(`${path} is not a manifest: expected an entries array.`);
+    throw new Error(
+      `${path} is not a version 1 manifest with an entries array.`,
+    );
   }
-  delete (manifest as Manifest & { version?: unknown }).version;
   return manifest;
 }
 

@@ -29,6 +29,7 @@ describe("updateEntry", () => {
         sourceName: "b.jpg",
       },
     ],
+    version: 1,
   };
   let dir: string;
   beforeEach(async () => {
@@ -49,7 +50,7 @@ describe("updateEntry", () => {
     const saved = JSON.parse(
       await readFile(join(dir, MANIFEST_FILENAME), "utf8"),
     ) as Record<string, unknown>;
-    expect(saved).not.toHaveProperty("version");
+    expect(saved.version).toBe(1);
     expect(await readdir(dir)).toEqual([MANIFEST_FILENAME]);
   });
 
@@ -96,19 +97,24 @@ describe("updateEntry", () => {
     expect(await readManifest(dir)).toEqual(manifest);
   });
 
-  it("removes the format marker from an inline manifest when saving", async () => {
+  it("rejects a manifest with an unsupported version", async () => {
     await writeFile(
       join(dir, MANIFEST_FILENAME),
       JSON.stringify({ ...manifest, version: 2 }),
     );
 
-    await updateEntry(dir, "1", { title: "Agnes" });
+    await expect(readManifest(dir)).rejects.toThrow(/version 1 manifest/);
+  });
 
-    const saved = JSON.parse(
-      await readFile(join(dir, MANIFEST_FILENAME), "utf8"),
-    ) as { entries: Record<string, unknown>[] } & Record<string, unknown>;
-    expect(saved).not.toHaveProperty("version");
-    expect(saved.entries[0]).toMatchObject({ title: "Agnes" });
+  it("rejects a manifest without a version", async () => {
+    const withoutVersion: Record<string, unknown> = { ...manifest };
+    delete withoutVersion.version;
+    await writeFile(
+      join(dir, MANIFEST_FILENAME),
+      JSON.stringify(withoutVersion),
+    );
+
+    await expect(readManifest(dir)).rejects.toThrow(/version 1 manifest/);
   });
 
   it("rejects an id the run does not have, changing nothing", async () => {

@@ -73,6 +73,7 @@ describe("runExport", () => {
         image("3", "PXL_3.jpg"),
         image("4", "PXL_4.jpg"),
       ],
+      version: 1,
     };
     await mkdir(run);
     await writeFile(join(run, MANIFEST_FILENAME), JSON.stringify(manifest));

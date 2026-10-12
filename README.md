@@ -252,8 +252,9 @@ dimensions and codecs, plus `sourceName`, the name it arrived under. As the
 other steps run it gains what was heard (`transcript`), what was measured
 (`analysis`), and what you set on the web page (`title`, `deleted`).
 
-The manifest has no format version. Transcript, analysis and curation data are
-stored directly on each entry in `.influenca.json`.
+The manifest is version 1. Transcript, analysis and curation data are stored
+directly on each entry in `.influenca.json`; manifests with another or missing
+version are rejected.
 
 ## Web
 

@@ -26,6 +26,7 @@ export type Manifest = {
   analyzedAt?: string; // ISO
   createdAt: string; // ISO
   entries: ManifestEntry[];
+  version: 1;
 };
 
 export type ManifestEntry = AudioEntry | ImageEntry | VideoEntry;
@@ -69,9 +70,13 @@ type EntryBase = Curation &
   };
 
 /**
- * Shape check for the envelope only; entries are trusted once they are in an array.
+ * Shape check for the envelope only; entries are trusted once the version and array match.
  */
 export function isManifest(value: unknown): value is Manifest {
-  const m = value as null | Partial<{ entries: unknown }>;
-  return typeof m === "object" && Array.isArray(m?.entries);
+  const m = value as null | Partial<{ entries: unknown; version: unknown }>;
+  return (
+    typeof m === "object" &&
+    m?.version === 1 &&
+    Array.isArray(m.entries)
+  );
 }

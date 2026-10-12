@@ -27,6 +27,7 @@ describe("summarize", () => {
         { ...base, durationSec: 2, id: "2", kind: "audio" },
         { ...base, frameCount: 1, id: "3", kind: "image" },
       ],
+      version: 1,
     };
     expect(summarize(manifest)).toEqual({
       counts: { audio: 1, image: 1, video: 1 },
