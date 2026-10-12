@@ -1,19 +1,13 @@
 import {
-  type Analysis,
-  ANALYSIS_FILENAME,
   type EntryAnalysis,
   formatDuration,
   type Manifest,
+  MANIFEST_FILENAME,
   type ManifestEntry,
   summarize,
   type Transcript,
 } from "@influenca/core";
-import {
-  readAnalysis,
-  readManifest,
-  readTranscripts,
-} from "@influenca/core/node";
-import { rename, writeFile } from "node:fs/promises";
+import { readManifest, updateManifest } from "@influenca/core/node";
 import { join, resolve } from "node:path";
 
 import { identify } from "./entries.js";
@@ -29,7 +23,7 @@ export type AnalyzeOptions = {
   language: string;
   /** Totals from the manifest only: measures nothing and writes nothing. */
   minimal: boolean;
-  /** Measure again even if the run already has an analysis file. */
+  /** Measure again even if the run has been measured before. */
   redo?: boolean;
 };
 
@@ -46,13 +40,10 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
   if (opts.minimal) return;
   log(`Total duration: ${formatDuration(s.totalDurationSec)}`);
 
-  const existing = opts.redo ? undefined : await readAnalysis(dir);
-  const transcripts = await readTranscripts(dir);
+  // Measured before, and not asked to again: what is on the entries is shown as it is.
+  const measuredAt = opts.redo ? undefined : manifest.analyzedAt;
   const found = (e: ManifestEntry, a?: EntryAnalysis) =>
-    [
-      ...measured(e, a),
-      ...said(transcripts?.entries[e.id], opts.language),
-    ].join("  ");
+    [...measured(e, a), ...said(e.transcript, opts.language)].join("  ");
 
   const identity = identify(manifest.entries);
   const table = startTable(
@@ -62,10 +53,8 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
     })),
   );
   try {
-    if (existing) {
-      manifest.entries.forEach((e, i) =>
-        table.set(i, found(e, existing.entries[e.id])),
-      );
+    if (measuredAt) {
+      manifest.entries.forEach((e, i) => table.set(i, found(e, e.analysis)));
     } else {
       await measureRun(dir, manifest, table, found);
     }
@@ -73,23 +62,22 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
     table.end();
   }
 
-  const words = manifest.entries.reduce((sum, e) => {
-    const t = transcripts?.entries[e.id];
-    return sum + (t?.status === "done" ? t.words : 0);
-  }, 0);
+  const words = manifest.entries.reduce(
+    (sum, e) =>
+      sum + (e.transcript?.status === "done" ? e.transcript.words : 0),
+    0,
+  );
   log(
-    transcripts
+    manifest.entries.some((e) => e.transcript)
       ? `Total words: ${words}`
       : dim(
           `No transcripts; run \`${invocation()} transcribe\` for what was said.`,
         ),
   );
   log(
-    existing
-      ? dim(
-          `Analysis from ${existing.createdAt}; pass --redo to measure again.`,
-        )
-      : `Wrote analysis to ${accent(join(dir, ANALYSIS_FILENAME))}`,
+    measuredAt
+      ? dim(`Measured ${measuredAt}; pass --redo to measure again.`)
+      : `Saved what was measured to ${accent(join(dir, MANIFEST_FILENAME))}`,
   );
   if (s.estimated) {
     log(
@@ -116,20 +104,14 @@ function measured(e: ManifestEntry, a: EntryAnalysis = {}): string[] {
   ];
 }
 
-/** Measures every video and audio file in the run, row by row, and writes the analysis file beside the manifest. */
+/** Measures every video and audio file in the run, row by row, and saves what it found to the manifest. */
 async function measureRun(
   dir: string,
   manifest: Manifest,
   table: ReturnType<typeof startTable>,
   found: (e: ManifestEntry, a?: EntryAnalysis) => string,
 ): Promise<void> {
-  const path = join(dir, ANALYSIS_FILENAME);
-  const analysis: Analysis = {
-    createdAt: new Date().toISOString(),
-    entries: {},
-    version: 1,
-  };
-
+  const measurements = new Map<string, EntryAnalysis>();
   for (const [i, e] of manifest.entries.entries()) {
     if (e.kind === "image") {
       table.set(i, found(e));
@@ -139,15 +121,25 @@ async function measureRun(
       audio: e.kind === "audio" || e.hasAudio === true,
       video: e.kind === "video",
     };
-    analysis.entries[e.id] = await table.run(
-      i,
-      (report) => measure(join(dir, e.outputName), has, e.durationSec, report),
-      (a) => found(e, a),
+    measurements.set(
+      e.id,
+      await table.run(
+        i,
+        (report) =>
+          measure(join(dir, e.outputName), has, e.durationSec, report),
+        (a) => found(e, a),
+      ),
     );
   }
-  // Write beside, then rename, so an interrupted run never leaves half a file.
-  await writeFile(`${path}.tmp`, JSON.stringify(analysis, null, 2));
-  await rename(`${path}.tmp`, path);
+  // Saved once, at the end, into the manifest as it stands by then: a title given on the
+  // web page while this ran is not undone.
+  await updateManifest(dir, (latest) => {
+    for (const e of latest.entries) {
+      const analysis = measurements.get(e.id);
+      if (analysis) e.analysis = analysis;
+    }
+    latest.analyzedAt = new Date().toISOString();
+  });
 }
 
 /** How much was said, which is its own hint of what a file holds. */

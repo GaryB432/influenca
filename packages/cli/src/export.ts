@@ -1,4 +1,4 @@
-import { readManifest, readTranscripts } from "@influenca/core/node";
+import { readManifest } from "@influenca/core/node";
 import { access, copyFile, mkdir, rename, rm } from "node:fs/promises";
 import { extname, join, parse, resolve } from "node:path";
 
@@ -26,7 +26,6 @@ export async function runExport(opts: ExportOptions): Promise<void> {
   const dir = opts.inDir ? resolve(opts.inDir) : await latestRun(mediaDir());
   const to = resolve(opts.to);
   const manifest = await readManifest(dir);
-  const transcripts = await readTranscripts(dir);
   const titled = manifest.entries.filter(
     (e) => e.title && !e.deleted && (opts.only?.includes(e.id) ?? true),
   );
@@ -75,7 +74,7 @@ export async function runExport(opts: ExportOptions): Promise<void> {
         () => `copied as ${target}`,
       );
       copied++;
-      const t = transcripts?.entries[e.id];
+      const t = e.transcript;
       if (t?.status === "done") {
         await copyFile(join(dir, t.vttName), join(to, `${stem}.vtt`));
       }

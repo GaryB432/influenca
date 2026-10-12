@@ -2,11 +2,9 @@ import {
   formatDuration,
   type ManifestEntry,
   type Transcript,
-  type Transcripts,
-  TRANSCRIPTS_FILENAME,
 } from "@influenca/core";
-import { readManifest, readTranscripts } from "@influenca/core/node";
-import { rename, writeFile } from "node:fs/promises";
+import { readManifest, updateEntry } from "@influenca/core/node";
+import { writeFile } from "node:fs/promises";
 import { join, parse, resolve } from "node:path";
 
 import { identify } from "./entries.js";
@@ -45,23 +43,17 @@ export async function transcribeRun(
   redo = false,
 ): Promise<number> {
   const manifest = await readManifest(dir);
-  const transcripts: Transcripts = (redo
-    ? undefined
-    : await readTranscripts(dir)) ?? {
-    createdAt: new Date().toISOString(),
-    entries: {},
-    version: 1,
-  };
   const media = manifest.entries.filter((e) => e.kind !== "image");
+  // Asked to redo, what was heard before is passed over and every file is sent again.
+  const before = (e: Media) => (redo ? undefined : e.transcript);
   const todo = media.filter(
-    (e) => (e.kind === "audio" || e.hasAudio) && !transcripts.entries[e.id],
+    (e) => (e.kind === "audio" || e.hasAudio) && !before(e),
   );
   if (todo.length === 0) return 0;
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("Set OPENAI_API_KEY in .env to transcribe.");
 
   const names = vttNames(media);
-  const path = join(dir, TRANSCRIPTS_FILENAME);
   const made: Transcript[] = [];
   // Every file with sound gets a row, so what was done before shows beside what is done now.
   const heardable = media.filter((e) => e.kind === "audio" || e.hasAudio);
@@ -77,9 +69,9 @@ export async function transcribeRun(
   );
   try {
     for (const [i, e] of heardable.entries()) {
-      const before = transcripts.entries[e.id];
-      if (before) {
-        table.set(i, outcome(before).tail, outcome(before).state);
+      const had = before(e);
+      if (had) {
+        table.set(i, outcome(had).tail, outcome(had).state);
         continue;
       }
       const vttName = names.get(e.id) ?? `${e.outputName}.vtt`;
@@ -113,11 +105,9 @@ export async function transcribeRun(
         },
         outcome,
       );
-      made.push((transcripts.entries[e.id] = transcript));
-      // After every file, so a run that is stopped has paid for nothing it lost. Written
-      // beside, then renamed, so it never leaves half a file.
-      await writeFile(`${path}.tmp`, JSON.stringify(transcripts, null, 2));
-      await rename(`${path}.tmp`, path);
+      made.push(transcript);
+      // After every file, so a run that is stopped has paid for nothing it lost.
+      await updateEntry(dir, e.id, { transcript });
     }
   } finally {
     table.end();
