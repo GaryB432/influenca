@@ -1,7 +1,6 @@
 :root {
   --color-theme-1: #1ca0dedf;
   --color-theme-2: #4075a6;
- 
   --color-text-dark: rgba(0, 0, 0, 0.7);
   --color-text-light: #e6e6e6;
   --label-color-brown: #555;
@@ -22,11 +21,6 @@ body {
   color-scheme: light dark;
 }
 
-main {
-  /* max-width: 44rem; */
-  margin: 3rem auto;
-  padding: 0 1rem;
-}
 label {
   display: block;
   margin-bottom: 0.4rem;

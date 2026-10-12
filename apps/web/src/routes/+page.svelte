@@ -7,7 +7,6 @@
 
 <svelte:head><title>Influenca</title></svelte:head>
 
-<main>
   <h1>Influenca</h1>
   {#if data.runs.length === 0}
     <p>
@@ -26,4 +25,3 @@
       {/each}
     </select>
   {/if}
-</main>
