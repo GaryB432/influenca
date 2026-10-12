@@ -1,17 +1,10 @@
 import {
   type Curation,
-  isManifest,
-  MANIFEST_FILENAME,
+  type Manifest,
   summarize,
   vttText,
-  withTitles,
 } from "@influenca/core";
-import {
-  readAnalysis,
-  readJSON,
-  readTranscripts,
-  updateEntry,
-} from "@influenca/core/node";
+import { readManifest, updateEntry } from "@influenca/core/node";
 import { error, fail } from "@sveltejs/kit";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -38,34 +31,25 @@ export const load: PageServerLoad = async ({ params }) => {
   const dir = resolveInsideRoot(root, params.dir);
   if (!dir) error(400, "Invalid path");
 
-  const where = params.dir || "the media directory";
-  let manifest: unknown;
+  let manifest: Manifest;
   try {
-    manifest = await readJSON(join(dir, MANIFEST_FILENAME));
-  } catch {
-    error(404, `No ${MANIFEST_FILENAME} in ${where}`);
+    manifest = await readManifest(dir);
+  } catch (e) {
+    // Not a run folder, or not one this influenca can read: either way there is no page for it.
+    error(404, e instanceof Error ? e.message : "Not a run folder");
   }
-  if (!isManifest(manifest)) {
-    error(422, `${MANIFEST_FILENAME} in ${where} is not a version 1 manifest`);
-  }
-  withTitles(manifest);
-
-  const [analysis, transcripts] = await Promise.all([
-    readAnalysis(dir),
-    readTranscripts(dir),
-  ]);
   const url = (name: string, route = "media") =>
     `/${route}/${[...params.dir.split("/"), name].filter(Boolean).map(encodeURIComponent).join("/")}`;
 
   return {
     files: await Promise.all(
       manifest.entries.map(async (entry) => {
-        const transcript = transcripts?.entries[entry.id];
         const path = join(dir, entry.outputName);
         const vttName =
-          transcript?.status === "done" ? transcript.vttName : undefined;
+          entry.transcript?.status === "done"
+            ? entry.transcript.vttName
+            : undefined;
         return {
-          analysis: analysis?.entries[entry.id],
           entry,
           // Where to pick the file up from, when it is wanted in a project.
           paths: [path, windowsPath(path)].filter((p) => p !== undefined),
@@ -81,7 +65,6 @@ export const load: PageServerLoad = async ({ params }) => {
               )
             : undefined,
           src: url(entry.outputName),
-          transcript,
           vttSrc: vttName && url(vttName),
         };
       }),
