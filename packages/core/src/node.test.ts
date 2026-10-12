@@ -29,7 +29,7 @@ describe("updateEntry", () => {
         sourceName: "b.jpg",
       },
     ],
-    version: 1,
+    version: 2,
   };
   let dir: string;
   beforeEach(async () => {
@@ -96,6 +96,74 @@ describe("updateEntry", () => {
     ) as { entries: Record<string, unknown>[] };
     expect(saved.entries[0]).toMatchObject({ title: "from before" });
     expect(saved.entries[0]).not.toHaveProperty("name");
+  });
+
+  describe("a run from when analyze and transcribe kept files of their own", () => {
+    const heard = {
+      language: "english",
+      model: "whisper-1",
+      status: "done",
+      vttName: "a.vtt",
+      words: 12,
+    };
+    const apart = async (version: number) => {
+      await writeFile(
+        join(dir, MANIFEST_FILENAME),
+        JSON.stringify({ ...manifest, version }),
+      );
+      await writeFile(
+        join(dir, ".influenca.analysis.json"),
+        JSON.stringify({
+          createdAt: "2059-05-20T01:00:00.000Z",
+          entries: { 1: { stillSec: 4 } },
+          version: 1,
+        }),
+      );
+      await writeFile(
+        join(dir, ".influenca.transcripts.json"),
+        JSON.stringify({
+          createdAt: "2059-05-20T00:30:00.000Z",
+          entries: { 2: heard },
+          version: 1,
+        }),
+      );
+    };
+
+    it("is read with what those files held on its entries", async () => {
+      await apart(1);
+      expect(await readManifest(dir)).toEqual({
+        ...manifest,
+        analyzedAt: "2059-05-20T01:00:00.000Z",
+        entries: [
+          { ...manifest.entries[0], analysis: { stillSec: 4 } },
+          { ...manifest.entries[1], transcript: heard },
+        ],
+      });
+    });
+
+    it("is saved whole in the new form by its next save, and the old files are left where they are", async () => {
+      await apart(1);
+      await updateEntry(dir, "1", { title: "Agnes" });
+      const saved = JSON.parse(
+        await readFile(join(dir, MANIFEST_FILENAME), "utf8"),
+      ) as Manifest;
+      expect(saved.version).toBe(2);
+      expect(saved.entries[0]).toMatchObject({
+        analysis: { stillSec: 4 },
+        title: "Agnes",
+      });
+      expect(saved.entries[1]).toMatchObject({ transcript: heard });
+      expect((await readdir(dir)).toSorted()).toEqual([
+        ".influenca.analysis.json",
+        MANIFEST_FILENAME,
+        ".influenca.transcripts.json",
+      ]);
+    });
+
+    it("has those files passed over once it is in the new form", async () => {
+      await apart(2);
+      expect(await readManifest(dir)).toEqual(manifest);
+    });
   });
 
   it("rejects an id the run does not have, changing nothing", async () => {
