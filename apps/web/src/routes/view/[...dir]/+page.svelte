@@ -6,16 +6,6 @@
   const { files, run, summary } = $derived(data);
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
 
-  let copied = $state<string>();
-
-  async function copy(path: string) {
-    await navigator.clipboard.writeText(path);
-    copied = path;
-    setTimeout(() => {
-      if (copied === path) copied = undefined;
-    }, 1500);
-  }
-
   /**
    * Holds a video's thumbnail and metadata back until its card is near the screen. A run
    * can hold dozens of clips, and a browser only keeps a few connections open to one
@@ -60,15 +50,6 @@
 
 <svelte:head><title>{run} · Influenca</title></svelte:head>
 
-{#snippet copy_button(path: string)}
-  <p class="path">
-    <code>{path}</code>
-    <button onclick={() => copy(path)}>
-      {copied === path ? "Copied" : "Copy"}
-    </button>
-  </p>
-{/snippet}
-
 <main>
   <p class="back"><a href="/">All runs</a></p>
   <h1>{run}</h1>
@@ -112,9 +93,7 @@
           </p>
         {/if}
         <p class="facts">{facts(e).join(" · ")}</p>
-        {#each paths as path (path)}
-          {@render copy_button(path)}
-        {/each}
+
         {#if said}
           <p class="said">{said}</p>
         {/if}
@@ -227,22 +206,7 @@
   .from {
     background-color: whitesmoke;
   }
-  .path {
-    display: flex;
-    gap: 0.5rem;
-    align-items: baseline;
-    margin: 0.3rem 0 0;
-    font-size: 0.85rem;
-  }
-  .path code {
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-  .path button {
-    flex: none;
-    min-width: 4rem;
-    font: inherit;
-  }
+
   /* Still there to play and to restore, but out of the way. */
   .deleted .media,
   .deleted .about > :not(form) {
