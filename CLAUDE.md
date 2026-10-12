@@ -7,7 +7,7 @@ Notes for agents working in this repo. The README covers usage; this covers what
 `packages/core` is imported by both the CLI and the web app, and part of the web app runs in the browser. So it is split by what the code may touch, not by topic.
 
 - `@influenca/core` (`src/index.ts`): types, filename constants and pure functions such as `summarize`, `formatDuration`, `isManifest` and `vttText`. Safe to import anywhere, including `.svelte` files.
-- `@influenca/core/node` (`src/node.ts`): everything that touches the filesystem, such as `readManifest`, `readAnalysis`, `readTranscripts`, `listRuns` and `readJSON`. Server and CLI only.
+- `@influenca/core/node` (`src/node.ts`): everything that touches the filesystem, such as `readManifest`, `updateManifest`, `listRuns` and `readJSON`. Server and CLI only.
 
 The rules that keep this working:
 
@@ -38,43 +38,31 @@ Every command is laid out the same way, so intake, accession, transcribe and ana
 - Nothing else may write to stdout while a table is live; put what happened to a file on its row.
 - The intake scripts in `scripts/` end on the same `Next:` line.
 
-## The JSON files in a run folder
+## The manifest
 
-A run folder holds the kept media plus three hidden JSON files. The manifest is the source of truth; the other two are sidecars that point into it by entry `id`. Each file has exactly one writer.
+A run folder holds the kept media, a `.vtt` beside each transcribed file, and one JSON file, `.influenca.json`, which holds everything known about the run.
 
-### `.influenca.json` — the manifest
+- Types: `packages/core/src/manifest.ts`. `{ version: 1, createdAt, analyzedAt?, entries: ManifestEntry[] }`.
+- Accession writes it once, after every file is copied or converted, and refuses to run if one already exists in the output dir. After that each step adds to the entries:
+  - `transcript`, by transcribe (`packages/cli/src/transcribe.ts`, Whisper call in `whisper.ts`): `done` (`language`, `model`, `vttName`, `words`), `failed` (`model`, `reason`) or `silent`. Saved after every file, because each one cost money to make.
+  - `analysis`, by analyze (`packages/cli/src/analyze.ts`, thresholds in `measure.ts`): `silentSec?` (below -40 dB for a second or more, anything with audio) and `stillSec?` (picture frozen two seconds or more, video only). Images get none. Saved once at the end, with `analyzedAt` on the manifest; `--redo` measures again and `--minimal` neither measures nor saves. Percent shares, Mb/s and word totals are worked out at print time, not stored.
+  - `title` and `deleted`, by you on the web page: the `Curation` type. `title` is what you call a file once you have seen it, as you would say it, such as `Pool b-roll`; export makes a filename from it with `slug` in `packages/cli/src/export.ts`. Neither touches the file on disk, which keeps its `outputName`.
+- A new thing to record about a file is a new field on the entry: in `Curation` if you set it, in `Findings` if a tool works it out.
 
-- Types: `packages/core/src/manifest.ts`. Writer: `runAccession` in `packages/cli/src/accession.ts`.
-- `{ version: 1, createdAt, entries: ManifestEntry[] }`.
-- Written once, after every file is copied or converted. Accession refuses to run if one already exists in the output dir.
-- It drives the web page, and what you set there while curating is saved back into its entries: `title` (what you call a file once you have seen it, as you would say it, such as `Pool b-roll`) and `deleted` (you do not want it). These are the `Curation` type in `packages/core/src/manifest.ts`; a new thing to record about a file is a new field there. Neither touches the file on disk, which keeps its `outputName`. Export makes a filename from the title with `slug` in `packages/cli/src/export.ts`. A manifest saved while the title was still called `name` is read as if it said `title` (`withTitles`), and is written the new way on its next save.
-- `updateEntry` in `packages/core/src/node.ts` is the one function that saves a manifest after accession. It changes only the fields it is given and writes through a temporary file, so a save cut short cannot leave half a manifest.
+### Saving it
+
+- `updateManifest` in `packages/core/src/node.ts` is the one way a manifest is saved after accession, and `updateEntry` is its form for a single entry. Each save reads the file afresh, changes only what it was given and writes it back whole through a temporary file named for the process.
+- That is what lets the web page, transcribe and analyze all save to one run. None of them may write from a copy it has been holding: a long job keeps its results to itself and hands them to `updateManifest` or `updateEntry` when it saves. Two saves within the same few milliseconds could still cross; that risk is accepted for a tool one person runs.
+
+### Reading it
+
+- `readManifest` in `packages/core/src/node.ts` is the one reader, and `listRuns` uses it. A missing manifest, one without an `entries` array, or one whose version is not `1` throws. Transcripts, analysis and curation are stored on each entry; legacy sidecars are not read.
 - Entry base: `id`, `sourceName` (intake name), `outputName` (run-folder name), `bytes`, `metaSource`, optional `width`, `height`, `capturedAt`.
 - `video`: `durationSec`, `fps`, `frameCount`, optional `hasAudio`, `videoCodec`.
 - `audio`: `durationSec`, optional `audioCodec`, `channels`, `sampleRate`.
 - `image`: `frameCount: 1`.
 - `id` is the 1-based position in the name-sorted intake listing, as a string (`planEntries` in `packages/cli/src/entries.ts`). It is unique only within a run.
 - `metaSource` is `"estimated"` (guessed from byte size) until ffprobe fills in real numbers, then `"ffprobe"`.
-- `isManifest` checks only the envelope: version 1 and `entries` is an array.
-
-### `.influenca.analysis.json` — analyze's findings
-
-- Types: `packages/core/src/analysis.ts`. Writer: `measureRun` in `packages/cli/src/analyze.ts`. Thresholds: `packages/cli/src/measure.ts`.
-- `{ version: 1, createdAt, entries: Record<entryId, EntryAnalysis> }`.
-- `EntryAnalysis` has only `silentSec?` (below -40 dB for a second or more, anything with audio) and `stillSec?` (picture frozen two seconds or more, video only). Images get no entry.
-- A disposable cache: reused if present, `--redo` measures again, `--minimal` neither reads nor writes it.
-- Written whole at the end via `.tmp` then rename.
-- Percent shares, Mb/s and word counts are computed at print time, not stored.
-
-### `.influenca.transcripts.json` — transcribe's record
-
-- Types: `packages/core/src/transcripts.ts`. Writer: `packages/cli/src/transcribe.ts`, with the Whisper call in `whisper.ts`.
-- Same envelope, keyed by entry `id`. Each value is `done` (`language`, `model`, `vttName`, `words`), `failed` (`model`, `reason`) or `silent`.
-- Saved after every file, because each one cost money to make.
-
-### Reading them
-
-- Readers are in `packages/core/src/node.ts`; see the two entry points above.
-- A missing or wrong-version manifest throws. A missing or wrong-version sidecar reads as `undefined`.
-- `analyze` joins all three and never calls OpenAI.
-- The web app (`apps/web`) reads all three plus the `.vtt` files, and saves what you curate through one form action on the run page, `update`. The action checks the post's origin itself, because SvelteKit does not under `vite dev`.
+- `isManifest` checks only the envelope: version is `1` and `entries` is an array.
+- `analyze` never calls OpenAI; it only reads what transcribe left on the entries.
+- The web app (`apps/web`) reads the manifest and the `.vtt` files, and saves what you curate through one form action on the run page, `update`. The action checks the post's origin itself, because SvelteKit does not under `vite dev`.

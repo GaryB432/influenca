@@ -58,7 +58,9 @@ export async function convert(
   } catch (error) {
     throw new Error(
       `ffmpeg failed on ${basename(src)}: ${(error as Error).message}`,
-      { cause: error },
+      {
+        cause: error,
+      },
     );
   }
 }

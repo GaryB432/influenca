@@ -1,4 +1,4 @@
-export const TRANSCRIPTS_FILENAME = ".influenca.transcripts.json";
+/** What came of sending one file to be transcribed. Kept on its manifest entry; it cost money to make. */
 
 export type Transcript =
   | {
@@ -13,17 +13,6 @@ export type Transcript =
   | { model: string; reason: string; status: "failed" }
   /** Too little sound to send. */
   | { status: "silent" };
-
-/**
- * What transcribe has had written down for a run. Sits beside the manifest and is
- * written only by transcribe. Unlike the analysis it cost money to make.
- */
-export type Transcripts = {
-  createdAt: string; // ISO
-  /** Keyed by the manifest entry's id. */
-  entries: Record<string, Transcript>;
-  version: 1;
-};
 
 /** Pure: what a .vtt says, with the header and cue timings taken out. */
 export function vttText(vtt: string): string {

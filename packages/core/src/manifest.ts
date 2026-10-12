@@ -1,3 +1,6 @@
+import type { EntryAnalysis } from "./analysis.js";
+import type { Transcript } from "./transcripts.js";
+
 export const MANIFEST_FILENAME = ".influenca.json";
 
 export type AudioEntry = EntryBase & {
@@ -14,10 +17,13 @@ export type ImageEntry = EntryBase & {
 };
 
 /**
- * What a run holds: written by accession, when everything is in. It drives the web page,
- * and what you set there while curating is saved back into its entries.
+ * Everything known about a run, in one file. Accession writes it when the files are in;
+ * transcribe and analyze add what they find to its entries, and the web page adds what
+ * you set there while curating.
  */
 export type Manifest = {
+  /** When analyze last measured the run. Absent until it has. */
+  analyzedAt?: string; // ISO
   createdAt: string; // ISO
   entries: ManifestEntry[];
   version: 1;
@@ -44,34 +50,29 @@ export type Curation = {
   title?: string;
 };
 
-type EntryBase = Curation & {
-  bytes: number;
-  capturedAt?: string; // ISO; EXIF for images, container creation_time for media
-  height?: number;
-  id: string;
-  /** "estimated" until ffprobe fills in real numbers. */
-  metaSource: "estimated" | "ffprobe";
-  outputName: string; // filename in the output dir
-  sourceName: string; // filename in the intake dir
-  width?: number;
+/** What the tools worked out about a file once it was kept. */
+export type Findings = {
+  analysis?: EntryAnalysis;
+  transcript?: Transcript;
 };
 
-/**
- * Pure: reads a manifest saved while the title was still called `name`. The old field is
- * taken as the title, and the next save writes it under the new one.
- */
-export function withTitles(manifest: Manifest): Manifest {
-  for (const entry of manifest.entries as (ManifestEntry & {
-    name?: string;
-  })[]) {
-    if (entry.name !== undefined) entry.title ??= entry.name;
-    delete entry.name;
-  }
-  return manifest;
-}
+type EntryBase = Curation &
+  Findings & {
+    bytes: number;
+    capturedAt?: string; // ISO; EXIF for images, container creation_time for media
+    height?: number;
+    id: string;
+    /** "estimated" until ffprobe fills in real numbers. */
+    metaSource: "estimated" | "ffprobe";
+    outputName: string; // filename in the output dir
+    sourceName: string; // filename in the intake dir
+    width?: number;
+  };
 
-/** Shape check for the envelope only; entries are trusted once the version matches. */
+/**
+ * Shape check for the envelope only; entries are trusted once the version and array match.
+ */
 export function isManifest(value: unknown): value is Manifest {
-  const m = value as null | Partial<Manifest>;
+  const m = value as null | Partial<{ entries: unknown; version: unknown }>;
   return typeof m === "object" && m?.version === 1 && Array.isArray(m.entries);
 }

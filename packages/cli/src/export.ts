@@ -1,4 +1,4 @@
-import { readManifest, readTranscripts } from "@influenca/core/node";
+import { readManifest } from "@influenca/core/node";
 import { access, copyFile, mkdir, rename, rm } from "node:fs/promises";
 import { extname, join, parse, resolve } from "node:path";
 
@@ -12,6 +12,8 @@ export type ExportOptions = {
   inDir?: string;
   /** Ids of the titled files to copy. Left off, every titled file goes. */
   only?: string[];
+  /** Copy the .vtt subtitle file alongside each video. Off by default. */
+  subtitles?: boolean;
   /** The folder the titled files are copied into. Made if it is not there. */
   to: string;
 };
@@ -26,7 +28,6 @@ export async function runExport(opts: ExportOptions): Promise<void> {
   const dir = opts.inDir ? resolve(opts.inDir) : await latestRun(mediaDir());
   const to = resolve(opts.to);
   const manifest = await readManifest(dir);
-  const transcripts = await readTranscripts(dir);
   const titled = manifest.entries.filter(
     (e) => e.title && !e.deleted && (opts.only?.includes(e.id) ?? true),
   );
@@ -75,8 +76,8 @@ export async function runExport(opts: ExportOptions): Promise<void> {
         () => `copied as ${target}`,
       );
       copied++;
-      const t = transcripts?.entries[e.id];
-      if (t?.status === "done") {
+      const t = e.transcript;
+      if (opts.subtitles && t?.status === "done") {
         await copyFile(join(dir, t.vttName), join(to, `${stem}.vtt`));
       }
     }

@@ -47,6 +47,10 @@ describe("updateEntry", () => {
       ...manifest,
       entries: [manifest.entries[0], { ...manifest.entries[1], deleted: true }],
     });
+    const saved = JSON.parse(
+      await readFile(join(dir, MANIFEST_FILENAME), "utf8"),
+    ) as Record<string, unknown>;
+    expect(saved.version).toBe(1);
     expect(await readdir(dir)).toEqual([MANIFEST_FILENAME]);
   });
 
@@ -80,22 +84,37 @@ describe("updateEntry", () => {
     expect(await readManifest(dir)).toEqual(manifest);
   });
 
-  it("reads a manifest saved when the title was called name, and saves it as title", async () => {
-    const old = structuredClone(manifest) as Manifest & {
-      entries: { name?: string }[];
-    };
-    old.entries[0]!.name = "from before";
-    await writeFile(join(dir, MANIFEST_FILENAME), JSON.stringify(old));
+  it("ignores legacy sidecar files", async () => {
+    await writeFile(
+      join(dir, ".influenca.analysis.json"),
+      JSON.stringify({ entries: { 1: { stillSec: 4 } } }),
+    );
+    await writeFile(
+      join(dir, ".influenca.transcripts.json"),
+      JSON.stringify({ entries: { 1: { status: "silent" } } }),
+    );
 
-    expect((await readManifest(dir)).entries[0]).toMatchObject({
-      title: "from before",
-    });
-    await updateEntry(dir, "2", { deleted: true });
-    const saved = JSON.parse(
-      await readFile(join(dir, MANIFEST_FILENAME), "utf8"),
-    ) as { entries: Record<string, unknown>[] };
-    expect(saved.entries[0]).toMatchObject({ title: "from before" });
-    expect(saved.entries[0]).not.toHaveProperty("name");
+    expect(await readManifest(dir)).toEqual(manifest);
+  });
+
+  it("rejects a manifest with an unsupported version", async () => {
+    await writeFile(
+      join(dir, MANIFEST_FILENAME),
+      JSON.stringify({ ...manifest, version: 2 }),
+    );
+
+    await expect(readManifest(dir)).rejects.toThrow(/version 1 manifest/);
+  });
+
+  it("rejects a manifest without a version", async () => {
+    const withoutVersion: Record<string, unknown> = { ...manifest };
+    delete withoutVersion.version;
+    await writeFile(
+      join(dir, MANIFEST_FILENAME),
+      JSON.stringify(withoutVersion),
+    );
+
+    await expect(readManifest(dir)).rejects.toThrow(/version 1 manifest/);
   });
 
   it("rejects an id the run does not have, changing nothing", async () => {
