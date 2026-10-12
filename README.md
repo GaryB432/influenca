@@ -8,8 +8,9 @@ The model is a museum's. A pile of files left on the doorstep is the **intake**.
 last, and writes a **manifest** of what it kept. The intake is never touched and
 is yours to keep or wipe. On the way in, what is said in each file is written
 down as subtitles. **Analyze** then studies what is inside, as often as you
-like. Each step writes to a file of its own. The manifest then drives the web
-page, where you curate: give a file a title, or mark the ones you do not want.
+like. Everything known about a run is kept in that one manifest: each step
+adds what it finds, and it drives the web page, where you curate: give a file a
+title, or mark the ones you do not want.
 
 ## How it works
 
@@ -30,9 +31,8 @@ flowchart TD
   subgraph run ["Run folder"]
     direction TB
     media[("Kept media")]
-    manifest[".influenca.json<br/>written once, at the end"]
-    vtt[("Transcripts: a .vtt per file<br/>and .influenca.transcripts.json")]
-    analysis[".influenca.analysis.json<br/>safe to delete and redo"]
+    manifest[".influenca.json<br/>written when every file is in,<br/>then added to by each step"]
+    vtt[("Transcripts: a .vtt per file")]
   end
 
   subgraph transcribe ["then, still in accession"]
@@ -49,11 +49,11 @@ flowchart TD
   accession -. "when every file is in" .-> manifest
   manifest --> measure
   media --> measure
-  measure --> analysis
+  measure -- "still and silent stretches" --> manifest
   manifest -- "unless --no-transcribe" --> whisper
   media --> whisper
   whisper --> vtt
-  vtt -. "word counts" .-> measure
+  whisper -- "language, word count" --> manifest
   manifest --> web["Web view"]
 ```
 
@@ -190,9 +190,10 @@ with `--no-transcribe` gets its transcripts later.
 
 - Only sound leaves your machine, as mono mp3 at 32 kb/s. OpenAI charges by the
   minute of audio.
-- Each file is sent once. `.influenca.transcripts.json` records what came of it
-  (the language Whisper heard, the word count), and is saved after every file,
-  so a run that stops has lost nothing. Run it again and it sends what is left.
+- Each file is sent once. What came of it (the language Whisper heard, the word
+  count) is recorded on the file's entry in the manifest, saved after every
+  file, so a run that stops has lost nothing. Run it again and it sends what is
+  left.
 - A file with less than a second of sound above -40 dB is not sent, and is
   recorded as `silent`. Whisper invents words for silence.
 - A file OpenAI turns down, such as one over its 25 MB upload limit (about 100
@@ -231,8 +232,9 @@ written once, when it is done.
   language when it is not the one you expected. Analyze only reads this; it
   never calls OpenAI.
 
-The thresholds are in `packages/cli/src/measure.ts`. Results are saved to
-`.influenca.analysis.json` and reused on the next run unless you pass `--redo`.
+The thresholds are in `packages/cli/src/measure.ts`. What is measured is saved
+on each file's entry in the manifest and reused on the next run unless you pass
+`--redo`.
 
 ## What a run folder holds
 
@@ -243,12 +245,17 @@ The thresholds are in `packages/cli/src/measure.ts`. Results are saved to
   AUD00000.mp3
   AUD00000.vtt
   .influenca.json              the manifest: one entry per kept file
-  .influenca.transcripts.json  transcribe's record, keyed by entry id
-  .influenca.analysis.json     analyze's findings, keyed by entry id
 ```
 
 Each manifest entry records the kept file's name, size, duration, frame count,
-dimensions and codecs, plus `sourceName`, the name it arrived under.
+dimensions and codecs, plus `sourceName`, the name it arrived under. As the
+other steps run it gains what was heard (`transcript`), what was measured
+(`analysis`), and what you set on the web page (`title`, `deleted`).
+
+A run made by an earlier influenca has two more files, `.influenca.transcripts.json`
+and `.influenca.analysis.json`. They are still read. The first time anything is
+saved to that run, what they hold moves into the manifest, and they are left
+where they are, unused from then on.
 
 ## Web
 
