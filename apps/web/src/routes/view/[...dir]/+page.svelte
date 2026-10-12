@@ -50,7 +50,6 @@
 
 <svelte:head><title>{run} · Influenca</title></svelte:head>
 
-<main>
   <p class="back"><a href="/">All runs</a></p>
   <h1>{run}</h1>
   <p class="totals">
@@ -128,7 +127,6 @@
       </div>
     </article>
   {/each}
-</main>
 
 <style>
   .back {
