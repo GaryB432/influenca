@@ -7,8 +7,8 @@
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
 
   let copied = $state<string>();
-    let titled = $state<boolean>(false);
-    let titling = $state<boolean>(false);
+  let titled = $state<boolean>(false);
+  let titling = $state<boolean>(false);
 
   async function copy(path: string) {
     await navigator.clipboard.writeText(path);
@@ -40,13 +40,18 @@
 
   function facts(e: ManifestEntry): string[] {
     const { analysis: a = {}, transcript: t } = e;
-    const share = (sec: number, of: number) => `${Math.round((sec / of) * 100)}%`;
+    const share = (sec: number, of: number) =>
+      `${Math.round((sec / of) * 100)}%`;
     return [
       e.kind,
       ...(e.kind === "image" ? [] : [formatDuration(e.durationSec)]),
       ...(e.width && e.height ? [`${e.width}×${e.height}`] : []),
-      ...(e.kind === "image" || a.stillSec === undefined ? [] : [`still ${share(a.stillSec, e.durationSec)}`]),
-      ...(e.kind === "image" || a.silentSec === undefined ? [] : [`silent ${share(a.silentSec, e.durationSec)}`]),
+      ...(e.kind === "image" || a.stillSec === undefined
+        ? []
+        : [`still ${share(a.stillSec, e.durationSec)}`]),
+      ...(e.kind === "image" || a.silentSec === undefined
+        ? []
+        : [`silent ${share(a.silentSec, e.durationSec)}`]),
       ...(t?.status === "done" ? [`${t.words} words (${t.language})`] : []),
       ...(t?.status === "silent" ? ["nothing to hear"] : []),
       ...(t?.status === "failed" ? ["transcript failed"] : []),
@@ -61,9 +66,11 @@
   <p class="back"><a href="/">All runs</a></p>
   <h1>{run}</h1>
   <p class="totals">
-    {summary.counts.video} video, {summary.counts.audio} audio, {summary.counts.image} images.
+    {summary.counts.video} video, {summary.counts.audio} audio, {summary.counts
+      .image} images.
     {summary.totalFrames} frames, {formatDuration(summary.totalDurationSec)}.
-    {#if summary.estimated}Files that could not be probed show estimated frames and durations.{/if}
+    {#if summary.estimated}Files that could not be probed show estimated frames
+      and durations.{/if}
     {#if deleted}{deleted} marked deleted.{/if}
   </p>
   {#if form?.message}<p class="problem">{form.message}</p>{/if}
@@ -75,7 +82,12 @@
           <!-- Starts with nothing fetched. Near the screen it gets its thumbnail and enough metadata to show its length; the picture itself waits for play. -->
           <!-- svelte-ignore a11y_media_has_caption (a file that was not transcribed has none to offer) -->
           <video controls preload="none" {src} use:whenNear={poster}>
-            {#if vttSrc}<track default kind="captions" label="Transcript" src={vttSrc} />{/if}
+            {#if vttSrc}<track
+                default
+                kind="captions"
+                label="Transcript"
+                src={vttSrc}
+              />{/if}
           </video>
         {:else if e.kind === "audio"}
           <audio controls preload="none" {src}></audio>
@@ -84,27 +96,49 @@
         {/if}
       </div>
       <div class="about">
-        <h2><span class={{id: true, titled, titling }} >{e.id}</span>{e.title ?? e.outputName}</h2>
+        <h2>
+          <span class={{ id: true, titled, titling }}>{e.id}</span>{e.title ??
+            e.outputName}
+        </h2>
         {#if e.title}<p class="from">{e.outputName}</p>{/if}
-        {#if e.sourceName !== e.outputName}<p class="from">from {e.sourceName}</p>{/if}
+        {#if e.sourceName !== e.outputName}<p class="from">
+            from {e.sourceName}
+          </p>{/if}
         <p class="facts">{facts(e).join(" · ")}</p>
         {#each paths as path (path)}
           <p class="path">
             <code>{path}</code>
-            <button onclick={() => copy(path)}>{copied === path ? "Copied" : "Copy"}</button>
+            <button onclick={() => copy(path)}
+              >{copied === path ? "Copied" : "Copy"}</button
+            >
           </p>
         {/each}
         {#if said}<p class="said">{said}</p>{/if}
         <!-- What you know the clip as, now that you have seen it. The file keeps its name on disk. -->
-        <form action="?/update" method="POST" use:enhance={() => ({ update }) => update({ reset: false })}>
+        <form
+          action="?/update"
+          method="POST"
+          use:enhance={() =>
+            ({ update }) =>
+              update({ reset: false })}
+        >
           <input name="id" type="hidden" value={e.id} />
-          <input aria-label="Title for {e.outputName}" name="title" placeholder="Give it a title" value={e.title ?? ""} />
+          <input
+            aria-label="Title for {e.outputName}"
+            name="title"
+            placeholder="Give it a title"
+            value={e.title ?? ""}
+          />
           <button>Save</button>
         </form>
         <!-- Only marks the manifest entry; the file stays in the run folder. -->
         <form action="?/update" method="POST" use:enhance>
           <input name="id" type="hidden" value={e.id} />
-          <input name="deleted" type="hidden" value={e.deleted ? "false" : "true"} />
+          <input
+            name="deleted"
+            type="hidden"
+            value={e.deleted ? "false" : "true"}
+          />
           {#if e.deleted}<span class="mark">Deleted</span>{/if}
           <button>{e.deleted ? "Restore" : "Delete"}</button>
         </form>
@@ -116,7 +150,9 @@
 <style>
   :global(body) {
     margin: 0;
-    font: 16px/1.5 system-ui, sans-serif;
+    font:
+      16px/1.5 system-ui,
+      sans-serif;
     color: light-dark(#1d1f21, #e6e6e6);
     background: light-dark(#fff, #16181a);
     color-scheme: light dark;
