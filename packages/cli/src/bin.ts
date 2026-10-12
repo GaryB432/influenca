@@ -223,7 +223,7 @@ const exporting = command(
             description: message`Copy the .vtt subtitle file alongside each video. Off by default.`,
           },
         ),
-        false,
+        true,
       ),
     }),
     (v) => ({ ...v, command: "export" as const }),

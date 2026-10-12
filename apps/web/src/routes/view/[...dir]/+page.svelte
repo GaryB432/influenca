@@ -63,7 +63,7 @@
   </p>
   {#if form?.message}<p class="problem">{form.message}</p>{/if}
 
-  {#each files as { entry: e, paths, poster, said, src, vttSrc } (e.id)}
+  {#each files as { entry: e, poster, said, src, vttSrc } (e.id)}
     <article class:deleted={e.deleted}>
       <div class="media">
         {#if e.kind === "video"}
