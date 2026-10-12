@@ -116,23 +116,6 @@
 </main>
 
 <style>
-  :global(body) {
-    margin: 0;
-    font: 16px/1.5 system-ui, sans-serif;
-    color: light-dark(#1d1f21, #e6e6e6);
-    background: light-dark(#fff, #16181a);
-    color-scheme: light dark;
-  }
-  main {
-    max-width: 60rem;
-    margin: 2rem auto 3rem;
-    padding: 0 1rem;
-  }
-  h1 {
-    margin-top: 0;
-    font-size: 1.4rem;
-    overflow-wrap: anywhere;
-  }
   .back {
     margin: 0;
   }

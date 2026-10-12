@@ -27,28 +27,3 @@
     </select>
   {/if}
 </main>
-
-<style>
-  :global(body) {
-    margin: 0;
-    font: 16px/1.5 system-ui, sans-serif;
-    color: light-dark(#1d1f21, #e6e6e6);
-    background: light-dark(#fff, #16181a);
-    color-scheme: light dark;
-  }
-  main {
-    max-width: 44rem;
-    margin: 3rem auto;
-    padding: 0 1rem;
-  }
-  label {
-    display: block;
-    margin-bottom: 0.4rem;
-    color: light-dark(#555, #aaa);
-  }
-  select {
-    width: 100%;
-    padding: 0.5rem 0.6rem;
-    font: inherit;
-  }
-</style>
