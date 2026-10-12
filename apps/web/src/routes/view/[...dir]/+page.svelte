@@ -1,11 +1,6 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
-  import {
-    type EntryAnalysis,
-    formatDuration,
-    type ManifestEntry,
-    type Transcript,
-  } from "@influenca/core";
+  import { formatDuration, type ManifestEntry } from "@influenca/core";
 
   let { data, form } = $props();
   const { files, run, summary } = $derived(data);
@@ -41,7 +36,8 @@
     return { destroy: () => near.disconnect() };
   }
 
-  function facts(e: ManifestEntry, a: EntryAnalysis = {}, t?: Transcript): string[] {
+  function facts(e: ManifestEntry): string[] {
+    const { analysis: a = {}, transcript: t } = e;
     const share = (sec: number, of: number) => `${Math.round((sec / of) * 100)}%`;
     return [
       e.kind,
@@ -70,7 +66,7 @@
   </p>
   {#if form?.message}<p class="problem">{form.message}</p>{/if}
 
-  {#each files as { analysis, entry: e, paths, poster, said, src, transcript, vttSrc } (e.id)}
+  {#each files as { entry: e, paths, poster, said, src, vttSrc } (e.id)}
     <article class:deleted={e.deleted}>
       <div class="media">
         {#if e.kind === "video"}
@@ -89,7 +85,7 @@
         <h2><span class="id">{e.id}</span>{e.title ?? e.outputName}</h2>
         {#if e.title}<p class="from">{e.outputName}</p>{/if}
         {#if e.sourceName !== e.outputName}<p class="from">from {e.sourceName}</p>{/if}
-        <p class="facts">{facts(e, analysis, transcript).join(" · ")}</p>
+        <p class="facts">{facts(e).join(" · ")}</p>
         {#each paths as path (path)}
           <p class="path">
             <code>{path}</code>
