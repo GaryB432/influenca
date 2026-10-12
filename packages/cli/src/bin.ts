@@ -216,12 +216,21 @@ const exporting = command(
           },
         ),
       ),
+      subtitles: withDefault(
+        negatableFlag(
+          { negative: ["--no-subtitles"], positive: ["--subtitles"] },
+          {
+            description: message`Copy the .vtt subtitle file alongside each video. Off by default.`,
+          },
+        ),
+        false,
+      ),
     }),
     (v) => ({ ...v, command: "export" as const }),
   ),
   {
     brief: message`Copy the files you have given a title into a folder, named after their titles.`,
-    description: message`Takes the files of a run that have a title and are not marked deleted, and copies each out under a filename made from its title, with its subtitles. The run is left as it is.`,
+    description: message`Takes the files of a run that have a title and are not marked deleted, and copies each out under a filename made from its title. Pass ${optionName("--subtitles")} to also copy the .vtt beside each file. The run is left as it is.`,
   },
 );
 

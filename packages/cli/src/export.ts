@@ -12,6 +12,8 @@ export type ExportOptions = {
   inDir?: string;
   /** Ids of the titled files to copy. Left off, every titled file goes. */
   only?: string[];
+  /** Copy the .vtt subtitle file alongside each video. Off by default. */
+  subtitles?: boolean;
   /** The folder the titled files are copied into. Made if it is not there. */
   to: string;
 };
@@ -75,7 +77,7 @@ export async function runExport(opts: ExportOptions): Promise<void> {
       );
       copied++;
       const t = e.transcript;
-      if (t?.status === "done") {
+      if (opts.subtitles && t?.status === "done") {
         await copyFile(join(dir, t.vttName), join(to, `${stem}.vtt`));
       }
     }
