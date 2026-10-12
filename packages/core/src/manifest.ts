@@ -26,7 +26,6 @@ export type Manifest = {
   analyzedAt?: string; // ISO
   createdAt: string; // ISO
   entries: ManifestEntry[];
-  version: 2;
 };
 
 export type ManifestEntry = AudioEntry | ImageEntry | VideoEntry;
@@ -56,15 +55,6 @@ export type Findings = {
   transcript?: Transcript;
 };
 
-/**
- * The two files a version 1 run kept beside its manifest, one written by analyze and one
- * by transcribe, each keyed by entry id.
- */
-export type Sidecars = {
-  analysis?: { createdAt: string; entries: Record<string, EntryAnalysis> };
-  transcripts?: { entries: Record<string, Transcript> };
-};
-
 type EntryBase = Curation &
   Findings & {
     bytes: number;
@@ -79,39 +69,9 @@ type EntryBase = Curation &
   };
 
 /**
- * Pure: brings a manifest that was saved by an earlier influenca up to this one. A title
- * that was still called `name` becomes `title`, and what a version 1 run kept in the two
- * files beside it is put on the entries. Nothing already on an entry is replaced. The
- * next save writes it all in the new form; the old files are then read no more.
- */
-export function upgrade(read: Manifest, old: Sidecars = {}): Manifest {
-  const manifest = read as Omit<Manifest, "version"> & { version: 1 | 2 };
-  const wasApart = manifest.version === 1;
-  for (const entry of manifest.entries as (ManifestEntry & {
-    name?: string;
-  })[]) {
-    if (entry.name !== undefined) entry.title ??= entry.name;
-    delete entry.name;
-    if (!wasApart) continue;
-    const analysis = old.analysis?.entries[entry.id];
-    const transcript = old.transcripts?.entries[entry.id];
-    if (analysis) entry.analysis ??= analysis;
-    if (transcript) entry.transcript ??= transcript;
-  }
-  if (wasApart && old.analysis) manifest.analyzedAt ??= old.analysis.createdAt;
-  manifest.version = 2;
-  return manifest as Manifest;
-}
-
-/**
- * Shape check for the envelope only; entries are trusted once the version is one this
- * influenca reads. A version 1 file passes, and `upgrade` then brings it up to date.
+ * Shape check for the envelope only; entries are trusted once they are in an array.
  */
 export function isManifest(value: unknown): value is Manifest {
-  const m = value as null | Partial<{ entries: unknown; version: unknown }>;
-  return (
-    typeof m === "object" &&
-    (m?.version === 1 || m?.version === 2) &&
-    Array.isArray(m.entries)
-  );
+  const m = value as null | Partial<{ entries: unknown }>;
+  return typeof m === "object" && Array.isArray(m?.entries);
 }

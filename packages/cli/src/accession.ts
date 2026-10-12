@@ -90,7 +90,6 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
     const manifest: Manifest = {
       createdAt: new Date().toISOString(),
       entries,
-      version: 2,
     };
     await writeFile(
       join(outDir, MANIFEST_FILENAME),

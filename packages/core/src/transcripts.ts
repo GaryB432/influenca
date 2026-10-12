@@ -1,6 +1,3 @@
-/** Where transcribe kept its record before it moved into the manifest. Read only to bring an old run up to date. */
-export const TRANSCRIPTS_FILENAME = ".influenca.transcripts.json";
-
 /** What came of sending one file to be transcribed. Kept on its manifest entry; it cost money to make. */
 
 export type Transcript =

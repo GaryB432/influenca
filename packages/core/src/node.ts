@@ -3,7 +3,6 @@
 import { readdir, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { ANALYSIS_FILENAME } from "./analysis.js";
 import { readJSON } from "./json.js";
 import {
   type Curation,
@@ -12,10 +11,7 @@ import {
   type Manifest,
   MANIFEST_FILENAME,
   type Run,
-  type Sidecars,
-  upgrade,
 } from "./manifest.js";
-import { TRANSCRIPTS_FILENAME } from "./transcripts.js";
 
 export { readJSON } from "./json.js";
 
@@ -36,7 +32,7 @@ export async function listRuns(root: string): Promise<Run[]> {
     .toSorted((a, b) => (a.name < b.name ? 1 : -1));
 }
 
-/** Reads a run folder's manifest, brought up to date, rejecting files this version cannot read. */
+/** Reads a run folder's manifest, rejecting files without an entries array. */
 export async function readManifest(dir: string): Promise<Manifest> {
   const path = join(dir, MANIFEST_FILENAME);
   const manifest = await readJSON<unknown>(path).catch((error: unknown) => {
@@ -49,19 +45,10 @@ export async function readManifest(dir: string): Promise<Manifest> {
     );
   });
   if (!isManifest(manifest)) {
-    throw new Error(
-      `${path} is not a manifest this influenca can read (written by an older one?)`,
-    );
+    throw new Error(`${path} is not a manifest: expected an entries array.`);
   }
-  // Only a version 1 run has anything beside its manifest to bring in.
-  const old: Sidecars =
-    (manifest.version as number) === 1
-      ? {
-          analysis: await sidecar(join(dir, ANALYSIS_FILENAME)),
-          transcripts: await sidecar(join(dir, TRANSCRIPTS_FILENAME)),
-        }
-      : {};
-  return upgrade(manifest, old);
+  delete (manifest as Manifest & { version?: unknown }).version;
+  return manifest;
 }
 
 /**
@@ -108,16 +95,4 @@ export async function updateManifest(
   await writeFile(part, JSON.stringify(manifest, null, 2));
   await rename(part, path);
   return manifest;
-}
-
-/** One of a version 1 run's two extra files, or undefined if it is missing or unreadable. */
-async function sidecar<T extends { entries: object }>(
-  path: string,
-): Promise<T | undefined> {
-  const file = await readJSON<null | Partial<T & { version: number }>>(
-    path,
-  ).catch(() => null);
-  return file?.version === 1 && typeof file.entries === "object"
-    ? (file as unknown as T)
-    : undefined;
 }

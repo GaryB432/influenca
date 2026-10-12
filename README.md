@@ -252,10 +252,8 @@ dimensions and codecs, plus `sourceName`, the name it arrived under. As the
 other steps run it gains what was heard (`transcript`), what was measured
 (`analysis`), and what you set on the web page (`title`, `deleted`).
 
-A run made by an earlier influenca has two more files, `.influenca.transcripts.json`
-and `.influenca.analysis.json`. They are still read. The first time anything is
-saved to that run, what they hold moves into the manifest, and they are left
-where they are, unused from then on.
+The manifest has no format version. Transcript, analysis and curation data are
+stored directly on each entry in `.influenca.json`.
 
 ## Web
 
