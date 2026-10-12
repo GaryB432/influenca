@@ -7,6 +7,8 @@
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
 
   let copied = $state<string>();
+    let titled = $state<boolean>(false);
+    let titling = $state<boolean>(false);
 
   async function copy(path: string) {
     await navigator.clipboard.writeText(path);
@@ -82,7 +84,7 @@
         {/if}
       </div>
       <div class="about">
-        <h2><span class="id">{e.id}</span>{e.title ?? e.outputName}</h2>
+        <h2><span class={{id: true, titled, titling }} >{e.id}</span>{e.title ?? e.outputName}</h2>
         {#if e.title}<p class="from">{e.outputName}</p>{/if}
         {#if e.sourceName !== e.outputName}<p class="from">from {e.sourceName}</p>{/if}
         <p class="facts">{facts(e).join(" · ")}</p>
