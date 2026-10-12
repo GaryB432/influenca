@@ -74,9 +74,5 @@ type EntryBase = Curation &
  */
 export function isManifest(value: unknown): value is Manifest {
   const m = value as null | Partial<{ entries: unknown; version: unknown }>;
-  return (
-    typeof m === "object" &&
-    m?.version === 1 &&
-    Array.isArray(m.entries)
-  );
+  return typeof m === "object" && m?.version === 1 && Array.isArray(m.entries);
 }

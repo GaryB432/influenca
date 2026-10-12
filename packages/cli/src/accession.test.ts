@@ -432,7 +432,7 @@ describe("accession + analyze", () => {
     it("analyze names the problem when pointed at it", async () => {
       await expect(
         runAnalyze({ inDir: legacy, language: "english", minimal: true }),
-      ).rejects.toThrow(/not a manifest this influenca can read/);
+      ).rejects.toThrow(/not a version 1 manifest with an entries array/);
     });
   });
 });

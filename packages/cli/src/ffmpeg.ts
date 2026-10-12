@@ -39,7 +39,9 @@ export async function runFfmpeg(
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       throw new Error(
         "ffmpeg not found; it is needed to convert and analyze media.",
-        { cause: error },
+        {
+          cause: error,
+        },
       );
     }
     throw error;
