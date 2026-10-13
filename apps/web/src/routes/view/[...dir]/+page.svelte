@@ -112,11 +112,6 @@
           {e.outputName}
         </p>
       {/if}
-      {#if e.sourceName !== e.outputName}
-        <p class="from">
-          from {e.sourceName}
-        </p>
-      {/if}
       <p class="facts">{facts(e).join(" · ")}</p>
 
       {#if said}
