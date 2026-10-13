@@ -204,7 +204,8 @@
     cursor: pointer;
   }
   .vtt-overlay-toggle[aria-pressed="true"] {
-    background: rgb(0 0 0 / 80%);
+    border-bottom: 3px solid #f00;
+    background: rgb(0 0 0 / 85%);
   }
   audio {
     width: 100%;
