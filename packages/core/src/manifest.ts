@@ -47,6 +47,7 @@ export type Curation = {
   /** Unwanted. The file itself is still in the run folder. */
   deleted?: boolean;
   /** What you call the file once you have seen what is in it, as you would say it: "Pool b-roll". Its name on disk stays outputName. */
+  tags?: string[];
   title?: string;
 };
 

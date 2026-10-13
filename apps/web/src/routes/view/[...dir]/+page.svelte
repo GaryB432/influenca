@@ -2,6 +2,8 @@
   import { enhance } from "$app/forms";
   import { formatDuration, type ManifestEntry } from "@influenca/core";
 
+  import TagStrip from "#lib/components/TagStrip.svelte";
+
   let { data, form } = $props();
   const { files, run, summary } = $derived(data);
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
@@ -97,6 +99,8 @@
         {#if said}
           <p class="said">{said}</p>
         {/if}
+
+        <TagStrip entry={e}></TagStrip>
 
         <form
           action="?/update"
