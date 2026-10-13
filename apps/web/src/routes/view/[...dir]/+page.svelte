@@ -7,6 +7,15 @@
   let { data, form } = $props();
   const { files, run, summary } = $derived(data);
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
+  let captionsShown = $state<Record<string, boolean>>({});
+  let videoElements = $state<Record<string, HTMLVideoElement | undefined>>({});
+
+  function toggleCaptions(id: string) {
+    const showing = !(captionsShown[id] ?? true);
+    captionsShown[id] = showing;
+    const track = videoElements[id]?.textTracks[0];
+    if (track) track.mode = showing ? "showing" : "disabled";
+  }
 
   /**
    * Holds a video's thumbnail and metadata back until its card is near the screen. A run
@@ -52,53 +61,64 @@
 
 <svelte:head><title>{run} · Influenca</title></svelte:head>
 
-<main>
-  <p class="back"><a href="/">All runs</a></p>
-  <h1>{run}</h1>
-  <p class="totals">
-    {summary.counts.video} video, {summary.counts.audio}
-    audio, {summary.counts.image} images.
-    {summary.totalFrames} frames, {formatDuration(summary.totalDurationSec)}.
-    {#if summary.estimated}Files that could not be probed show estimated frames
-      and durations.{/if}
-    {#if deleted}{deleted} marked deleted.{/if}
-  </p>
-  {#if form?.message}<p class="problem">{form.message}</p>{/if}
+<p class="back"><a href="/">All runs</a></p>
+<h1>{run}</h1>
+<p class="totals">
+  {summary.counts.video} video, {summary.counts.audio}
+  audio, {summary.counts.image} images.
+  {summary.totalFrames} frames, {formatDuration(summary.totalDurationSec)}.
+  {#if summary.estimated}Files that could not be probed show estimated frames
+    and durations.{/if}
+  {#if deleted}{deleted} marked deleted.{/if}
+</p>
+{#if form?.message}<p class="problem">{form.message}</p>{/if}
 
-  {#each files as { entry: e, poster, said, src, vttSrc } (e.id)}
-    <article class:deleted={e.deleted}>
-      <div class="media">
-        {#if e.kind === "video"}
-          <!-- Starts with nothing fetched. Near the screen it gets its thumbnail and enough metadata to show its length; the picture itself waits for play. -->
-          <!-- svelte-ignore a11y_media_has_caption (a file that was not transcribed has none to offer) -->
-          <video controls preload="none" {src} use:whenNear={poster}>
-            {#if vttSrc}
-              <track default kind="captions" label="Transcript" src={vttSrc} />
-            {/if}
-          </video>
-        {:else if e.kind === "audio"}
-          <audio controls preload="none" {src}></audio>
-        {:else}
-          <img alt={e.outputName} loading="lazy" {src} />
+{#each files as { entry: e, poster, said, src, vttSrc } (e.id)}
+  <article class:deleted={e.deleted}>
+    <div class="media">
+      {#if e.kind === "video"}
+        <!-- Starts with nothing fetched. Near the screen it gets its thumbnail and enough metadata to show its length; the picture itself waits for play. -->
+        <!-- svelte-ignore a11y_media_has_caption (a file that was not transcribed has none to offer) -->
+        <video
+          bind:this={videoElements[e.id]}
+          controls
+          preload="none"
+          {src}
+          use:whenNear={poster}
+        >
+          {#if vttSrc}
+            <track default kind="captions" label="Transcript" src={vttSrc} />
+          {/if}
+        </video>
+        {#if vttSrc}
+          <button
+            aria-label={(captionsShown[e.id] ?? true)
+              ? "Turn captions off"
+              : "Turn captions on"}
+            aria-pressed={captionsShown[e.id] ?? true}
+            class="vtt-overlay-toggle"
+            onclick={() => toggleCaptions(e.id)}
+            type="button">CC</button
+          >
         {/if}
-      </div>
-      <div class="about">
-        <h2><span class="id">{e.id}</span>{e.title ?? e.outputName}</h2>
-        {#if e.title}
-          <p class="from">
-            {e.outputName}
-          </p>
-        {/if}
-        {#if e.sourceName !== e.outputName}
-          <p class="from">
-            from {e.sourceName}
-          </p>
-        {/if}
-        <p class="facts">{facts(e).join(" · ")}</p>
+      {:else if e.kind === "audio"}
+        <audio controls preload="none" {src}></audio>
+      {:else}
+        <img alt={e.outputName} loading="lazy" {src} />
+      {/if}
+    </div>
+    <div class="about">
+      <h2><span class="id">{e.id}</span>{e.title ?? e.outputName}</h2>
+      {#if e.title}
+        <p class="from">
+          {e.outputName}
+        </p>
+      {/if}
+      <p class="facts">{facts(e).join(" · ")}</p>
 
-        {#if said}
-          <p class="said">{said}</p>
-        {/if}
+      {#if said}
+        <p class="said">{said}</p>
+      {/if}
 
         <TagStrip entry={e}></TagStrip>
 
@@ -135,25 +155,6 @@
 </main>
 
 <style>
-  :global(body) {
-    margin: 0;
-    font:
-      16px/1.5 system-ui,
-      sans-serif;
-    color: light-dark(#1d1f21, #e6e6e6);
-    background: light-dark(#fff, #16181a);
-    color-scheme: light dark;
-  }
-  main {
-    max-width: 60rem;
-    margin: 2rem auto 3rem;
-    padding: 0 1rem;
-  }
-  h1 {
-    margin-top: 0;
-    font-size: 1.4rem;
-    overflow-wrap: anywhere;
-  }
   .back {
     margin: 0;
   }
@@ -181,6 +182,40 @@
     object-fit: contain;
     background: #000;
     border-radius: 0.3rem;
+  }
+  .media {
+    position: relative;
+  }
+  .vtt-overlay-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 4px;
+    color: white;
+    background: rgb(0 0 0 / 60%);
+    backdrop-filter: blur(4px);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .vtt-overlay-toggle::after {
+    content: "";
+    position: absolute;
+    right: 8px;
+    bottom: 2px;
+    left: 8px;
+    height: 2px;
+    background: #f00;
+    transform: scaleX(0);
+    transition: transform 150ms ease;
+  }
+  .vtt-overlay-toggle[aria-pressed="true"]::after {
+    transform: scaleX(1);
   }
   audio {
     width: 100%;
