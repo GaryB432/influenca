@@ -141,7 +141,7 @@
       <div class="suggestions-dropdown">
         <div class="dropdown-header">Suggested Tags</div>
         <ul>
-          {#each filteredSuggestions as suggestion}
+          {#each filteredSuggestions as suggestion (suggestion)}
             <li>
               <button type="button" onclick={() => addTag(suggestion)}>
                 <svg
