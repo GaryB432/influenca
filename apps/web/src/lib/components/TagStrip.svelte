@@ -173,8 +173,6 @@
     display: inline-block;
     width: 100%;
     max-width: 480px;
-    font-family:
-      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   .tag-input-container {
