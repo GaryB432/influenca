@@ -5,6 +5,15 @@
   let { data, form } = $props();
   const { files, run, summary } = $derived(data);
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
+  let captionsShown = $state<Record<string, boolean>>({});
+  let videoElements = $state<Record<string, HTMLVideoElement | undefined>>({});
+
+  function toggleCaptions(id: string) {
+    const showing = !(captionsShown[id] ?? true);
+    captionsShown[id] = showing;
+    const track = videoElements[id]?.textTracks[0];
+    if (track) track.mode = showing ? "showing" : "disabled";
+  }
 
   /**
    * Holds a video's thumbnail and metadata back until its card is near the screen. A run
@@ -68,11 +77,28 @@
       {#if e.kind === "video"}
         <!-- Starts with nothing fetched. Near the screen it gets its thumbnail and enough metadata to show its length; the picture itself waits for play. -->
         <!-- svelte-ignore a11y_media_has_caption (a file that was not transcribed has none to offer) -->
-        <video controls preload="none" {src} use:whenNear={poster}>
+        <video
+          bind:this={videoElements[e.id]}
+          controls
+          preload="none"
+          {src}
+          use:whenNear={poster}
+        >
           {#if vttSrc}
             <track default kind="captions" label="Transcript" src={vttSrc} />
           {/if}
         </video>
+        {#if vttSrc}
+          <button
+            aria-label={(captionsShown[e.id] ?? true)
+              ? "Turn captions off"
+              : "Turn captions on"}
+            aria-pressed={captionsShown[e.id] ?? true}
+            class="vtt-overlay-toggle"
+            onclick={() => toggleCaptions(e.id)}
+            type="button">CC</button
+          >
+        {/if}
       {:else if e.kind === "audio"}
         <audio controls preload="none" {src}></audio>
       {:else}
@@ -156,6 +182,29 @@
     object-fit: contain;
     background: #000;
     border-radius: 0.3rem;
+  }
+  .media {
+    position: relative;
+  }
+  .vtt-overlay-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 4px;
+    color: white;
+    background: rgb(0 0 0 / 60%);
+    backdrop-filter: blur(4px);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .vtt-overlay-toggle[aria-pressed="true"] {
+    background: rgb(0 0 0 / 80%);
   }
   audio {
     width: 100%;
