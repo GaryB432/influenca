@@ -84,6 +84,11 @@ describe("updateEntry", () => {
     expect(await readManifest(dir)).toEqual(manifest);
   });
 
+  it("preserves tags", async () => {
+    await updateEntry(dir, "1", { tags: ["fruits", "vegetables", "hybrid"] });
+    expect(await readManifest(dir)).toEqual(manifest);
+  });
+
   it("ignores legacy sidecar files", async () => {
     await writeFile(
       join(dir, ".influenca.analysis.json"),
