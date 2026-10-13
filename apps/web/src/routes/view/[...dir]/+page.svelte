@@ -203,9 +203,19 @@
     font-size: 12px;
     cursor: pointer;
   }
-  .vtt-overlay-toggle[aria-pressed="true"] {
-    border-bottom: 3px solid #f00;
-    background: rgb(0 0 0 / 85%);
+  .vtt-overlay-toggle::after {
+    content: "";
+    position: absolute;
+    right: 8px;
+    bottom: 2px;
+    left: 8px;
+    height: 2px;
+    background: #f00;
+    transform: scaleX(0);
+    transition: transform 150ms ease;
+  }
+  .vtt-overlay-toggle[aria-pressed="true"]::after {
+    transform: scaleX(1);
   }
   audio {
     width: 100%;
