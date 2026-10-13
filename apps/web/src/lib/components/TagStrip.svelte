@@ -28,7 +28,6 @@
   let inputValue = $state<string>("");
   let showDropdown = $state<boolean>(false);
 
-  // 4. Automated reactive compiler loop derivation
   let filteredSuggestions = $derived<string[]>(
     suggestions.filter(
       (item: string) =>
@@ -37,7 +36,6 @@
     ),
   );
 
-  // 5. Explicitly typed layout functions
   function addTag(tagName: string): void {
     const cleanName: string = tagName.trim();
     if (cleanName && !tags.includes(cleanName)) {
