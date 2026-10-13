@@ -9,6 +9,10 @@
   color: var(--color-text);
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   min-height: 100vh;
   background-size: 100vw 100vh;
@@ -29,7 +33,6 @@ label {
 select {
   width: 100%;
   padding: 0.5rem 0.6rem;
-  font: inherit;
 }
 
 h1,
@@ -37,10 +40,6 @@ h2,
 p {
   font-weight: 400;
   overflow-wrap: anywhere;
-}
-
-p {
-  line-height: 1.5;
 }
 
 a {
@@ -62,9 +61,10 @@ h2 {
 }
 
 input,
-button {
-  font-size: inherit;
-  font-family: inherit;
+button,
+select,
+textarea {
+  font: inherit;
 }
 
 button:focus:not(:focus-visible) {
