@@ -50,83 +50,83 @@
 
 <svelte:head><title>{run} · Influenca</title></svelte:head>
 
-  <p class="back"><a href="/">All runs</a></p>
-  <h1>{run}</h1>
-  <p class="totals">
-    {summary.counts.video} video, {summary.counts.audio}
-    audio, {summary.counts.image} images.
-    {summary.totalFrames} frames, {formatDuration(summary.totalDurationSec)}.
-    {#if summary.estimated}Files that could not be probed show estimated frames
-      and durations.{/if}
-    {#if deleted}{deleted} marked deleted.{/if}
-  </p>
-  {#if form?.message}<p class="problem">{form.message}</p>{/if}
+<p class="back"><a href="/">All runs</a></p>
+<h1>{run}</h1>
+<p class="totals">
+  {summary.counts.video} video, {summary.counts.audio}
+  audio, {summary.counts.image} images.
+  {summary.totalFrames} frames, {formatDuration(summary.totalDurationSec)}.
+  {#if summary.estimated}Files that could not be probed show estimated frames
+    and durations.{/if}
+  {#if deleted}{deleted} marked deleted.{/if}
+</p>
+{#if form?.message}<p class="problem">{form.message}</p>{/if}
 
-  {#each files as { entry: e, poster, said, src, vttSrc } (e.id)}
-    <article class:deleted={e.deleted}>
-      <div class="media">
-        {#if e.kind === "video"}
-          <!-- Starts with nothing fetched. Near the screen it gets its thumbnail and enough metadata to show its length; the picture itself waits for play. -->
-          <!-- svelte-ignore a11y_media_has_caption (a file that was not transcribed has none to offer) -->
-          <video controls preload="none" {src} use:whenNear={poster}>
-            {#if vttSrc}
-              <track default kind="captions" label="Transcript" src={vttSrc} />
-            {/if}
-          </video>
-        {:else if e.kind === "audio"}
-          <audio controls preload="none" {src}></audio>
-        {:else}
-          <img alt={e.outputName} loading="lazy" {src} />
-        {/if}
-      </div>
-      <div class="about">
-        <h2><span class="id">{e.id}</span>{e.title ?? e.outputName}</h2>
-        {#if e.title}
-          <p class="from">
-            {e.outputName}
-          </p>
-        {/if}
-        {#if e.sourceName !== e.outputName}
-          <p class="from">
-            from {e.sourceName}
-          </p>
-        {/if}
-        <p class="facts">{facts(e).join(" · ")}</p>
+{#each files as { entry: e, poster, said, src, vttSrc } (e.id)}
+  <article class:deleted={e.deleted}>
+    <div class="media">
+      {#if e.kind === "video"}
+        <!-- Starts with nothing fetched. Near the screen it gets its thumbnail and enough metadata to show its length; the picture itself waits for play. -->
+        <!-- svelte-ignore a11y_media_has_caption (a file that was not transcribed has none to offer) -->
+        <video controls preload="none" {src} use:whenNear={poster}>
+          {#if vttSrc}
+            <track default kind="captions" label="Transcript" src={vttSrc} />
+          {/if}
+        </video>
+      {:else if e.kind === "audio"}
+        <audio controls preload="none" {src}></audio>
+      {:else}
+        <img alt={e.outputName} loading="lazy" {src} />
+      {/if}
+    </div>
+    <div class="about">
+      <h2><span class="id">{e.id}</span>{e.title ?? e.outputName}</h2>
+      {#if e.title}
+        <p class="from">
+          {e.outputName}
+        </p>
+      {/if}
+      {#if e.sourceName !== e.outputName}
+        <p class="from">
+          from {e.sourceName}
+        </p>
+      {/if}
+      <p class="facts">{facts(e).join(" · ")}</p>
 
-        {#if said}
-          <p class="said">{said}</p>
-        {/if}
+      {#if said}
+        <p class="said">{said}</p>
+      {/if}
 
-        <form
-          action="?/update"
-          method="POST"
-          use:enhance={() =>
-            ({ update }) =>
-              update({ reset: false })}
-        >
-          <input name="id" type="hidden" value={e.id} />
-          <input
-            aria-label="Title for {e.outputName}"
-            name="title"
-            placeholder="Give it a title"
-            value={e.title ?? ""}
-          />
-          <button>Save</button>
-        </form>
-        <!-- Only marks the manifest entry; the file stays in the run folder. -->
-        <form action="?/update" method="POST" use:enhance>
-          <input name="id" type="hidden" value={e.id} />
-          <input
-            name="deleted"
-            type="hidden"
-            value={e.deleted ? "false" : "true"}
-          />
-          {#if e.deleted}<span class="mark">Deleted</span>{/if}
-          <button>{e.deleted ? "Restore" : "Delete"}</button>
-        </form>
-      </div>
-    </article>
-  {/each}
+      <form
+        action="?/update"
+        method="POST"
+        use:enhance={() =>
+          ({ update }) =>
+            update({ reset: false })}
+      >
+        <input name="id" type="hidden" value={e.id} />
+        <input
+          aria-label="Title for {e.outputName}"
+          name="title"
+          placeholder="Give it a title"
+          value={e.title ?? ""}
+        />
+        <button>Save</button>
+      </form>
+      <!-- Only marks the manifest entry; the file stays in the run folder. -->
+      <form action="?/update" method="POST" use:enhance>
+        <input name="id" type="hidden" value={e.id} />
+        <input
+          name="deleted"
+          type="hidden"
+          value={e.deleted ? "false" : "true"}
+        />
+        {#if e.deleted}<span class="mark">Deleted</span>{/if}
+        <button>{e.deleted ? "Restore" : "Delete"}</button>
+      </form>
+    </div>
+  </article>
+{/each}
 
 <style>
   .back {
