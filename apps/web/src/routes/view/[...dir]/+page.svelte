@@ -120,39 +120,38 @@
         <p class="said">{said}</p>
       {/if}
 
-        <TagStrip entry={e}></TagStrip>
+      <TagStrip entry={e}></TagStrip>
 
-        <form
-          action="?/update"
-          method="POST"
-          use:enhance={() =>
-            ({ update }) =>
-              update({ reset: false })}
-        >
-          <input name="id" type="hidden" value={e.id} />
-          <input
-            aria-label="Title for {e.outputName}"
-            name="title"
-            placeholder="Give it a title"
-            value={e.title ?? ""}
-          />
-          <button>Save</button>
-        </form>
-        <!-- Only marks the manifest entry; the file stays in the run folder. -->
-        <form action="?/update" method="POST" use:enhance>
-          <input name="id" type="hidden" value={e.id} />
-          <input
-            name="deleted"
-            type="hidden"
-            value={e.deleted ? "false" : "true"}
-          />
-          {#if e.deleted}<span class="mark">Deleted</span>{/if}
-          <button>{e.deleted ? "Restore" : "Delete"}</button>
-        </form>
-      </div>
-    </article>
-  {/each}
-</main>
+      <form
+        action="?/update"
+        method="POST"
+        use:enhance={() =>
+          ({ update }) =>
+            update({ reset: false })}
+      >
+        <input name="id" type="hidden" value={e.id} />
+        <input
+          aria-label="Title for {e.outputName}"
+          name="title"
+          placeholder="Give it a title"
+          value={e.title ?? ""}
+        />
+        <button>Save</button>
+      </form>
+      <!-- Only marks the manifest entry; the file stays in the run folder. -->
+      <form action="?/update" method="POST" use:enhance>
+        <input name="id" type="hidden" value={e.id} />
+        <input
+          name="deleted"
+          type="hidden"
+          value={e.deleted ? "false" : "true"}
+        />
+        {#if e.deleted}<span class="mark">Deleted</span>{/if}
+        <button>{e.deleted ? "Restore" : "Delete"}</button>
+      </form>
+    </div>
+  </article>
+{/each}
 
 <style>
   .back {
