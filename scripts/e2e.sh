@@ -23,6 +23,24 @@ ffmpeg -v error -f lavfi -i testsrc=duration=1:rate=30:size=320x240 -c:v mjpeg "
 # A check must not depend on, or spend, an OpenAI key.
 packages/cli/dist/bin.mjs accession "$IN" --out-dir "$OUT" --no-timestamp --no-transcribe
 
+# A manifest can also carry user curation, such as tags assigned on the web page.
+node - "$OUT/.influenca.json" <<'NODE'
+const fs = require('node:fs');
+const path = process.argv[2];
+const manifest = JSON.parse(fs.readFileSync(path, 'utf8'));
+manifest.entries[0].tags = [
+  ...new Set(
+    ['frontend', '  typeScript  ', 'frontend']
+      .map((tag) => String(tag).trim())
+      .filter(Boolean),
+  ),
+];
+fs.writeFileSync(path, JSON.stringify(manifest, null, 2));
+NODE
+
+TAG_NAMES=$(node -p 'JSON.parse(fs.readFileSync(process.argv[1], "utf8")).entries[0].tags.join(",")' "$OUT/.influenca.json")
+[ "$TAG_NAMES" = 'frontend,typeScript' ] || fail "expected manifest tags to round-trip as normalized strings"
+
 ANALYSIS=$(packages/cli/dist/bin.mjs analyze "$OUT")
 printf '%s\n' "$ANALYSIS"
 
@@ -36,6 +54,7 @@ printf '%s\n' "$ANALYSIS" | grep -qx 'Total frames: 30' || fail "expected 'Total
 grep -q '"metaSource": "ffprobe"' "$OUT/.influenca.json" || fail "expected the entry to be probed, not estimated"
 grep -q '"videoCodec": "h264"' "$OUT/.influenca.json" || fail "expected fake.avi to be converted to H.264"
 grep -q '"analyzedAt"' "$OUT/.influenca.json" || fail "expected analyze to save what it measured to the manifest"
+grep -q '"tags"' "$OUT/.influenca.json" || fail "expected the manifest to keep the tags that were curated"
 [ -s "$OUT/fake.mp4" ] || fail "expected a converted fake.mp4 in the run folder"
 
 printf '\033[1;32mPASS\033[0m\n'

@@ -71,6 +71,11 @@ export function updateEntry(
     else if (changes.deleted === false) delete entry.deleted;
     if (changes.title?.trim()) entry.title = changes.title.trim();
     else if (changes.title !== undefined) delete entry.title;
+    if (changes.tags !== undefined) {
+      const tags = changes.tags.map((tag) => tag.trim()).filter(Boolean);
+      if (tags.length > 0) entry.tags = [...new Set(tags)];
+      else delete entry.tags;
+    }
     if (changes.analysis) entry.analysis = changes.analysis;
     if (changes.transcript) entry.transcript = changes.transcript;
   });

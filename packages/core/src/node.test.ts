@@ -84,9 +84,15 @@ describe("updateEntry", () => {
     expect(await readManifest(dir)).toEqual(manifest);
   });
 
-  it("preserves tags", async () => {
-    await updateEntry(dir, "1", { tags: ["fruits", "vegetables", "hybrid"] });
-    expect(await readManifest(dir)).toEqual(manifest);
+  it("writes tags to an entry and strips empty ones", async () => {
+    await updateEntry(dir, "1", {
+      tags: ["fruits", "  vegetables  ", "fruits", "", "hybrid"],
+    });
+    expect((await readManifest(dir)).entries[0]).toMatchObject({
+      tags: ["fruits", "vegetables", "hybrid"],
+    });
+    await updateEntry(dir, "1", { tags: ["   "] });
+    expect((await readManifest(dir)).entries[0]).not.toHaveProperty("tags");
   });
 
   it("ignores legacy sidecar files", async () => {
