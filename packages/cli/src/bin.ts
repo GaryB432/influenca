@@ -157,6 +157,8 @@ const analyze = command(
 
 // The tick list below is made from the run, so the run is something it can depend on.
 const exportRun = dependency(string({ metavar: "RUN_DIR" }));
+// So is the tag, which narrows it.
+const exportTag = dependency(string({ metavar: "TAG" }));
 // The runs to offer when export is not told which. Read here, and only for export,
 // because a prompt's choices have to be in hand when the parser is put together.
 const runs = process.argv[2] === "export" ? await runChoices() : [];
@@ -184,6 +186,11 @@ const exporting = command(
         }),
         { message: "Copy the titled files to which folder?", type: "text" },
       ),
+      tag: optional(
+        option("--tag", exportTag, {
+          description: message`Copy only the titled files with this tag.`,
+        }),
+      ),
       // Which files is a question for a person at a terminal; a script gets them all.
       only: prompt(
         multiple(
@@ -193,10 +200,11 @@ const exporting = command(
           { min: 1 },
         ),
         derivePromptConfig(
-          exportRun,
-          async (given) => {
+          [exportRun, exportTag],
+          async ([given, tag]) => {
             const options = await titledChoices(
               given || (await latestRun(mediaDir())),
+              tag || undefined,
             );
             return {
               message: "Copy which? Space ticks one, a ticks them all.",
@@ -210,7 +218,7 @@ const exporting = command(
             };
           },
           {
-            defaultValue: () => "",
+            defaultValues: () => ["", ""] as const,
             otherwise: [],
             when: () => process.stdin.isTTY === true,
           },
@@ -230,7 +238,7 @@ const exporting = command(
   ),
   {
     brief: message`Copy the files you have given a title into a folder, named after their titles.`,
-    description: message`Takes the files of a run that have a title and are not marked deleted, and copies each out under a filename made from its title. Pass ${optionName("--subtitles")} to also copy the .vtt beside each file. The run is left as it is.`,
+    description: message`Takes the files of a run that have a title and are not marked deleted, and copies each out under a filename made from its title. Pass ${optionName("--tag")} to take only the ones with that tag, and ${optionName("--subtitles")} to also copy the .vtt beside each file. The run is left as it is.`,
   },
 );
 
@@ -238,7 +246,7 @@ const exporting = command(
 const self = invocation();
 const result = await run(or(accession, transcribe, analyze, exporting), {
   brief: message`Keep media off a camera or phone, then transcribe and measure it.`,
-  examples: message`${commandLine(`${self} accession /path/to/intake`)}${lineBreak()}${commandLine(`${self} accession /path/to/intake --no-transcribe --dry-run`)}${lineBreak()}${commandLine(`${self} transcribe`)}${lineBreak()}${commandLine(`${self} analyze --redo`)}${lineBreak()}${commandLine(`${self} export --to ~/projects/garden-party/media`)}`,
+  examples: message`${commandLine(`${self} accession /path/to/intake`)}${lineBreak()}${commandLine(`${self} accession /path/to/intake --no-transcribe --dry-run`)}${lineBreak()}${commandLine(`${self} transcribe`)}${lineBreak()}${commandLine(`${self} analyze --redo`)}${lineBreak()}${commandLine(`${self} export --to ~/projects/garden-party/media`)}${lineBreak()}${commandLine(`${self} export --to ~/projects/garden-party/interviews --tag interview`)}`,
   help: "both",
   programName: self,
   showDefault: true,

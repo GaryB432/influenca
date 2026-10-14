@@ -132,6 +132,28 @@ describe("runExport", () => {
     expect(await readdir(to)).toEqual(["candles.jpg"]);
   });
 
+  it("copies only the titled files with the tag asked for", async () => {
+    await updateEntry(run, "1", { tags: ["drone"], title: "Pool b-roll" });
+    await updateEntry(run, "3", { tags: ["drone", "cake"], title: "cake" });
+    await updateEntry(run, "4", { title: "candles" });
+    // Tagged but untitled, so not picked.
+    await updateEntry(run, "2", { tags: ["drone"] });
+    await runExport({ inDir: run, tag: "drone", to });
+    expect((await readdir(to)).toSorted()).toEqual([
+      "cake.jpg",
+      "pool-b-roll.jpg",
+    ]);
+  });
+
+  it("says so, and makes no folder, when nothing titled has the tag", async () => {
+    await updateEntry(run, "3", { title: "cake" });
+    await runExport({ inDir: run, tag: "drone", to });
+    expect(process.stdout.write).toHaveBeenCalledWith(
+      expect.stringContaining("Nothing titled is tagged drone"),
+    );
+    await expect(readdir(to)).rejects.toThrow();
+  });
+
   it("does not write over a file that is already there", async () => {
     await updateEntry(run, "3", { title: "cake" });
     await runExport({ inDir: run, to });

@@ -14,6 +14,8 @@ export type ExportOptions = {
   only?: string[];
   /** Copy the .vtt subtitle file alongside each video. Off by default. */
   subtitles?: boolean;
+  /** Copy only the titled files with this tag. */
+  tag?: string;
   /** The folder the titled files are copied into. Made if it is not there. */
   to: string;
 };
@@ -21,18 +23,26 @@ export type ExportOptions = {
 /**
  * Copies the files of a run that you have given a title into a folder of your choosing,
  * each under a filename made from its title: "Pool b-roll" arrives as pool-b-roll.mp4,
- * with its subtitles beside it. Giving a file a title is how you pick it. The run is
- * left as it is.
+ * with its subtitles beside it. Giving a file a title is how you pick it, and a tag
+ * narrows the pick. The run is left as it is.
  */
 export async function runExport(opts: ExportOptions): Promise<void> {
   const dir = opts.inDir ? resolve(opts.inDir) : await latestRun(mediaDir());
   const to = resolve(opts.to);
   const manifest = await readManifest(dir);
   const titled = manifest.entries.filter(
-    (e) => e.title && !e.deleted && (opts.only?.includes(e.id) ?? true),
+    (e) =>
+      e.title &&
+      !e.deleted &&
+      (opts.only?.includes(e.id) ?? true) &&
+      (opts.tag === undefined || e.tags?.includes(opts.tag)),
   );
 
   log(accent(dir));
+  if (titled.length === 0 && opts.tag !== undefined) {
+    log(dim(`Nothing titled is tagged ${opts.tag}.`));
+    return;
+  }
   if (titled.length === 0) {
     log(
       dim(
@@ -84,7 +94,8 @@ export async function runExport(opts: ExportOptions): Promise<void> {
   } finally {
     table.end();
   }
-  log(`Copied ${copied} of ${titled.length} titled files to ${accent(to)}`);
+  const which = opts.tag === undefined ? "titled" : `titled ${opts.tag}`;
+  log(`Copied ${copied} of ${titled.length} ${which} files to ${accent(to)}`);
 }
 
 /**

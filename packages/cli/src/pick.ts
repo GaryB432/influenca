@@ -39,11 +39,20 @@ export async function runChoices(): Promise<Choice[]> {
   ];
 }
 
-/** The titled files of a run, as the choices of a tick list: the title to read, the file it is, its number to answer with. */
-export async function titledChoices(dir: string): Promise<Choice[]> {
+/**
+ * The titled files of a run, as the choices of a tick list: the title to read, the file it is,
+ * its number to answer with. Given a tag, only the files that have it.
+ */
+export async function titledChoices(
+  dir: string,
+  tag?: string,
+): Promise<Choice[]> {
   const { entries } = await readManifest(dir);
   return entries
-    .filter((e) => e.title && !e.deleted)
+    .filter(
+      (e) =>
+        e.title && !e.deleted && (tag === undefined || e.tags?.includes(tag)),
+    )
     .map((e) => ({
       hint: e.outputName,
       label: e.title ?? e.outputName,

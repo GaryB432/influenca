@@ -273,7 +273,8 @@ too.
 
 This is also where you say what a file is. Watch `PXL_20261010_175159748.mp4`,
 type `Pool b-roll` and **Save**, and the page shows it under that title from then
-on. **Delete** marks a file as unwanted and dims it; **Restore** takes the mark
+on. Tags go in the box beside the title, separated by commas, and each one
+shows on the file as a link that shows only the files with that tag. **Delete** marks a file as unwanted and dims it; **Restore** takes the mark
 off. Both are recorded in the manifest, and neither renames or removes the
 file itself.
 
@@ -286,6 +287,7 @@ for and held in memory.
 pnpm influenca export --to ~/projects/garden-party/media   # asks which run
 pnpm influenca export /path/to/run --to /some/folder
 pnpm influenca export --to /some/folder --only 3 --only 7  # by number, without being asked
+pnpm influenca export --to /some/folder --tag interview     # only the titled files tagged interview
 ```
 
 ```
@@ -307,6 +309,8 @@ of the web app. A script is not asked, and gets the newest run.
 - A file already in the folder under that name is left alone, so exporting
   again brings only what is new.
 - Leave `--to` off and you are asked for the folder.
+- `--tag` takes only the titled files with that tag, and the tick list shows
+  only those.
 
 ## Development
 
