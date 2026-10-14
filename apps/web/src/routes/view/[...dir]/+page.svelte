@@ -1,5 +1,6 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
+  import { tick } from "svelte";
   import { formatDuration, type ManifestEntry } from "@influenca/core";
 
   import TagStrip from "#lib/components/TagStrip.svelte";
@@ -35,6 +36,7 @@
     })(),
   );
   let tagState = $state<Record<string, string[]>>({});
+  let tagForms = $state<Record<string, HTMLFormElement | undefined>>({});
   let captionsShown = $state<Record<string, boolean>>({});
   let videoElements = $state<Record<string, HTMLVideoElement | undefined>>({});
 
@@ -148,17 +150,11 @@
         <p class="said">{said}</p>
       {/if}
 
-      <TagStrip
-        tags={tagState[e.id] ?? e.tags ?? []}
-        suggestions={suggestionList}
-        onChange={(nextTags) => {
-          tagState[e.id] = nextTags;
-        }}
-      ></TagStrip>
-
+      <!-- Saves on every change; there is no button to press. -->
       <form
         action="?/update"
         method="POST"
+        bind:this={tagForms[e.id]}
         use:enhance={() =>
           ({ update }) =>
             update({ reset: false })}
@@ -168,6 +164,25 @@
           <input name="tags" type="hidden" value={tag} />
         {/each}
         <input name="tagsSet" type="hidden" value="true" />
+        <TagStrip
+          tags={tagState[e.id] ?? e.tags ?? []}
+          suggestions={suggestionList}
+          onChange={async (nextTags) => {
+            tagState[e.id] = nextTags;
+            await tick();
+            tagForms[e.id]?.requestSubmit();
+          }}
+        ></TagStrip>
+      </form>
+
+      <form
+        action="?/update"
+        method="POST"
+        use:enhance={() =>
+          ({ update }) =>
+            update({ reset: false })}
+      >
+        <input name="id" type="hidden" value={e.id} />
         <input
           aria-label="Title for {e.outputName}"
           name="title"
