@@ -7,6 +7,7 @@
   let { data, form } = $props();
   const { files, run, summary } = $derived(data);
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
+  let tagState = $state<Record<string, string[]>>({});
   let captionsShown = $state<Record<string, boolean>>({});
   let videoElements = $state<Record<string, HTMLVideoElement | undefined>>({});
 
@@ -120,7 +121,12 @@
         <p class="said">{said}</p>
       {/if}
 
-      <TagStrip entry={e}></TagStrip>
+      <TagStrip
+        entry={e}
+        onchange={(tags) => {
+          tagState[e.id] = tags;
+        }}
+      ></TagStrip>
 
       <form
         action="?/update"
@@ -130,6 +136,10 @@
             update({ reset: false })}
       >
         <input name="id" type="hidden" value={e.id} />
+        {#each tagState[e.id] ?? e.tags ?? [] as tag (tag)}
+          <input name="tags" type="hidden" value={tag} />
+        {/each}
+        <input name="tagsSet" type="hidden" value="true" />
         <input
           aria-label="Title for {e.outputName}"
           name="title"

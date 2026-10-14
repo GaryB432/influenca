@@ -3,12 +3,19 @@
 
   interface Props {
     entry: ManifestEntry;
+    onchange: (tags: string[], entry?: ManifestEntry) => void;
   }
 
-  let { entry }: Props = $props();
+  let { entry, onchange }: Props = $props();
 
-  let initialTags = $derived(entry.tags || []);
-  let tags = $derived<string[]>(initialTags);
+  let tags = $state<string[]>([]);
+
+  $effect(() => {
+    const nextTags = entry.tags ?? [];
+    if (nextTags.join("\u0000") !== tags.join("\u0000")) {
+      tags = nextTags;
+    }
+  });
 
   let suggestions = $state([
     "Accessibility",
@@ -36,17 +43,31 @@
     ),
   );
 
+  function emitUpdate(nextTags: string[]): void {
+    const normalized = [
+      ...new Set(nextTags.map((tag) => tag.trim()).filter(Boolean)),
+    ];
+    tags = normalized;
+    onchange(normalized, entry);
+  }
+
+  function removeTag(index: number): void {
+    const nextTags = tags.filter((_, i: number) => i !== index);
+    emitUpdate(nextTags);
+    focusedIndex =
+      nextTags.length > 0 ? Math.min(index, nextTags.length - 1) : -1;
+  }
+
   function addTag(tagName: string): void {
     const cleanName: string = tagName.trim();
     if (cleanName && !tags.includes(cleanName)) {
-      tags = [...tags, cleanName];
+      emitUpdate([...tags, cleanName]);
     }
     focusedIndex = -1;
     inputValue = "";
   }
 
   function handleKeyDown(event: KeyboardEvent): void {
-    // If input line text buffer is active, default typing passes out natively
     if (inputValue.length > 0) {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -56,19 +77,20 @@
       return;
     }
 
-    // Keyboard backspace delete loop execution
-    if (event.key === "Backspace") {
-      if (focusedIndex === -1 && tags.length > 0) {
-        focusedIndex = tags.length - 1; // Select the final pill item
-      } else if (focusedIndex >= 0) {
+    if (
+      (event.key === "Backspace" || event.key === "Delete") &&
+      tags.length > 0
+    ) {
+      if (focusedIndex === -1) {
+        focusedIndex = tags.length - 1;
+      }
+      if (focusedIndex >= 0) {
         event.preventDefault();
-        tags = tags.filter((_, i: number) => i !== focusedIndex);
-        focusedIndex = tags.length > 0 ? tags.length - 1 : -1;
+        removeTag(focusedIndex);
       }
       return;
     }
 
-    // Linear arrow key focus navigations
     if (event.key === "ArrowLeft" && focusedIndex > 0) {
       event.preventDefault();
       focusedIndex -= 1;
@@ -77,11 +99,10 @@
         event.preventDefault();
         focusedIndex += 1;
       } else {
-        focusedIndex = -1; // Hand control focus back to layout cursor
+        focusedIndex = -1;
       }
     }
 
-    // Escape hides open popup modules
     if (event.key === "Escape") {
       focusedIndex = -1;
       showDropdown = false;
@@ -116,7 +137,11 @@
             type="button"
             class="tag-pill"
             class:is-focused={focusedIndex === index}
-            onclick={() => (focusedIndex = index)}
+            onclick={() => {
+              focusedIndex = index;
+              showDropdown = false;
+            }}
+            aria-label={`Edit tag ${tag}`}
           >
             {tag}
           </button>
