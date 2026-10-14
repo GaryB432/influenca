@@ -4,20 +4,10 @@
   interface Props {
     entry: ManifestEntry;
     onchange: (tags: string[], entry?: ManifestEntry) => void;
+    suggestions?: string[];
   }
 
-  let { entry, onchange }: Props = $props();
-
-  let tags = $state<string[]>([]);
-
-  $effect(() => {
-    const nextTags = entry.tags ?? [];
-    if (nextTags.join("\u0000") !== tags.join("\u0000")) {
-      tags = nextTags;
-    }
-  });
-
-  let suggestions = $state([
+  const fallbackSuggestions = [
     "Accessibility",
     "Animation",
     "Backend",
@@ -29,7 +19,18 @@
     "Responsive Design",
     "TypeScript",
     "Web History",
-  ]);
+  ];
+
+  let { entry, onchange, suggestions = fallbackSuggestions }: Props = $props();
+
+  let tags = $state<string[]>([]);
+
+  $effect(() => {
+    const nextTags = entry.tags ?? [];
+    if (nextTags.join("\u0000") !== tags.join("\u0000")) {
+      tags = nextTags;
+    }
+  });
 
   let focusedIndex = $state<number>(-1);
   let inputValue = $state<string>("");

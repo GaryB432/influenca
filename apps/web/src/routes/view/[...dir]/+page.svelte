@@ -7,6 +7,33 @@
   let { data, form } = $props();
   const { files, run, summary } = $derived(data);
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
+  const defaultSuggestions = [
+    "Accessibility",
+    "Animation",
+    "Backend",
+    "Build Tools",
+    "Deployment",
+    "Design Systems",
+    "Frontend",
+    "JavaScript",
+    "Responsive Design",
+    "TypeScript",
+    "Web History",
+  ];
+  const suggestionList = $derived(
+    (() => {
+      const counts: Record<string, number> = {};
+      for (const file of files) {
+        for (const tag of file.entry.tags ?? []) {
+          counts[tag] = (counts[tag] ?? 0) + 1;
+        }
+      }
+      const popular = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([tag]) => tag);
+      return [...new Set([...popular, ...defaultSuggestions])].slice(0, 12);
+    })(),
+  );
   let tagState = $state<Record<string, string[]>>({});
   let captionsShown = $state<Record<string, boolean>>({});
   let videoElements = $state<Record<string, HTMLVideoElement | undefined>>({});
@@ -123,6 +150,7 @@
 
       <TagStrip
         entry={e}
+        suggestions={suggestionList}
         onchange={(tags) => {
           tagState[e.id] = tags;
         }}
