@@ -3,12 +3,8 @@
   import { formatDuration, type ManifestEntry } from "@influenca/core";
 
   let { data, form } = $props();
-  const { files, run, summary } = $derived(data);
+  const { files, run, summary, tag, tags } = $derived(data);
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
-  /** Every tag used in the run, offered as you type one. */
-  const runTags = $derived(
-    [...new Set(files.flatMap((f) => f.entry.tags ?? []))].sort(),
-  );
   let captionsShown = $state<Record<string, boolean>>({});
   let videoElements = $state<Record<string, HTMLVideoElement | undefined>>({});
 
@@ -73,10 +69,15 @@
     and durations.{/if}
   {#if deleted}{deleted} marked deleted.{/if}
 </p>
+{#if tag}
+  <p class="filter">
+    {files.length} tagged <strong>{tag}</strong> · <a href="?">Show all</a>
+  </p>
+{/if}
 {#if form?.message}<p class="problem">{form.message}</p>{/if}
 
 <datalist id="run-tags">
-  {#each runTags as tag (tag)}<option value={tag}></option>{/each}
+  {#each tags as t (t)}<option value={t}></option>{/each}
 </datalist>
 
 {#each files as { entry: e, poster, said, src, vttSrc } (e.id)}
@@ -121,6 +122,12 @@
         </p>
       {/if}
       <p class="facts">{facts(e).join(" · ")}</p>
+      {#if e.tags}
+        <p class="tags">
+          {#each e.tags as t (t)}<a href="?tag={encodeURIComponent(t)}">{t}</a
+            >{/each}
+        </p>
+      {/if}
 
       {#if said}
         <p class="said">{said}</p>
@@ -276,6 +283,13 @@
     min-width: 0;
     max-width: 22rem;
     padding: 0.2rem 0.4rem;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.4rem 0 0;
+    font-size: 0.9rem;
   }
   .mark {
     font-size: 0.9rem;

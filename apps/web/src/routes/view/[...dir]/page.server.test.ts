@@ -5,9 +5,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { actions } from "./+page.server.js";
+import { actions, load } from "./+page.server.js";
 
-describe("update", () => {
+describe("update and load", () => {
   const manifest: Manifest = {
     createdAt: "2059-05-20T00:00:00.000Z",
     entries: [
@@ -19,6 +19,15 @@ describe("update", () => {
         metaSource: "estimated",
         outputName: "a.jpg",
         sourceName: "a.jpg",
+      },
+      {
+        bytes: 1,
+        frameCount: 1,
+        id: "2",
+        kind: "image",
+        metaSource: "estimated",
+        outputName: "b.jpg",
+        sourceName: "b.jpg",
       },
     ],
     version: 1,
@@ -60,5 +69,18 @@ describe("update", () => {
     expect(
       (await readManifest(join(root, "run"))).entries[0],
     ).not.toHaveProperty("tags");
+  });
+
+  it("shows only the files with the tag in ?tag=, and offers every tag", async () => {
+    await post({ id: "1", tags: "drone, pool" });
+    await post({ id: "2", tags: "interview" });
+    const url = new URL("http://localhost/view/run?tag=drone");
+    // The load reads only these two.
+    const page = (await load({ params: { dir: "run" }, url } as never)) as {
+      files: { entry: { id: string } }[];
+      tags: string[];
+    };
+    expect(page.files.map((f) => f.entry.id)).toEqual(["1"]);
+    expect(page.tags).toEqual(["drone", "interview", "pool"]);
   });
 });
