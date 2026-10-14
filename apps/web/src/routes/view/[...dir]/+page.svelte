@@ -149,10 +149,10 @@
       {/if}
 
       <TagStrip
-        entry={e}
+        tags={tagState[e.id] ?? e.tags ?? []}
         suggestions={suggestionList}
-        onchange={(tags) => {
-          tagState[e.id] = tags;
+        onChange={(nextTags) => {
+          tagState[e.id] = nextTags;
         }}
       ></TagStrip>
 

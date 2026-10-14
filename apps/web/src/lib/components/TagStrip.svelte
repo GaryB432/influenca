@@ -1,10 +1,8 @@
 <script lang="ts">
-  import type { ManifestEntry } from "@influenca/core";
-
   interface Props {
-    entry: ManifestEntry;
-    onchange: (tags: string[], entry?: ManifestEntry) => void;
+    tags: string[];
     suggestions?: string[];
+    onChange: (nextTags: string[]) => void;
   }
 
   const fallbackSuggestions = [
@@ -21,16 +19,7 @@
     "Web History",
   ];
 
-  let { entry, onchange, suggestions = fallbackSuggestions }: Props = $props();
-
-  let tags = $state<string[]>([]);
-
-  $effect(() => {
-    const nextTags = entry.tags ?? [];
-    if (nextTags.join("\u0000") !== tags.join("\u0000")) {
-      tags = nextTags;
-    }
-  });
+  let { onChange, suggestions = fallbackSuggestions, tags }: Props = $props();
 
   let focusedIndex = $state<number>(-1);
   let inputValue = $state<string>("");
@@ -44,28 +33,31 @@
     ),
   );
 
-  function emitUpdate(nextTags: string[]): void {
+  function commit(nextTags: string[]): void {
     const normalized = [
       ...new Set(nextTags.map((tag) => tag.trim()).filter(Boolean)),
     ];
-    tags = normalized;
-    onchange(normalized, entry);
+    onChange(normalized);
+  }
+
+  function addTag(tagName: string): void {
+    const cleanName = tagName.trim();
+    if (!cleanName || tags.includes(cleanName)) {
+      focusedIndex = -1;
+      inputValue = "";
+      return;
+    }
+
+    commit([...tags, cleanName]);
+    focusedIndex = -1;
+    inputValue = "";
   }
 
   function removeTag(index: number): void {
     const nextTags = tags.filter((_, i: number) => i !== index);
-    emitUpdate(nextTags);
+    commit(nextTags);
     focusedIndex =
       nextTags.length > 0 ? Math.min(index, nextTags.length - 1) : -1;
-  }
-
-  function addTag(tagName: string): void {
-    const cleanName: string = tagName.trim();
-    if (cleanName && !tags.includes(cleanName)) {
-      emitUpdate([...tags, cleanName]);
-    }
-    focusedIndex = -1;
-    inputValue = "";
   }
 
   function handleKeyDown(event: KeyboardEvent): void {
@@ -121,7 +113,6 @@
     onfocusin={() => (showDropdown = true)}
     onfocusout={(event: FocusEvent) => {
       const target = event.currentTarget as HTMLElement;
-      // Small timeout allows button click tracking to process before component blur
       setTimeout(() => {
         if (!target.contains(document.activeElement)) {
           focusedIndex = -1;
