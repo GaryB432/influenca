@@ -1,4 +1,4 @@
-import { MANIFEST_FILENAME, type Manifest } from "@influenca/core";
+import { type Manifest, MANIFEST_FILENAME } from "@influenca/core";
 import { readManifest } from "@influenca/core/node";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -57,8 +57,8 @@ describe("update", () => {
   it("removes the tags when the field is emptied", async () => {
     await post({ id: "1", tags: "drone" });
     await post({ id: "1", tags: "" });
-    expect((await readManifest(join(root, "run"))).entries[0]).not.toHaveProperty(
-      "tags",
-    );
+    expect(
+      (await readManifest(join(root, "run"))).entries[0],
+    ).not.toHaveProperty("tags");
   });
 });
