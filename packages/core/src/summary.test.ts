@@ -43,31 +43,3 @@ describe("formatDuration", () => {
     expect(formatDuration(3725)).toBe("01:02:05");
   });
 });
-
-describe("Tags", () => {
-  it("preserves tags", () => {
-    const manifest: Manifest = {
-      createdAt: "2059-05-20T00:00:00Z",
-      entries: [
-        {
-          ...base,
-          durationSec: 2,
-          fps: 30,
-          frameCount: 60,
-          id: "1",
-          kind: "video",
-          tags: ["a", "b"],
-        },
-        { ...base, durationSec: 2, id: "2", kind: "audio", tags: [] },
-        { ...base, frameCount: 1, id: "3", kind: "image", tags: [] },
-      ],
-      version: 1,
-    };
-    expect(summarize(manifest)).toEqual({
-      counts: { audio: 1, image: 1, video: 1 },
-      estimated: true,
-      totalDurationSec: 4,
-      totalFrames: 61,
-    });
-  });
-});

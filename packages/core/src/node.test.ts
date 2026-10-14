@@ -91,6 +91,11 @@ describe("updateEntry", () => {
     expect((await readManifest(dir)).entries[0]).toMatchObject({
       tags: ["fruits", "vegetables", "hybrid"],
     });
+    // A save that does not name tags, such as Delete, leaves them alone.
+    await updateEntry(dir, "1", { deleted: true });
+    expect((await readManifest(dir)).entries[0]).toMatchObject({
+      tags: ["fruits", "vegetables", "hybrid"],
+    });
     await updateEntry(dir, "1", { tags: ["   "] });
     expect((await readManifest(dir)).entries[0]).not.toHaveProperty("tags");
   });

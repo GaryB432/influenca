@@ -1,42 +1,14 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
-  import { tick } from "svelte";
   import { formatDuration, type ManifestEntry } from "@influenca/core";
-
-  import TagStrip from "#lib/components/TagStrip.svelte";
 
   let { data, form } = $props();
   const { files, run, summary } = $derived(data);
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
-  const defaultSuggestions = [
-    "Accessibility",
-    "Animation",
-    "Backend",
-    "Build Tools",
-    "Deployment",
-    "Design Systems",
-    "Frontend",
-    "JavaScript",
-    "Responsive Design",
-    "TypeScript",
-    "Web History",
-  ];
-  const suggestionList = $derived(
-    (() => {
-      const counts: Record<string, number> = {};
-      for (const file of files) {
-        for (const tag of file.entry.tags ?? []) {
-          counts[tag] = (counts[tag] ?? 0) + 1;
-        }
-      }
-      const popular = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-        .map(([tag]) => tag);
-      return [...new Set([...popular, ...defaultSuggestions])].slice(0, 12);
-    })(),
+  /** Every tag used in the run, offered as you type one. */
+  const runTags = $derived(
+    [...new Set(files.flatMap((f) => f.entry.tags ?? []))].sort(),
   );
-  let tagState = $state<Record<string, string[]>>({});
-  let tagForms = $state<Record<string, HTMLFormElement | undefined>>({});
   let captionsShown = $state<Record<string, boolean>>({});
   let videoElements = $state<Record<string, HTMLVideoElement | undefined>>({});
 
@@ -103,6 +75,10 @@
 </p>
 {#if form?.message}<p class="problem">{form.message}</p>{/if}
 
+<datalist id="run-tags">
+  {#each runTags as tag (tag)}<option value={tag}></option>{/each}
+</datalist>
+
 {#each files as { entry: e, poster, said, src, vttSrc } (e.id)}
   <article class:deleted={e.deleted}>
     <div class="media">
@@ -150,31 +126,6 @@
         <p class="said">{said}</p>
       {/if}
 
-      <!-- Saves on every change; there is no button to press. -->
-      <form
-        action="?/update"
-        method="POST"
-        bind:this={tagForms[e.id]}
-        use:enhance={() =>
-          ({ update }) =>
-            update({ reset: false })}
-      >
-        <input name="id" type="hidden" value={e.id} />
-        {#each tagState[e.id] ?? e.tags ?? [] as tag (tag)}
-          <input name="tags" type="hidden" value={tag} />
-        {/each}
-        <input name="tagsSet" type="hidden" value="true" />
-        <TagStrip
-          tags={tagState[e.id] ?? e.tags ?? []}
-          suggestions={suggestionList}
-          onChange={async (nextTags) => {
-            tagState[e.id] = nextTags;
-            await tick();
-            tagForms[e.id]?.requestSubmit();
-          }}
-        ></TagStrip>
-      </form>
-
       <form
         action="?/update"
         method="POST"
@@ -188,6 +139,13 @@
           name="title"
           placeholder="Give it a title"
           value={e.title ?? ""}
+        />
+        <input
+          aria-label="Tags for {e.outputName}"
+          list="run-tags"
+          name="tags"
+          placeholder="Tags, by commas"
+          value={e.tags?.join(", ") ?? ""}
         />
         <button>Save</button>
       </form>
@@ -310,10 +268,10 @@
     margin-top: 0.7rem;
   }
   form button,
-  form input[name="title"] {
+  form input {
     font: inherit;
   }
-  form input[name="title"] {
+  form input:not([type="hidden"]) {
     flex: 1;
     min-width: 0;
     max-width: 22rem;

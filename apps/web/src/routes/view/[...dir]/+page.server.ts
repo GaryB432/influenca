@@ -92,16 +92,12 @@ export const actions: Actions = {
 
     const title = form.get("title");
     const deleted = form.get("deleted");
-    const tagsSet = form.get("tagsSet");
-    const tags = form.getAll("tags").map((tag) => String(tag).trim());
-    const normalizedTags = [...new Set(tags.filter((tag) => tag.length > 0))];
-
+    const tags = form.get("tags");
     const changes: Curation = {
       ...(typeof deleted === "string" && { deleted: deleted === "true" }),
       ...(typeof title === "string" && { title }),
-      ...(tagsSet === "true" && { tags: normalizedTags }),
+      ...(typeof tags === "string" && { tags: tags.split(",") }),
     };
-
     try {
       await updateEntry(dir, id, changes);
     } catch (e) {
