@@ -7,7 +7,7 @@
     "clean": "mv .env ~/tempenv && git clean -dfx && mv ~/tempenv .env",
     "build": "pnpm --recursive build",
     "dev:web": "pnpm --filter @influenca/web dev",
-    "influenca": "node packages/cli/dist/bin.mjs",
+    "influenca": "node apps/cli/dist/bin.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",

@@ -27,7 +27,7 @@ export default defineConfig([
   },
   {
     // The order of a parser's keys is the order of its usage line and help.
-    files: ["packages/cli/src/bin.ts"],
+    files: ["apps/cli/src/bin.ts"],
     rules: {
       "perfectionist/sort-objects": "off",
     },
