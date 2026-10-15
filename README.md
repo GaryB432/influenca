@@ -128,10 +128,9 @@ pwsh.exe -File scripts\intake-device.ps1 -DeviceName "Pixel" -MaxAgeDays 3
 pwsh.exe -File scripts\intake-device.ps1 -DeviceName "iPad" -MaxAgeDays 0
 ```
 
-Videos, sound and JPEG stills are copied. A Live Photo is a still with a short
-clip under the same name; only the still is taken unless you pass
-`-KeepLiveClips`. Stills an iPhone or iPad offers as HEIC are not copied, and
-the script tells you which setting on the device makes them JPEGs.
+Videos, sound and stills (JPEG or HEIC) are copied; accession turns HEIC into
+JPEG. A Live Photo is a still with a short clip under the same name; only the
+still is taken unless you pass `-KeepLiveClips`.
 
 Or start it from a WSL terminal, with `pwsh.exe` on the Windows `PATH`:
 
@@ -322,12 +321,12 @@ published and there is nothing to link.
 
 ### Layout
 
-| Path              | What                                                        |
-| ----------------- | ----------------------------------------------------------- |
-| `apps/cli`        | The `influenca` command                                     |
-| `apps/web`        | SvelteKit viewer                                            |
-| `packages/core`   | Manifest, transcripts and analysis types, readers, summary  |
-| `scripts/e2e.sh`  | Builds, then runs accession and analyze on a generated clip |
+| Path              | What                                                             |
+| ----------------- | ---------------------------------------------------------------- |
+| `apps/cli`        | The `influenca` command                                          |
+| `apps/web`        | SvelteKit viewer                                                 |
+| `packages/core`   | Manifest, transcripts and analysis types, readers, summary       |
+| `scripts/e2e.sh`  | Builds, then runs accession and analyze on a generated clip      |
 | `scripts/intake*` | Fill an intake folder from an SD card or any device in "This PC" |
 
 `CLAUDE.md` holds the rules the code relies on, for people as much as for

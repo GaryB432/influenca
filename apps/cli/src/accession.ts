@@ -54,7 +54,9 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
   const files = await listIntake(inDir, opts.verbose);
   const planned = planEntries(files);
   if (planned.length === 0) {
-    throw new Error(`No supported media (avi, heic, mov, mp4, wav, jpg) in ${inDir}`);
+    throw new Error(
+      `No supported media (avi, heic, mov, mp4, wav, jpg) in ${inDir}`,
+    );
   }
   const sources = await probeEntries(inDir, planned);
 

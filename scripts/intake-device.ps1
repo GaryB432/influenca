@@ -29,7 +29,7 @@
 
 .PARAMETER Extensions
     Optional. Comma-separated file extensions to copy.
-    Defaults to: mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,jpg,JPG,jpeg,JPEG
+    Defaults to: mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,jpg,JPG,jpeg,JPEG,heic,HEIC
 
 .PARAMETER KeepLiveClips
     Optional. A Live Photo is a still and a short clip under the same name. By
@@ -200,7 +200,6 @@ $cutoffDate  = if ($MaxAgeDays -gt 0) { (Get-Date).AddDays(-$MaxAgeDays) } else 
 $stillExts = @(".jpg", ".jpeg", ".heic")
 $clipExts  = @(".mov")
 $script:liveClips = 0
-$script:heicStills = 0
 
 function Collect-MediaItems ([object]$folder, [ref]$results) {
     # Listed once: every pass over a folder is a round trip to the device.
@@ -217,7 +216,6 @@ function Collect-MediaItems ([object]$folder, [ref]$results) {
             Collect-MediaItems $item.GetFolder() $results
         } else {
             $ext = [System.IO.Path]::GetExtension($item.Name)
-            if ($ext -eq ".heic" -and $ext -notin $allowedExts) { $script:heicStills++ }
             if ($ext -notin $allowedExts) { continue }
             $stem = [System.IO.Path]::GetFileNameWithoutExtension($item.Name)
             if (-not $KeepLiveClips -and $ext -in $clipExts -and $stills.ContainsKey($stem)) {
@@ -247,24 +245,10 @@ $mediaItems = [System.Collections.Generic.List[object]]::new()
 $listRef    = [ref]$mediaItems
 Collect-MediaItems $mediaFolder $listRef
 
-if ($script:heicStills -gt 0) {
-    Write-Host ""
-    Write-Fail "$($script:heicStills) HEIC still(s) found — none were copied."
-    Write-Host "  influenca keeps JPEGs, not HEIC. Fix this once on the device and it" -ForegroundColor Yellow
-    Write-Host "  stays fixed for every future intake:" -ForegroundColor Yellow
-    Write-Host "  • iPhone / iPad  →  Settings > Photos > Transfer to Mac or PC > Automatic" -ForegroundColor Yellow
-    Write-Host ""
-}
-
 if ($mediaItems.Count -eq 0) {
-    if ($script:heicStills -gt 0) {
-        Write-Fail "Nothing was copied — all media on this device was HEIC."
-        Write-Host "  Apply the setting above, then run this script again." -ForegroundColor Yellow
-    } else {
-        $ageNote = if ($MaxAgeDays -gt 0) { " in the last $MaxAgeDays day(s)" } else { "" }
-        Write-Warn "No matching media files found on $deviceFriendlyName$ageNote."
-        Write-Host "  Extensions searched: $Extensions"
-    }
+    $ageNote = if ($MaxAgeDays -gt 0) { " in the last $MaxAgeDays day(s)" } else { "" }
+    Write-Warn "No matching media files found on $deviceFriendlyName$ageNote."
+    Write-Host "  Extensions searched: $Extensions"
     exit 0
 }
 
