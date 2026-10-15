@@ -29,7 +29,7 @@ The web app has the same kind of boundary of its own: `src/lib/server` is server
 Every command is laid out the same way, so intake, accession, transcribe and analyze read as one tool:
 
 1. the folder it is working on, in the accent
-2. a table with a row per file (`startTable` in `packages/cli/src/live.ts`)
+2. a table with a row per file (`startTable` in `apps/cli/src/live.ts`)
 3. a plain line saying what was written
 4. `Next: <command>` with the command in the accent (`next` in `theme.ts`), spelled the way the CLI was started (`invocation.ts`)
 
@@ -44,9 +44,9 @@ A run folder holds the kept media, a `.vtt` beside each transcribed file, and on
 
 - Types: `packages/core/src/manifest.ts`. `{ version: 1, createdAt, analyzedAt?, entries: ManifestEntry[] }`.
 - Accession writes it once, after every file is copied or converted, and refuses to run if one already exists in the output dir. After that each step adds to the entries:
-  - `transcript`, by transcribe (`packages/cli/src/transcribe.ts`, Whisper call in `whisper.ts`): `done` (`language`, `model`, `vttName`, `words`), `failed` (`model`, `reason`) or `silent`. Saved after every file, because each one cost money to make.
-  - `analysis`, by analyze (`packages/cli/src/analyze.ts`, thresholds in `measure.ts`): `silentSec?` (below -40 dB for a second or more, anything with audio) and `stillSec?` (picture frozen two seconds or more, video only). Images get none. Saved once at the end, with `analyzedAt` on the manifest; `--redo` measures again and `--minimal` neither measures nor saves. Percent shares, Mb/s and word totals are worked out at print time, not stored.
-  - `title`, `tags` and `deleted`, by you on the web page: the `Curation` type. `title` is what you call a file once you have seen it, as you would say it, such as `Pool b-roll`; export makes a filename from it with `slug` in `packages/cli/src/export.ts`. `tags` are words you file it under, typed as one comma-separated field; `updateEntry` trims them, drops duplicates and blanks, and removes the field when none are left. The run page filters by one with `?tag=`, and `export --tag` takes only the titled files that have it. None of these touches the file on disk, which keeps its `outputName`.
+  - `transcript`, by transcribe (`apps/cli/src/transcribe.ts`, Whisper call in `whisper.ts`): `done` (`language`, `model`, `vttName`, `words`), `failed` (`model`, `reason`) or `silent`. Saved after every file, because each one cost money to make.
+  - `analysis`, by analyze (`apps/cli/src/analyze.ts`, thresholds in `measure.ts`): `silentSec?` (below -40 dB for a second or more, anything with audio) and `stillSec?` (picture frozen two seconds or more, video only). Images get none. Saved once at the end, with `analyzedAt` on the manifest; `--redo` measures again and `--minimal` neither measures nor saves. Percent shares, Mb/s and word totals are worked out at print time, not stored.
+  - `title`, `tags` and `deleted`, by you on the web page: the `Curation` type. `title` is what you call a file once you have seen it, as you would say it, such as `Pool b-roll`; export makes a filename from it with `slug` in `apps/cli/src/export.ts`. `tags` are words you file it under, typed as one comma-separated field; `updateEntry` trims them, drops duplicates and blanks, and removes the field when none are left. The run page filters by one with `?tag=`, and `export --tag` takes only the titled files that have it. None of these touches the file on disk, which keeps its `outputName`.
 - A new thing to record about a file is a new field on the entry: in `Curation` if you set it, in `Findings` if a tool works it out.
 
 ### Saving it
@@ -61,7 +61,7 @@ A run folder holds the kept media, a `.vtt` beside each transcribed file, and on
 - `video`: `durationSec`, `fps`, `frameCount`, optional `hasAudio`, `videoCodec`.
 - `audio`: `durationSec`, optional `audioCodec`, `channels`, `sampleRate`.
 - `image`: `frameCount: 1`.
-- `id` is the 1-based position in the name-sorted intake listing, as a string (`planEntries` in `packages/cli/src/entries.ts`). It is unique only within a run.
+- `id` is the 1-based position in the name-sorted intake listing, as a string (`planEntries` in `apps/cli/src/entries.ts`). It is unique only within a run.
 - `metaSource` is `"estimated"` (guessed from byte size) until ffprobe fills in real numbers, then `"ffprobe"`.
 - `isManifest` checks only the envelope: version is `1` and `entries` is an array.
 - `analyze` never calls OpenAI; it only reads what transcribe left on the entries.

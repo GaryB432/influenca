@@ -1,7 +1,7 @@
 node_modules
+apps/cli/dist
 apps/web/.svelte-kit
 apps/web/build
-packages/cli/dist
 .DS_Store
 .env
 Thumbs.db

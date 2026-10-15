@@ -163,7 +163,7 @@ folder is read, and files of other types are left behind (`--verbose` lists them
 | `.mp4`, `.jpg`, `.jpeg` | unchanged | Copied under its own name                         |
 
 - The converted file is the only copy influenca keeps, so the encode settings
-  favour quality over size. They live in `packages/cli/src/convert.ts`.
+  favour quality over size. They live in `apps/cli/src/convert.ts`.
 - Each file is written under a `.part-` name and renamed when it is complete and
   its duration matches the source, so a file with its real name is always whole.
 - The manifest is written last. A run folder without one did not finish, and a
@@ -201,7 +201,7 @@ with `--no-transcribe` gets its transcripts later.
 - Any other failure, such as a refused key or no network, stops the
   transcribing there. What was done is kept.
 
-The model and the audio settings are in `packages/cli/src/whisper.ts`.
+The model and the audio settings are in `apps/cli/src/whisper.ts`.
 
 ## Analyze
 
@@ -232,7 +232,7 @@ written once, when it is done.
   language when it is not the one you expected. Analyze only reads this; it
   never calls OpenAI.
 
-The thresholds are in `packages/cli/src/measure.ts`. What is measured is saved
+The thresholds are in `apps/cli/src/measure.ts`. What is measured is saved
 on each file's entry in the manifest and reused on the next run unless you pass
 `--redo`.
 
@@ -321,9 +321,9 @@ published and there is nothing to link.
 
 | Path              | What                                                        |
 | ----------------- | ----------------------------------------------------------- |
-| `packages/core`   | Manifest, transcripts and analysis types, readers, summary  |
-| `packages/cli`    | The `influenca` command                                     |
+| `apps/cli`        | The `influenca` command                                     |
 | `apps/web`        | SvelteKit viewer                                            |
+| `packages/core`   | Manifest, transcripts and analysis types, readers, summary  |
 | `scripts/e2e.sh`  | Builds, then runs accession and analyze on a generated clip |
 | `scripts/intake*` | Fill an intake folder from an SD card, a phone or a tablet  |
 

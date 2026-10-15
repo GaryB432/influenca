@@ -1,5 +1,6 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
+  import { resolve } from "$app/paths";
   import { formatDuration, type ManifestEntry } from "@influenca/core";
 
   let { data, form } = $props();
@@ -59,7 +60,7 @@
 
 <svelte:head><title>{run} · Influenca</title></svelte:head>
 
-<p class="back"><a href="/">All runs</a></p>
+<p class="back"><a href={resolve("/")}>All runs</a></p>
 <h1>{run}</h1>
 <p class="totals">
   {summary.counts.video} video, {summary.counts.audio}
@@ -71,7 +72,8 @@
 </p>
 {#if tag}
   <p class="filter">
-    {files.length} tagged <strong>{tag}</strong> · <a href="?">Show all</a>
+    {files.length} tagged <strong>{tag}</strong> ·
+    <a href={resolve("?")}>Show all</a>
   </p>
 {/if}
 {#if form?.message}<p class="problem">{form.message}</p>{/if}
@@ -124,8 +126,9 @@
       <p class="facts">{facts(e).join(" · ")}</p>
       {#if e.tags}
         <p class="tags">
-          {#each e.tags as t (t)}<a href="?tag={encodeURIComponent(t)}">{t}</a
-            >{/each}
+          {#each e.tags as t (t)}
+            <a href="{resolve('/')}?tag={encodeURIComponent(t)}">{t}</a>
+          {/each}
         </p>
       {/if}
 

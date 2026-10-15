@@ -21,9 +21,9 @@ mkdir -p "$IN"
 ffmpeg -v error -f lavfi -i testsrc=duration=1:rate=30:size=320x240 -c:v mjpeg "$IN/fake.avi"
 
 # A check must not depend on, or spend, an OpenAI key.
-packages/cli/dist/bin.mjs accession "$IN" --out-dir "$OUT" --no-timestamp --no-transcribe
+apps/cli/dist/bin.mjs accession "$IN" --out-dir "$OUT" --no-timestamp --no-transcribe
 
-ANALYSIS=$(packages/cli/dist/bin.mjs analyze "$OUT")
+ANALYSIS=$(apps/cli/dist/bin.mjs analyze "$OUT")
 printf '%s\n' "$ANALYSIS"
 
 cat "$OUT/.influenca.json"
