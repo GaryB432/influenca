@@ -108,21 +108,24 @@ card:
 ./scripts/intake.sh g
 ```
 
-### Phone or tablet (MTP)
+### Phone, tablet or camera (any device in "This PC")
 
-Phones are reached through the Windows Shell, so this one runs in PowerShell 7
-on Windows. It takes whichever device is plugged in, and asks which if there
-is more than one:
+Uses the Windows Shell COM API (`Shell.Application`) — the same thing Windows
+Explorer uses — to discover and browse whatever is plugged in. Any device that
+appears under "This PC" is reachable: Android phones, iPhones, iPads, and
+anything else Windows recognises as a portable device. No adb, no iTunes, no
+vendor drivers beyond what Windows installs automatically when you first connect
+the device and tap "Allow" or "File Transfer".
 
 ```powershell
-# The device that is plugged in, last 7 days of camera files
-pwsh.exe -File scripts\intake-android.ps1
+# Whichever device is plugged in, last 7 days of camera files
+pwsh.exe -File scripts\intake-device.ps1
 
-# A phone by partial name, last 3 days
-pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Pixel" -MaxAgeDays 3
+# A specific device by partial name, last 3 days
+pwsh.exe -File scripts\intake-device.ps1 -DeviceName "Pixel" -MaxAgeDays 3
 
-# Every camera file, whatever its age
-pwsh.exe -File scripts\intake-android.ps1 -PhoneName "Galaxy" -MaxAgeDays 0
+# Every camera file from an iPad, regardless of age
+pwsh.exe -File scripts\intake-device.ps1 -DeviceName "iPad" -MaxAgeDays 0
 ```
 
 Videos, sound and JPEG stills are copied. A Live Photo is a still with a short
@@ -133,13 +136,13 @@ the script tells you which setting on the device makes them JPEGs.
 Or start it from a WSL terminal, with `pwsh.exe` on the Windows `PATH`:
 
 ```sh
-pwsh.exe -File "$(wslpath -w ./scripts/intake-android.ps1)"
+pwsh.exe -File "$(wslpath -w ./scripts/intake-device.ps1)"
 ```
 
 It copies into your WSL home and prints the next command, to paste at the repo root:
 
 ```
-pnpm influenca accession "/home/you/.local/state/influenca/2059-05-20_00-00-00/pixel-9-pro"
+pnpm influenca accession "/home/you/.local/state/influenca/2059-05-20_00-00-00/ipad-pro"
 ```
 
 ## Accession
@@ -325,7 +328,7 @@ published and there is nothing to link.
 | `apps/web`        | SvelteKit viewer                                            |
 | `packages/core`   | Manifest, transcripts and analysis types, readers, summary  |
 | `scripts/e2e.sh`  | Builds, then runs accession and analyze on a generated clip |
-| `scripts/intake*` | Fill an intake folder from an SD card, a phone or a tablet  |
+| `scripts/intake*` | Fill an intake folder from an SD card or any device in "This PC" |
 
 `CLAUDE.md` holds the rules the code relies on, for people as much as for
 agents: who may write which file, how options reach a command and how the
