@@ -321,9 +321,9 @@ published and there is nothing to link.
 
 | Path              | What                                                        |
 | ----------------- | ----------------------------------------------------------- |
-| `packages/core`   | Manifest, transcripts and analysis types, readers, summary  |
-| `apps/cli`    | The `influenca` command                                     |
+| `apps/cli`        | The `influenca` command                                     |
 | `apps/web`        | SvelteKit viewer                                            |
+| `packages/core`   | Manifest, transcripts and analysis types, readers, summary  |
 | `scripts/e2e.sh`  | Builds, then runs accession and analyze on a generated clip |
 | `scripts/intake*` | Fill an intake folder from an SD card, a phone or a tablet  |
 

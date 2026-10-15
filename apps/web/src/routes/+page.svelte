@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import { formatDuration } from "@influenca/core";
 
   let { data } = $props();
@@ -15,7 +16,10 @@
   </p>
 {:else}
   <label for="run">Runs in <code>{data.root}</code></label>
-  <select id="run" onchange={(e) => goto(e.currentTarget.value)}>
+  <select
+    id="run"
+    onchange={(e) => goto(resolve(e.currentTarget.value as "/"))}
+  >
     <option value="" disabled selected>Choose from {data.runs.length}…</option>
     {#each data.runs as r (r.href)}
       {@const files =

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { invocation } from "./invocation.js";
 
-const entry = "/repo/packages/cli/dist/bin.mjs";
+const entry = "/repo/apps/cli/dist/bin.mjs";
 const pnpm = { npm_config_user_agent: "pnpm/12.5.1 npm/? node/? linux x64" };
 
 describe("invocation", () => {
@@ -10,7 +10,7 @@ describe("invocation", () => {
     const env = {
       ...pnpm,
       npm_lifecycle_event: "influenca",
-      npm_lifecycle_script: "node packages/cli/dist/bin.mjs analyze",
+      npm_lifecycle_script: "node apps/cli/dist/bin.mjs analyze",
     };
     expect(invocation(env, entry)).toBe("pnpm influenca");
   });
