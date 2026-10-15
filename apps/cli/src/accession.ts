@@ -54,7 +54,7 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
   const files = await listIntake(inDir, opts.verbose);
   const planned = planEntries(files);
   if (planned.length === 0) {
-    throw new Error(`No supported media (avi, mov, mp4, wav, jpg) in ${inDir}`);
+    throw new Error(`No supported media (avi, heic, mov, mp4, wav, jpg) in ${inDir}`);
   }
   const sources = await probeEntries(inDir, planned);
 
@@ -137,7 +137,7 @@ async function bringIn(
   // Same folder and same extension: the rename stays on one drive, and ffmpeg still sees the format.
   const part = join(dirname(dest), `.part-${basename(dest)}`);
   try {
-    const kept = await (e.kind === "image" || e.outputName === e.sourceName
+    const kept = await (e.outputName === e.sourceName
       ? copy(src, part, e.bytes, report).then(() => e)
       : convertAndCheck(e, src, part, report));
     await rename(part, dest);
@@ -150,7 +150,7 @@ async function bringIn(
 
 /** Converts into part and returns the entry for the result, or throws if it cannot be trusted. */
 async function convertAndCheck(
-  e: Exclude<ManifestEntry, { kind: "image" }>,
+  e: ManifestEntry,
   src: string,
   part: string,
   report: OnProgress,

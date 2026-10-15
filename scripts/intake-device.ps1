@@ -63,7 +63,7 @@
 [CmdletBinding()]
 param(
     [string]  $DeviceName  = "",
-    [string]  $Extensions = "mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,jpg,JPG,jpeg,JPEG",
+    [string]  $Extensions = "mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,jpg,JPG,jpeg,JPEG,heic,HEIC",
     [int]     $MaxAgeDays = 7,
     [switch]  $KeepLiveClips,
     [string]  $WslDistro  = ""

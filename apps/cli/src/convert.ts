@@ -24,6 +24,8 @@ const VIDEO_ARGS = [
 const AUDIO_ARGS = ["-c:a", "libmp3lame", "-q:a", "2"];
 // Nothing is decoded, so nothing is lost and it runs at the speed of a copy.
 const REWRAP_ARGS = ["-c", "copy", "-movflags", "+faststart"];
+// Preserve quality; ffmpeg's -q:v 2 is near-lossless for JPEG output.
+const IMAGE_ARGS = ["-q:v", "2"];
 
 /**
  * Transcodes src into dest, whose extension picks the container. Overwrites dest.
@@ -32,16 +34,19 @@ const REWRAP_ARGS = ["-c", "copy", "-movflags", "+faststart"];
 export async function convert(
   src: string,
   dest: string,
-  kind: "audio" | "video",
+  kind: "audio" | "image" | "video",
   durationSec: number,
   onProgress: OnProgress,
   rewrap = false,
 ): Promise<void> {
-  const codec = rewrap
-    ? REWRAP_ARGS
-    : kind === "video"
-      ? VIDEO_ARGS
-      : AUDIO_ARGS;
+  const codec =
+    kind === "image"
+      ? IMAGE_ARGS
+      : rewrap
+        ? REWRAP_ARGS
+        : kind === "video"
+          ? VIDEO_ARGS
+          : AUDIO_ARGS;
   const args = [
     "-v",
     "error",
