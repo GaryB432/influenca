@@ -73,7 +73,8 @@ settings sit in a `.env` at the root of the clone, so that is where every
 command here is typed.
 
 It needs a recent Node (developed on 24), pnpm, and `ffmpeg` with `ffprobe` on
-your `PATH`.
+your `PATH`. HEIC stills from an iPhone or iPad also need `heif-convert`; on
+Ubuntu, `apt install libheif-examples libheif-plugin-libde265`.
 
 ```sh
 git clone https://github.com/GaryB432/influenca.git

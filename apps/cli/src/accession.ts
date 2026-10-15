@@ -161,7 +161,7 @@ async function convertAndCheck(
     src,
     part,
     e.kind,
-    e.durationSec,
+    e.kind === "image" ? 0 : e.durationSec,
     report,
     classify(e.sourceName)?.rewrap,
   );
@@ -169,7 +169,11 @@ async function convertAndCheck(
   // The manifest describes the converted file, and a probe that disagrees with the
   // source means the conversion cannot be trusted as the only copy.
   const kept = applyProbe(e, await probe(part));
-  if (kept.kind !== "image" && e.metaSource === "ffprobe") {
+  if (
+    kept.kind !== "image" &&
+    e.kind !== "image" &&
+    e.metaSource === "ffprobe"
+  ) {
     const drift = Math.abs(kept.durationSec - e.durationSec);
     if (drift > DURATION_TOLERANCE_SEC) {
       throw new Error(
@@ -220,6 +224,11 @@ async function probeEntries(
 ): Promise<ManifestEntry[]> {
   const entries: ManifestEntry[] = [];
   for (const e of planned) {
+    // ffprobe cannot read HEIC; the JPEG made from it is probed once it exists.
+    if (e.kind === "image" && e.outputName !== e.sourceName) {
+      entries.push(e);
+      continue;
+    }
     try {
       entries.push(applyProbe(e, await probe(join(inDir, e.sourceName))));
     } catch (error) {
