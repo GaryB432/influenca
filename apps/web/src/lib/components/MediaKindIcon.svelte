@@ -6,6 +6,12 @@
   let { kind }: Props = $props();
 </script>
 
+{#snippet dogearDocumentFrame()}
+  <!-- Document/File Frame -->
+  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+  <path d="M14 2v6h6" />
+{/snippet}
+
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 24 24"
@@ -19,26 +25,20 @@
 >
   {#if kind === "video"}
     <g id="video-file">
-      <!-- Document/File Frame -->
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6" />
+      {@render dogearDocumentFrame()}
       <!-- Play Button -->
       <polygon points="10 11 10 17 15 14 10 11" />
     </g>
   {:else if kind === "image"}
     <g id="image-file">
-      <!-- Document/File Frame -->
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6" />
+      {@render dogearDocumentFrame()}
       <!-- Mountain/Sun Photo Symbol -->
       <circle cx="9" cy="12" r="1" />
       <path d="m16 18-3.5-3.5a1 1 0 0 0-1.4 0L7 18" />
     </g>
   {:else if kind === "audio"}
     <g id="audio-file">
-      <!-- Document/File Frame -->
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6" />
+      {@render dogearDocumentFrame()}
       <!-- Audio Waveform -->
       <path d="M8 13v2" />
       <path d="M11 11v6" />
