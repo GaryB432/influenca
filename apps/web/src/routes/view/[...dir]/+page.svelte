@@ -1,7 +1,9 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
   import { resolve } from "$app/paths";
-  import { formatDuration, type ManifestEntry } from "@influenca/core";
+  import { formatDuration } from "@influenca/core";
+
+  import MediaFacts from "./MediaFacts.svelte";
 
   let { data, form } = $props();
   const { files, run, summary, tag, tags } = $derived(data);
@@ -34,27 +36,6 @@
     );
     near.observe(video);
     return { destroy: () => near.disconnect() };
-  }
-
-  function facts(e: ManifestEntry): string[] {
-    const { analysis: a = {}, transcript: t } = e;
-    const share = (sec: number, of: number) =>
-      `${Math.round((sec / of) * 100)}%`;
-    return [
-      e.kind,
-      ...(e.kind === "image" ? [] : [formatDuration(e.durationSec)]),
-      ...(e.width && e.height ? [`${e.width}×${e.height}`] : []),
-      ...(e.kind === "image" || a.stillSec === undefined
-        ? []
-        : [`still ${share(a.stillSec, e.durationSec)}`]),
-      ...(e.kind === "image" || a.silentSec === undefined
-        ? []
-        : [`silent ${share(a.silentSec, e.durationSec)}`]),
-      ...(t?.status === "done" ? [`${t.words} words (${t.language})`] : []),
-      ...(t?.status === "silent" ? ["nothing to hear"] : []),
-      ...(t?.status === "failed" ? ["transcript failed"] : []),
-      ...(e.metaSource === "estimated" ? ["estimated"] : []),
-    ];
   }
 </script>
 
@@ -123,7 +104,7 @@
           {e.outputName}
         </p>
       {/if}
-      <p class="facts">{facts(e).join(" · ")}</p>
+      <MediaFacts entry={e}></MediaFacts>
       {#if e.tags}
         <p class="tags">
           {#each e.tags as t (t)}
@@ -180,9 +161,6 @@
   }
   .totals,
   .from,
-  .facts {
-    color: light-dark(#555, #aaa);
-  }
   article {
     display: grid;
     gap: 0.75rem 1.25rem;
@@ -258,10 +236,6 @@
     border-radius: 0.3rem;
   }
   .from,
-  .facts {
-    margin: 0.2rem 0 0;
-    font-size: 0.9rem;
-  }
   .from {
     background-color: whitesmoke;
   }
