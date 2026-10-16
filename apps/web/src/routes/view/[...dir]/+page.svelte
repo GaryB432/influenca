@@ -160,7 +160,6 @@
     margin: 0;
   }
   .totals,
-  .from,
   article {
     display: grid;
     gap: 0.75rem 1.25rem;
@@ -235,7 +234,6 @@
     background: light-dark(#555, #aaa);
     border-radius: 0.3rem;
   }
-  .from,
   .from {
     background-color: whitesmoke;
   }
