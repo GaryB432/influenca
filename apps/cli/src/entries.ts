@@ -16,6 +16,7 @@ type KindInfo = {
 
 const KINDS: Record<string, KindInfo> = {
   ".avi": { convertTo: ".mp4", kind: "video" },
+  ".heic": { convertTo: ".jpg", kind: "image" },
   ".jpeg": { kind: "image" },
   ".jpg": { kind: "image" },
   ".mov": { convertTo: ".mp4", kind: "video", rewrap: true },

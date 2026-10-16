@@ -54,7 +54,9 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
   const files = await listIntake(inDir, opts.verbose);
   const planned = planEntries(files);
   if (planned.length === 0) {
-    throw new Error(`No supported media (avi, mov, mp4, wav, jpg) in ${inDir}`);
+    throw new Error(
+      `No supported media (avi, heic, mov, mp4, wav, jpg) in ${inDir}`,
+    );
   }
   const sources = await probeEntries(inDir, planned);
 
@@ -137,7 +139,7 @@ async function bringIn(
   // Same folder and same extension: the rename stays on one drive, and ffmpeg still sees the format.
   const part = join(dirname(dest), `.part-${basename(dest)}`);
   try {
-    const kept = await (e.kind === "image" || e.outputName === e.sourceName
+    const kept = await (e.outputName === e.sourceName
       ? copy(src, part, e.bytes, report).then(() => e)
       : convertAndCheck(e, src, part, report));
     await rename(part, dest);
@@ -150,7 +152,7 @@ async function bringIn(
 
 /** Converts into part and returns the entry for the result, or throws if it cannot be trusted. */
 async function convertAndCheck(
-  e: Exclude<ManifestEntry, { kind: "image" }>,
+  e: ManifestEntry,
   src: string,
   part: string,
   report: OnProgress,
@@ -159,7 +161,7 @@ async function convertAndCheck(
     src,
     part,
     e.kind,
-    e.durationSec,
+    e.kind === "image" ? 0 : e.durationSec,
     report,
     classify(e.sourceName)?.rewrap,
   );
@@ -167,7 +169,11 @@ async function convertAndCheck(
   // The manifest describes the converted file, and a probe that disagrees with the
   // source means the conversion cannot be trusted as the only copy.
   const kept = applyProbe(e, await probe(part));
-  if (kept.kind !== "image" && e.metaSource === "ffprobe") {
+  if (
+    kept.kind !== "image" &&
+    e.kind !== "image" &&
+    e.metaSource === "ffprobe"
+  ) {
     const drift = Math.abs(kept.durationSec - e.durationSec);
     if (drift > DURATION_TOLERANCE_SEC) {
       throw new Error(
@@ -218,6 +224,11 @@ async function probeEntries(
 ): Promise<ManifestEntry[]> {
   const entries: ManifestEntry[] = [];
   for (const e of planned) {
+    // ffprobe cannot read HEIC; the JPEG made from it is probed once it exists.
+    if (e.kind === "image" && e.outputName !== e.sourceName) {
+      entries.push(e);
+      continue;
+    }
     try {
       entries.push(applyProbe(e, await probe(join(inDir, e.sourceName))));
     } catch (error) {
