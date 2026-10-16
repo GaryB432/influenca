@@ -87,7 +87,7 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<void> {
     );
   }
   // The viewer is a script of this repo, so it is only offered when that is where we are.
-  if (invocation().startsWith("pnpm ")) next("pnpm dev:web");
+  if (invocation().startsWith("pnpm ")) next("pnpm dev:web --open");
 }
 
 /** What analyze worked out about one file, as the cells that follow its name and size. */
