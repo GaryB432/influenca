@@ -315,6 +315,8 @@ of the web app. A script is not asked, and gets the newest run.
 - `--tag` takes only the titled files with that tag, and the tick list shows
   only those.
 
+[event | Apple Developer Documentation](https://developer.apple.com/documentation/professional-video-applications/event)
+
 ## Development
 
 Working on influenca is the same clone and the same folder. Nothing is
