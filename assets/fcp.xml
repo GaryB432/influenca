@@ -1,0 +1,31 @@
+<fcpxml version="1.10">
+  <resources>
+    <asset
+      id="4"
+      name="specimen 1"
+      src="file:///m/media/specimen-1.jpg"
+      start="0s"
+      duration="0s"
+      hasAudio="0"
+      hasVideo="0"
+    />
+    <asset
+      id="8"
+      name="playbill"
+      src="file:///m/media/playbill.mp4"
+      start="0s"
+      duration="60.297s"
+      hasAudio="1"
+      hasVideo="1"
+    />
+    <asset
+      id="29"
+      name="coffee machine"
+      src="file:///m/media/coffee-machine.jpg"
+      start="0s"
+      duration="0s"
+      hasAudio="0"
+      hasVideo="0"
+    />
+  </resources>
+</fcpxml>
