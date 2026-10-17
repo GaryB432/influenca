@@ -1,3 +1,4 @@
+import { FcpTimeline, FCPXML_FILE_NAME } from "@influenca/core";
 import { readManifest } from "@influenca/core/node";
 import { access, copyFile, mkdir, rename, rm } from "node:fs/promises";
 import { extname, join, parse, resolve } from "node:path";
@@ -27,6 +28,7 @@ export type ExportOptions = {
  * narrows the pick. The run is left as it is.
  */
 export async function runExport(opts: ExportOptions): Promise<void> {
+  const experimental_timeline = new FcpTimeline();
   const dir = opts.inDir ? resolve(opts.inDir) : await latestRun(mediaDir());
   const to = resolve(opts.to);
   const manifest = await readManifest(dir);
@@ -49,6 +51,12 @@ export async function runExport(opts: ExportOptions): Promise<void> {
         `Nothing has a title yet. Give the files you want one on the web page (\`pnpm dev:web\`), then \`${invocation()} export\` again.`,
       ),
     );
+    return;
+  }
+
+  const fcp_dest = join(to, FCPXML_FILE_NAME);
+  if (await exists(fcp_dest)) {
+    log(dim(`"${fcp_dest}" already exists.`));
     return;
   }
 
@@ -86,6 +94,7 @@ export async function runExport(opts: ExportOptions): Promise<void> {
         () => `copied as ${target}`,
       );
       copied++;
+      await experimental_timeline.add(e, stem, target, dest);
       const t = e.transcript;
       if (opts.subtitles && t?.status === "done") {
         await copyFile(join(dir, t.vttName), join(to, `${stem}.vtt`));
@@ -93,6 +102,8 @@ export async function runExport(opts: ExportOptions): Promise<void> {
     }
   } finally {
     table.end();
+    await writeFile(fcp_dest, experimental_timeline.xml(), "utf-8");
+    experimental_timeline.end();
   }
   const which = opts.tag === undefined ? "titled" : `titled ${opts.tag}`;
   log(`Copied ${copied} of ${titled.length} ${which} files to ${accent(to)}`);
@@ -115,3 +126,12 @@ const exists = (path: string) =>
     () => true,
     () => false,
   );
+
+function writeFile(
+  final_cut_pro_stuff: string,
+  arg1: string,
+  arg2: string,
+): Promise<void> {
+  console.log(JSON.stringify({ arg1, arg2, final_cut_pro_stuff }));
+  return Promise.resolve();
+}
