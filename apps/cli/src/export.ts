@@ -1,13 +1,13 @@
 import { FcpTimeline, FCPXML_FILE_NAME } from "@influenca/core";
-import { readManifest, writeFile } from "@influenca/core/node";
-import { access, copyFile, mkdir, rename, rm } from "node:fs/promises";
+import { exists, readManifest } from "@influenca/core/node";
+import { copyFile, mkdir, rename, rm, writeFile } from "node:fs/promises";
 import { extname, join, parse, resolve } from "node:path";
 
 import { copy } from "./copy.js";
 import { invocation } from "./invocation.js";
 import { startTable } from "./live.js";
 import { latestRun, mediaDir } from "./paths.js";
-import { accent, dim, log } from "./theme.js";
+import { accent, dim, log, printError, warn } from "./theme.js";
 
 export type ExportOptions = {
   /** Create fcpxml file. Off by default. */
@@ -31,8 +31,9 @@ export type ExportOptions = {
  */
 export async function runExport(opts: ExportOptions): Promise<void> {
   if (opts.fcpxml) {
-    console.warn("EXPERIMENTAL");
+    warn("EXPERIMENTAL");
   }
+  console.log(JSON.stringify(opts));
   const experimental_timeline = new FcpTimeline();
   const dir = opts.inDir ? resolve(opts.inDir) : await latestRun(mediaDir());
   const to = resolve(opts.to);
@@ -61,7 +62,7 @@ export async function runExport(opts: ExportOptions): Promise<void> {
 
   const fcp_dest = join(to, FCPXML_FILE_NAME);
   if (await exists(fcp_dest)) {
-    log(dim(`"${fcp_dest}" already exists.`));
+    printError(`"${fcp_dest}" already exists.`);
     return;
   }
 
@@ -109,18 +110,15 @@ export async function runExport(opts: ExportOptions): Promise<void> {
     }
   } finally {
     table.end();
-    if (opts.fcpxml) {
-      experimental_timeline.end();
-      const some_xm_ripe_for_inline = experimental_timeline.xml();
-      if (!some_xm_ripe_for_inline) {
-        throw new Error("how did this get through?");
-      }
-      // console.log(some_xm_ripe_for_inline ?? "what the actual fuck");
-      await writeFile(fcp_dest, some_xm_ripe_for_inline, "utf8");
-    }
+    experimental_timeline.end();
   }
   const which = opts.tag === undefined ? "titled" : `titled ${opts.tag}`;
   log(`Copied ${copied} of ${titled.length} ${which} files to ${accent(to)}`);
+
+  if (opts.fcpxml) {
+    await writeFile(fcp_dest, experimental_timeline.xml(), "utf8");
+    log(`Created  ${accent(fcp_dest)}`);
+  }
 }
 
 /**
@@ -134,9 +132,3 @@ export function slug(title: string): string {
     .replaceAll(/[^\p{L}\p{N}]+/gu, "-")
     .replaceAll(/^-+|-+$/g, "");
 }
-
-const exists = (path: string) =>
-  access(path).then(
-    () => true,
-    () => false,
-  );

@@ -4,6 +4,7 @@ import type { Mode, ObjectEncodingOptions, OpenMode, PathLike } from "node:fs";
 // Everything in core that touches the filesystem. The main entry stays free of Node
 // built-ins so the web app's browser code can import it.
 import {
+  access,
   type FileHandle,
   writeFile as fswf,
   readdir,
@@ -110,6 +111,12 @@ export async function updateManifest(
   await rename(part, path);
   return manifest;
 }
+
+export const exists = (path: string) =>
+  access(path).then(
+    () => true,
+    () => false,
+  );
 
 export function writeFile(
   file: FileHandle | PathLike,

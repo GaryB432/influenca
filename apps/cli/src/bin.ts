@@ -265,6 +265,7 @@ try {
   if (result.command === "accession") await runAccession(result);
   else if (result.command === "transcribe") await runTranscribe(result);
   else if (result.command === "export") {
+    // if (exists)
     await runExport({
       ...result,
       fcpxml: result.fcpxml,
