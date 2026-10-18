@@ -1,6 +1,16 @@
+import type { Abortable } from "node:events";
+import type { Mode, ObjectEncodingOptions, OpenMode, PathLike } from "node:fs";
+
 import { FcpTimeline, FCPXML_FILE_NAME } from "@influenca/core";
 import { readManifest } from "@influenca/core/node";
-import { access, copyFile, mkdir, rename, rm } from "node:fs/promises";
+import {
+  access,
+  copyFile,
+  type FileHandle,
+  mkdir,
+  rename,
+  rm,
+} from "node:fs/promises";
 import { extname, join, parse, resolve } from "node:path";
 
 import { copy } from "./copy.js";
@@ -10,6 +20,8 @@ import { latestRun, mediaDir } from "./paths.js";
 import { accent, dim, log } from "./theme.js";
 
 export type ExportOptions = {
+  /** Create fcpxml file. Off by default. */
+  fcpxml: boolean;
   inDir?: string;
   /** Ids of the titled files to copy. Left off, every titled file goes. */
   only?: string[];
@@ -28,6 +40,9 @@ export type ExportOptions = {
  * narrows the pick. The run is left as it is.
  */
 export async function runExport(opts: ExportOptions): Promise<void> {
+  if (opts.fcpxml) {
+    console.warn("EXPERIMENTAL");
+  }
   const experimental_timeline = new FcpTimeline();
   const dir = opts.inDir ? resolve(opts.inDir) : await latestRun(mediaDir());
   const to = resolve(opts.to);
@@ -94,7 +109,9 @@ export async function runExport(opts: ExportOptions): Promise<void> {
         () => `copied as ${target}`,
       );
       copied++;
-      await experimental_timeline.add(e, stem, target, dest);
+      if (opts.fcpxml) {
+        await experimental_timeline.add(e, stem, target, dest);
+      }
       const t = e.transcript;
       if (opts.subtitles && t?.status === "done") {
         await copyFile(join(dir, t.vttName), join(to, `${stem}.vtt`));
@@ -102,8 +119,15 @@ export async function runExport(opts: ExportOptions): Promise<void> {
     }
   } finally {
     table.end();
-    await writeFile(fcp_dest, experimental_timeline.xml(), "utf-8");
-    experimental_timeline.end();
+    if (opts.fcpxml) {
+      experimental_timeline.end();
+      const some_xm_ripe_for_inline = experimental_timeline.xml();
+      if (!some_xm_ripe_for_inline) {
+        throw new Error("how did this get through?");
+      }
+      // console.log(some_xm_ripe_for_inline ?? "what the actual fuck");
+      await writeFile(fcp_dest, some_xm_ripe_for_inline, "utf8");
+    }
   }
   const which = opts.tag === undefined ? "titled" : `titled ${opts.tag}`;
   log(`Copied ${copied} of ${titled.length} ${which} files to ${accent(to)}`);
@@ -128,10 +152,29 @@ const exists = (path: string) =>
   );
 
 function writeFile(
-  final_cut_pro_stuff: string,
-  arg1: string,
-  arg2: string,
+  file: FileHandle | PathLike,
+  data:
+    | AsyncIterable<NodeJS.ArrayBufferView | string>
+    | Iterable<NodeJS.ArrayBufferView | string>
+    | NodeJS.ArrayBufferView
+    | string,
+  options?:
+    | (Abortable &
+        ObjectEncodingOptions & {
+          mode?: Mode | undefined;
+          flag?: OpenMode | undefined;
+          flush?: boolean | undefined;
+        })
+    | BufferEncoding
+    | null,
 ): Promise<void> {
-  console.log(JSON.stringify({ arg1, arg2, final_cut_pro_stuff }));
-  return Promise.resolve();
+  if (options) {
+    console.warn(file.toString());
+    if (data) {
+      console.warn(data);
+      return Promise.resolve();
+    }
+    return Promise.reject("nothing to write");
+  }
+  return Promise.reject("not a thing");
 }

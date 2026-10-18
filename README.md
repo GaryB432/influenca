@@ -287,10 +287,10 @@ for and held in memory.
 ## Export
 
 ```sh
-pnpm influenca export --to ~/projects/garden-party/media   # asks which run
-pnpm influenca export /path/to/run --to /some/folder
-pnpm influenca export --to /some/folder --only 3 --only 7  # by number, without being asked
-pnpm influenca export --to /some/folder --tag interview     # only the titled files tagged interview
+pnpm influenca export --to ~/projects/garden-party/media           # asks which run
+pnpm influenca export --fcpxml --to ~/projects/garden-party/media  # asks which run, include fcpxml index
+pnpm influenca export --to /some/folder --only 3 --only 7          # by number, without being asked
+pnpm influenca export --to /some/folder --tag interview            # only the titled files tagged interview
 ```
 
 ```

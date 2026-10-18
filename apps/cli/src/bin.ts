@@ -231,7 +231,16 @@ const exporting = command(
             description: message`Copy the .vtt subtitle file alongside each video. Off by default.`,
           },
         ),
-        true,
+        false,
+      ),
+      fcpxml: withDefault(
+        negatableFlag(
+          { negative: ["--no-fcpxml"], positive: ["--fcpxml"] },
+          {
+            description: message`Create experimental fcpxml file. Off by default`,
+          },
+        ),
+        false,
       ),
     }),
     (v) => ({ ...v, command: "export" as const }),
@@ -258,6 +267,7 @@ try {
   else if (result.command === "export") {
     await runExport({
       ...result,
+      fcpxml: result.fcpxml,
       inDir: result.inDir || undefined,
       only: result.only.length > 0 ? [...result.only] : undefined,
     });
