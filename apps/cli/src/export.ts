@@ -33,7 +33,6 @@ export async function runExport(opts: ExportOptions): Promise<void> {
   if (opts.fcpxml) {
     warn("EXPERIMENTAL");
   }
-  console.log(JSON.stringify(opts));
   const experimental_timeline = new FcpTimeline();
   const dir = opts.inDir ? resolve(opts.inDir) : await latestRun(mediaDir());
   const to = resolve(opts.to);
