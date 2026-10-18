@@ -1,6 +1,14 @@
+import type { Abortable } from "node:events";
+import type { Mode, ObjectEncodingOptions, OpenMode, PathLike } from "node:fs";
+
 // Everything in core that touches the filesystem. The main entry stays free of Node
 // built-ins so the web app's browser code can import it.
-import { readdir, rename, writeFile } from "node:fs/promises";
+import {
+  type FileHandle,
+  writeFile as fswf,
+  readdir,
+  rename,
+} from "node:fs/promises";
 import { join } from "node:path";
 
 import { readJSON } from "./json.js";
@@ -98,7 +106,35 @@ export async function updateManifest(
   // Written beside, under a name of this process's own, then renamed: a save that is cut
   // short never leaves half a manifest, and two savers never share a half-written file.
   const part = `${path}.${process.pid}.tmp`;
-  await writeFile(part, JSON.stringify(manifest, null, 2));
+  await fswf(part, JSON.stringify(manifest, null, 2));
   await rename(part, path);
   return manifest;
+}
+
+export function writeFile(
+  file: FileHandle | PathLike,
+  data:
+    | AsyncIterable<NodeJS.ArrayBufferView | string>
+    | Iterable<NodeJS.ArrayBufferView | string>
+    | NodeJS.ArrayBufferView
+    | string,
+  options?:
+    | (Abortable &
+        ObjectEncodingOptions & {
+          mode?: Mode | undefined;
+          flag?: OpenMode | undefined;
+          flush?: boolean | undefined;
+        })
+    | BufferEncoding
+    | null,
+): Promise<void> {
+  if (options) {
+    console.warn(file.toString());
+    if (data) {
+      console.warn(data);
+      return Promise.resolve();
+    }
+    return Promise.reject("nothing to write");
+  }
+  return Promise.reject("not a thing");
 }

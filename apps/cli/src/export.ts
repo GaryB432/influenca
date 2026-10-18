@@ -1,16 +1,6 @@
-import type { Abortable } from "node:events";
-import type { Mode, ObjectEncodingOptions, OpenMode, PathLike } from "node:fs";
-
 import { FcpTimeline, FCPXML_FILE_NAME } from "@influenca/core";
-import { readManifest } from "@influenca/core/node";
-import {
-  access,
-  copyFile,
-  type FileHandle,
-  mkdir,
-  rename,
-  rm,
-} from "node:fs/promises";
+import { readManifest, writeFile } from "@influenca/core/node";
+import { access, copyFile, mkdir, rename, rm } from "node:fs/promises";
 import { extname, join, parse, resolve } from "node:path";
 
 import { copy } from "./copy.js";
@@ -150,31 +140,3 @@ const exists = (path: string) =>
     () => true,
     () => false,
   );
-
-function writeFile(
-  file: FileHandle | PathLike,
-  data:
-    | AsyncIterable<NodeJS.ArrayBufferView | string>
-    | Iterable<NodeJS.ArrayBufferView | string>
-    | NodeJS.ArrayBufferView
-    | string,
-  options?:
-    | (Abortable &
-        ObjectEncodingOptions & {
-          mode?: Mode | undefined;
-          flag?: OpenMode | undefined;
-          flush?: boolean | undefined;
-        })
-    | BufferEncoding
-    | null,
-): Promise<void> {
-  if (options) {
-    console.warn(file.toString());
-    if (data) {
-      console.warn(data);
-      return Promise.resolve();
-    }
-    return Promise.reject("nothing to write");
-  }
-  return Promise.reject("not a thing");
-}
