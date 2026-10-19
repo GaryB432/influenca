@@ -9,13 +9,13 @@
   let { children }: LayoutProps = $props();
 </script>
 
-<Header></Header>
+<Header />
 <div class="app">
   <main>
     {@render children()}
   </main>
 </div>
-<Footer></Footer>
+<Footer />
 
 <style>
   .app {
