@@ -3,6 +3,7 @@
   import { resolve } from "$app/paths";
   import { formatDuration } from "@influenca/core";
 
+  import CaptionToggle from "./CaptionToggle.svelte";
   import MediaFacts from "./MediaFacts.svelte";
 
   let { data, form } = $props();
@@ -81,15 +82,7 @@
           {/if}
         </video>
         {#if vttSrc}
-          <button
-            aria-label={(captionsShown[e.id] ?? true)
-              ? "Turn captions off"
-              : "Turn captions on"}
-            aria-pressed={captionsShown[e.id] ?? true}
-            class="vtt-overlay-toggle"
-            onclick={() => toggleCaptions(e.id)}
-            type="button">CC</button
-          >
+          <CaptionToggle entry={e} {captionsShown} {toggleCaptions} />
         {/if}
       {:else if e.kind === "audio"}
         <audio controls preload="none" {src}></audio>
@@ -104,7 +97,7 @@
           {e.outputName}
         </p>
       {/if}
-      <MediaFacts entry={e}></MediaFacts>
+      <MediaFacts entry={e} />
       {#if e.tags}
         <p class="tags">
           {#each e.tags as t (t)}
@@ -183,37 +176,7 @@
   .media {
     position: relative;
   }
-  .vtt-overlay-toggle {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 8px;
-    border: 0;
-    border-radius: 4px;
-    color: white;
-    background: rgb(0 0 0 / 60%);
-    backdrop-filter: blur(4px);
-    font-size: 12px;
-    cursor: pointer;
-  }
-  .vtt-overlay-toggle::after {
-    content: "";
-    position: absolute;
-    right: 8px;
-    bottom: 2px;
-    left: 8px;
-    height: 2px;
-    background: #f00;
-    transform: scaleX(0);
-    transition: transform 150ms ease;
-  }
-  .vtt-overlay-toggle[aria-pressed="true"]::after {
-    transform: scaleX(1);
-  }
+
   audio {
     width: 100%;
   }
