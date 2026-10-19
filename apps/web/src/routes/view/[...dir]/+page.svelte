@@ -3,21 +3,12 @@
   import { resolve } from "$app/paths";
   import { formatDuration } from "@influenca/core";
 
-  import CaptionToggle from "./CaptionToggle.svelte";
   import MediaFacts from "./MediaFacts.svelte";
 
   let { data, form } = $props();
   const { files, run, summary, tag, tags } = $derived(data);
   const deleted = $derived(files.filter((f) => f.entry.deleted).length);
-  let captionsShown = $state<Record<string, boolean>>({});
   let videoElements = $state<Record<string, HTMLVideoElement | undefined>>({});
-
-  function toggleCaptions(id: string) {
-    const showing = !(captionsShown[id] ?? true);
-    captionsShown[id] = showing;
-    const track = videoElements[id]?.textTracks[0];
-    if (track) track.mode = showing ? "showing" : "disabled";
-  }
 
   /**
    * Holds a video's thumbnail and metadata back until its card is near the screen. A run
@@ -78,12 +69,9 @@
           use:whenNear={poster}
         >
           {#if vttSrc}
-            <track default kind="captions" label="Transcript" src={vttSrc} />
+            <track kind="captions" label="Transcript" src={vttSrc} />
           {/if}
         </video>
-        {#if vttSrc}
-          <CaptionToggle entry={e} {captionsShown} {toggleCaptions} />
-        {/if}
       {:else if e.kind === "audio"}
         <audio controls preload="none" {src}></audio>
       {:else}
