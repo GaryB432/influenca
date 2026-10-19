@@ -128,9 +128,9 @@ export function writeFile(
   options?:
     | (Abortable &
         ObjectEncodingOptions & {
-          mode?: Mode | undefined;
           flag?: OpenMode | undefined;
           flush?: boolean | undefined;
+          mode?: Mode | undefined;
         })
     | BufferEncoding
     | null,

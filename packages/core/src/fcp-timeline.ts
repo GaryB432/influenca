@@ -4,49 +4,37 @@ import type { ManifestEntry } from "./manifest";
 
 export const FCPXML_FILE_NAME = ".fcp.xml";
 
+export type FcpxmlDocument = {
+  fcpxml: {
+    ":@": { version: string };
+    library?: Record<string, unknown>;
+    resources: {
+      asset?: Array<{ ":@": AssetAttributes }>;
+      // Multiple formats/assets are specified as arrays of objects containing the ":@" group
+      format?: Array<{ ":@": FormatAttributes }>;
+    };
+  };
+};
+
 type AssetAttributes = {
+  duration: string;
+  format?: string;
+  hasAudio: "0" | "1";
+  hasVideo: "0" | "1";
   id: string;
   name: string;
   src: string;
   start: string;
-  duration: string;
-  hasAudio: "0" | "1";
-  hasVideo: "0" | "1";
-  format?: string;
 };
 
 type FormatAttributes = {
+  frameDuration?: string;
+  height?: string;
   id: string;
   name?: string;
-  frameDuration?: string;
   width?: string;
-  height?: string;
 };
 
-export type FcpxmlDocument = {
-  fcpxml: {
-    ":@": { version: string };
-    resources: {
-      // Multiple formats/assets are specified as arrays of objects containing the ":@" group
-      format?: Array<{ ":@": FormatAttributes }>;
-      asset?: Array<{ ":@": AssetAttributes }>;
-    };
-    library?: Record<string, unknown>;
-  };
-};
-
-function seconds(s: number): string {
-  return `${s}s`;
-}
-
-function zeroOrOne(v: boolean): "0" | "1" {
-  return v ? "1" : "0";
-}
-
-/**
- *
- * see `fast-xml-parser` one fine day for your consideration
- */
 export class FcpTimeline {
   private readonly dictionary = new Set<{
     dest: string;
@@ -135,4 +123,12 @@ export class FcpTimeline {
       suppressEmptyNode: true,
     }).build(fcpxmlData);
   }
+}
+
+function seconds(s: number): string {
+  return `${s}s`;
+}
+
+function zeroOrOne(v: boolean): "0" | "1" {
+  return v ? "1" : "0";
 }
