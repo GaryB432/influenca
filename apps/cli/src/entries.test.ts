@@ -6,6 +6,7 @@ describe("classify", () => {
   it("is case-insensitive and rejects unknown types", () => {
     expect(classify("CLIP.AVI")?.kind).toBe("video");
     expect(classify("take.wav")?.kind).toBe("audio");
+    expect(classify("picture.png")?.kind).toBe("image");
     expect(classify("notes.txt")).toBeUndefined();
   });
 

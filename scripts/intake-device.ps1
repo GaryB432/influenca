@@ -197,7 +197,7 @@ $cutoffDate  = if ($MaxAgeDays -gt 0) { (Get-Date).AddDays(-$MaxAgeDays) } else 
 
 # A Live Photo is two files under one name: the still, and a clip of a second or two
 # around it. The still is the photo, so the clip is left on the device.
-$stillExts = @(".jpg", ".png" ".jpeg", ".heic")
+$stillExts = @(".jpg", ".png", ".jpeg", ".heic")
 $clipExts  = @(".mov")
 $script:liveClips = 0
 
