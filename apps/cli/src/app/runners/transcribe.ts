@@ -7,7 +7,11 @@ import { readManifest, updateEntry } from "@influenca/core/node";
 import { writeFile } from "node:fs/promises";
 import { join, parse, resolve } from "node:path";
 
-import { RejectedError, transcribe, WHISPER_MODEL } from "../svc/whisper.js";
+import {
+  RejectedError,
+  transcribe,
+  WHISPER_MODEL,
+} from "../service/whisper.js";
 import { accent, dim, log, next } from "../theme.js";
 import { identify } from "../utils/entries.js";
 import { invocation } from "../utils/invocation.js";

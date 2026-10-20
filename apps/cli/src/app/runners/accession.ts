@@ -15,9 +15,9 @@ import {
 } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 
-import type { OnProgress } from "../svc/ffmpeg.js";
+import type { OnProgress } from "../service/ffmpeg.js";
 
-import { applyProbe, isFfprobeMissing, probe } from "../svc/probe.js";
+import { applyProbe, isFfprobeMissing, probe } from "../service/probe.js";
 import { accent, log, next, warn } from "../theme.js";
 import { convert } from "../utils/convert.js";
 import { copy } from "../utils/copy.js";

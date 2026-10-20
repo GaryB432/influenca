@@ -1,6 +1,6 @@
 import type { EntryAnalysis } from "@influenca/core";
 
-import { type OnProgress, runFfmpeg } from "../svc/ffmpeg.js";
+import { type OnProgress, runFfmpeg } from "../service/ffmpeg.js";
 import { round3 } from "./entries.js";
 
 // Shrinking each frame to a thumbnail averages sensor noise away, so only real movement

@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { basename } from "node:path";
 import { promisify } from "node:util";
 
-import { type OnProgress, runFfmpeg } from "../svc/ffmpeg.js";
+import { type OnProgress, runFfmpeg } from "../service/ffmpeg.js";
 
 // The converted file is the only copy we keep, so these lean towards quality over size.
 const VIDEO_ARGS = [

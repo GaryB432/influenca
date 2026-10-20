@@ -1,6 +1,6 @@
 import { stripVTControlCharacters, styleText } from "node:util";
 
-import type { OnProgress } from "../svc/ffmpeg.js";
+import type { OnProgress } from "../service/ffmpeg.js";
 
 import { accent, dim } from "../theme.js";
 
