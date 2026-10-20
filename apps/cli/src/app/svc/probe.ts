@@ -3,7 +3,7 @@ import type { ManifestEntry } from "@influenca/core";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
-import { round3 } from "../entries.js";
+import { round3 } from "../utils/entries.js";
 
 /** The slice of `ffprobe -of json` output we ask for. Numbers arrive as strings. */
 export type ProbeOutput = {
