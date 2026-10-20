@@ -21,14 +21,14 @@ import { string } from "@optique/core/valueparser";
 import { derivePromptConfig } from "@optique/prompt";
 import { run } from "@optique/run";
 
-import { runAccession } from "./accession.js";
-import { runAnalyze } from "./analyze.js";
-import { runExport } from "./export.js";
-import { invocation } from "./invocation.js";
-import { latestRun, mediaDir } from "./paths.js";
-import { runChoices, titledChoices } from "./pick.js";
-import { printError } from "./theme.js";
-import { runTranscribe } from "./transcribe.js";
+import { runAccession } from "./app/accession.js";
+import { runAnalyze } from "./app/analyze.js";
+import { runExport } from "./app/export.js";
+import { invocation } from "./app/invocation.js";
+import { latestRun, mediaDir } from "./app/paths.js";
+import { runChoices, titledChoices } from "./app/pick.js";
+import { printError } from "./app/theme.js";
+import { runTranscribe } from "./app/transcribe.js";
 
 try {
   process.loadEnvFile();
