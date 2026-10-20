@@ -11,8 +11,8 @@ import { identify } from "../entries.js";
 import { invocation } from "../invocation.js";
 import { type RowState, startTable } from "../live.js";
 import { latestRun, mediaDir } from "../paths.js";
+import { RejectedError, transcribe, WHISPER_MODEL } from "../svc/whisper.js";
 import { accent, dim, log, next } from "../theme.js";
-import { RejectedError, transcribe, WHISPER_MODEL } from "../whisper.js";
 
 export type TranscribeOptions = {
   inDir?: string;

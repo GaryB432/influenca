@@ -15,7 +15,7 @@ import {
 } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 
-import type { OnProgress } from "../ffmpeg.js";
+import type { OnProgress } from "../svc/ffmpeg.js";
 
 import { convert } from "../convert.js";
 import { copy } from "../copy.js";
@@ -23,7 +23,7 @@ import { classify, type IntakeFile, planEntries } from "../entries.js";
 import { invocation } from "../invocation.js";
 import { startTable } from "../live.js";
 import { hasManifest, mediaDir, stamp } from "../paths.js";
-import { applyProbe, isFfprobeMissing, probe } from "../probe.js";
+import { applyProbe, isFfprobeMissing, probe } from "../svc/probe.js";
 import { accent, log, next, warn } from "../theme.js";
 import { transcribeRun } from "./transcribe.js";
 

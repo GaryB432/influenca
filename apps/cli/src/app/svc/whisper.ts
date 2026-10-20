@@ -2,8 +2,8 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { detectedSec, SILENCE_FILTER } from "../measure.js";
 import { type OnProgress, runFfmpeg } from "./ffmpeg.js";
-import { detectedSec, SILENCE_FILTER } from "./measure.js";
 
 export const WHISPER_MODEL = "whisper-1";
 

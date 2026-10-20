@@ -27,8 +27,8 @@ import { runChoices, titledChoices } from "./app/pick.js";
 import { runAccession } from "./app/runners/accession.js";
 import { runAnalyze } from "./app/runners/analyze.js";
 import { runExport } from "./app/runners/export.js";
+import { runTranscribe } from "./app/runners/transcribe.js";
 import { printError } from "./app/theme.js";
-import { runTranscribe } from "./app/transcribe.js";
 
 try {
   process.loadEnvFile();

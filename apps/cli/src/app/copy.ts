@@ -1,7 +1,7 @@
 import { createReadStream, createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
 
-import type { OnProgress } from "./ffmpeg.js";
+import type { OnProgress } from "./svc/ffmpeg.js";
 
 /** Copies one file, reporting how far through it is. */
 export async function copy(

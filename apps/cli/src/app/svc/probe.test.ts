@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { planEntries } from "./entries.js";
+import { planEntries } from "../entries.js";
 import { applyProbe, type ProbeOutput } from "./probe.js";
 
 const [jpgImage, pngImage, video, audio] = planEntries([
