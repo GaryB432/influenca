@@ -318,7 +318,7 @@ $maxWaitSecs   = 120
 do {
     Start-Sleep -Seconds 2
     $waitSecs += 2
-    $present = (Get-ChildItem -Path $destWin -File -ErrorAction SilentlyContinue).Count
+    $present = @(Get-ChildItem -Path $destWin -File -ErrorAction SilentlyContinue).Count
     if ($present -ge $expectedCount) { break }
     if ($waitSecs -ge $maxWaitSecs) {
         Write-Warn "Timed out waiting for all files. Proceeding with what arrived."
