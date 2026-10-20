@@ -3,11 +3,11 @@ import { exists, readManifest } from "@influenca/core/node";
 import { copyFile, mkdir, rename, rm, writeFile } from "node:fs/promises";
 import { extname, join, parse, resolve } from "node:path";
 
-import { copy } from "./copy.js";
-import { invocation } from "./invocation.js";
-import { startTable } from "./live.js";
-import { latestRun, mediaDir } from "./paths.js";
-import { accent, dim, log, printError, warn } from "./theme.js";
+import { copy } from "../copy.js";
+import { invocation } from "../invocation.js";
+import { startTable } from "../live.js";
+import { latestRun, mediaDir } from "../paths.js";
+import { accent, dim, log, printError, warn } from "../theme.js";
 
 export type ExportOptions = {
   /** Create fcpxml file. Off by default. */
