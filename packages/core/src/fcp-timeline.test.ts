@@ -120,17 +120,8 @@ const specimens: { fcp: FcpxmlDocument; manifest: Manifest } = {
 
 describe("fcp-timeline", () => {
   const sut = new FcpTimeline();
-  it("outputs proper fcpxml", () => {
-    expect(sut.emit_specimen_during_development("tester")).toMatch(
-      /Dynamic asset entries loop here tester/,
-    );
-  });
 
-  it.skip("prints minimal for now", () => {
-    expect(sut.toString()).toEqual('<fcpxml version="1.8"></fcpxml>');
-  });
-
-  it("makes fcp of specime n", async () => {
+  it("makes fcp of specimen", async () => {
     const { manifest } = specimens;
 
     // for (const e of manifest.entries) {

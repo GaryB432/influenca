@@ -3,8 +3,9 @@ import { describe, expect, it } from "vitest";
 import { planEntries } from "./entries.js";
 import { applyProbe, type ProbeOutput } from "./probe.js";
 
-const [image, video, audio] = planEntries([
+const [jpgImage, pngImage, video, audio] = planEntries([
   { bytes: 500, name: "a.jpg" },
+  { bytes: 500, name: "a.png" },
   { bytes: 2_000_000, name: "b.avi" },
   { bytes: 352_800, name: "c.wav" },
 ]);
@@ -17,6 +18,12 @@ const pcm = {
 };
 const mjpeg = {
   codec_name: "mjpeg",
+  codec_type: "video",
+  height: 1080,
+  width: 1920,
+};
+const mpng = {
+  codec_name: "tbd",
   codec_type: "video",
   height: 1080,
   width: 1920,
@@ -66,7 +73,17 @@ describe("applyProbe", () => {
       metaSource: "ffprobe",
       sampleRate: 16_000,
     });
-    expect(applyProbe(image!, { format: {}, streams: [mjpeg] })).toMatchObject({
+    expect(
+      applyProbe(jpgImage!, { format: {}, streams: [mjpeg] }),
+    ).toMatchObject({
+      frameCount: 1,
+      height: 1080,
+      metaSource: "ffprobe",
+      width: 1920,
+    });
+    expect(
+      applyProbe(pngImage!, { format: {}, streams: [mpng] }),
+    ).toMatchObject({
       frameCount: 1,
       height: 1080,
       metaSource: "ffprobe",
@@ -75,11 +92,11 @@ describe("applyProbe", () => {
   });
 
   it("throws when the probe found nothing usable", () => {
-    expect(() => applyProbe(image!, { format: { duration: "0.04" } })).toThrow(
-      /no image stream/,
-    );
     expect(() =>
-      applyProbe(image!, { streams: [{ ...mjpeg, height: 0, width: 0 }] }),
+      applyProbe(jpgImage!, { format: { duration: "0.04" } }),
+    ).toThrow(/no image stream/);
+    expect(() =>
+      applyProbe(jpgImage!, { streams: [{ ...mjpeg, height: 0, width: 0 }] }),
     ).toThrow(/no image stream/);
     expect(() => applyProbe(video!, { format: {}, streams: [mjpeg] })).toThrow(
       /no duration/,

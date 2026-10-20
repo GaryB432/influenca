@@ -6,6 +6,7 @@ describe("classify", () => {
   it("is case-insensitive and rejects unknown types", () => {
     expect(classify("CLIP.AVI")?.kind).toBe("video");
     expect(classify("take.wav")?.kind).toBe("audio");
+    expect(classify("picture.png")?.kind).toBe("image");
     expect(classify("notes.txt")).toBeUndefined();
   });
 
@@ -24,16 +25,19 @@ describe("planEntries", () => {
       { bytes: 2_000_000, name: "b.avi" },
       { bytes: 10, name: "readme.txt" },
       { bytes: 500, name: "a.jpg" },
+      { bytes: 500, name: "a.png" },
       { bytes: 352_800, name: "voice.wav" },
     ]);
     expect(entries.map((e) => e.sourceName)).toEqual([
       "a.jpg",
+      "a.png",
       "b.avi",
       "voice.wav",
     ]);
 
-    const [image, video, audio] = entries;
-    expect(image).toMatchObject({ frameCount: 1, kind: "image" });
+    const [jpegImage, pngImage, video, audio] = entries;
+    expect(jpegImage).toMatchObject({ frameCount: 1, kind: "image" });
+    expect(pngImage).toMatchObject({ frameCount: 1, kind: "image" });
     expect(video).toMatchObject({
       durationSec: 2,
       fps: 30,

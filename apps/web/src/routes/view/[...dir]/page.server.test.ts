@@ -17,8 +17,8 @@ describe("update and load", () => {
         id: "1",
         kind: "image",
         metaSource: "estimated",
-        outputName: "a.jpg",
-        sourceName: "a.jpg",
+        outputName: "a.png",
+        sourceName: "a.png",
       },
       {
         bytes: 1,

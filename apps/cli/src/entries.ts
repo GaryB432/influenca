@@ -21,6 +21,7 @@ const KINDS: Record<string, KindInfo> = {
   ".jpg": { kind: "image" },
   ".mov": { convertTo: ".mp4", kind: "video", rewrap: true },
   ".mp4": { kind: "video" },
+  ".png": { kind: "image" },
   ".wav": { convertTo: ".mp3", kind: "audio" },
 };
 

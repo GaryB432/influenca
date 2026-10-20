@@ -40,7 +40,7 @@ export function applyProbe(
   };
 
   if (entry.kind === "image") {
-    // ffprobe reports a 0x0 stream for a .jpg that holds no picture.
+    // ffprobe reports a 0x0 stream for a .jpg that holds no picture. // TODO also a png?
     if (!video?.width || !video.height) throw new Error("no image stream");
     return { ...entry, ...probed, height: video.height, width: video.width };
   }

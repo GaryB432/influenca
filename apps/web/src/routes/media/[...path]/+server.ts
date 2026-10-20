@@ -14,6 +14,7 @@ const TYPES: Record<string, string> = {
   ".jpg": "image/jpeg",
   ".mp3": "audio/mpeg",
   ".mp4": "video/mp4",
+  ".png": "image/png",
   ".vtt": "text/vtt; charset=utf-8",
 };
 

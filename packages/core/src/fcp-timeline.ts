@@ -57,34 +57,6 @@ export class FcpTimeline {
     );
   }
 
-  public emit_specimen_during_development(greetee: string): string {
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE fcpxml>
-<fcpxml version="1.8">
-  <resources>
-    <format id="f1" name="FFMPEG_EXPORT_STREAM" frameDuration="100/2400s" />
-    <!-- Dynamic asset entries loop here ${greetee} -->
-    <asset id="r1" name="Example Clip Title" src="file://localhost/absolute/path/to/media.mp4" start="0s" duration="120s" hasVideo="1" hasAudio="1" />
-  </resources>
-  <library>
-    <event name="Influenca Curated Ingest">
-      <!-- Timelines loop here -->
-      <project name="Example Clip Title_Timeline">
-        <sequence format="f1" duration="120s">
-          <spine>
-            <asset-clip name="Example Clip Title" ref="r1" offset="0s" duration="120s">
-              <!-- Sequential metadata and transcript markers layer here -->
-              <marker start="15s" duration="4s" value="Transcribed speech line goes here" color="green" />
-              <marker start="45s" duration="10s" value="Silent Stretch" color="blue" />
-            </asset-clip>
-          </spine>
-        </sequence>
-      </project>
-    </event>
-  </library>
-</fcpxml>`;
-  }
-
   public end(): void {
     console.warn("thank you for closing");
   }

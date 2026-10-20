@@ -81,7 +81,7 @@ describe("runExport", () => {
           },
         },
         image("2", "PXL_2.jpg"),
-        image("3", "PXL_3.jpg"),
+        image("3", "PXL_3.png"),
         image("4", "PXL_4.jpg"),
       ],
       version: 1,
@@ -137,7 +137,7 @@ describe("runExport", () => {
     await runExport({ fcpxml, inDir: run, to });
 
     expect((await readdir(to)).toSorted()).toEqual([
-      "cake.jpg",
+      "cake.png",
       "pool-b-roll.jpg",
       // No .vtt by default — VLC would auto-show it as captions otherwise.
     ]);
@@ -153,7 +153,7 @@ describe("runExport", () => {
     await runExport({ fcpxml, inDir: run, subtitles: true, to });
 
     expect((await readdir(to)).toSorted()).toEqual([
-      "cake.jpg",
+      "cake.png",
       "pool-b-roll.jpg",
       "pool-b-roll.vtt",
     ]);
@@ -162,7 +162,7 @@ describe("runExport", () => {
   it("keeps the file's own name when the title has nothing to make one from", async () => {
     await updateEntry(run, "3", { title: "🎉🎂" });
     await runExport({ fcpxml, inDir: run, to });
-    expect(await readdir(to)).toEqual(["PXL_3.jpg"]);
+    expect(await readdir(to)).toEqual(["PXL_3.png"]);
   });
 
   it("copies only the ones asked for", async () => {
@@ -180,7 +180,7 @@ describe("runExport", () => {
     await updateEntry(run, "2", { tags: ["drone"] });
     await runExport({ fcpxml, inDir: run, tag: "drone", to });
     expect((await readdir(to)).toSorted()).toEqual([
-      "cake.jpg",
+      "cake.png",
       "pool-b-roll.jpg",
     ]);
   });
@@ -197,15 +197,15 @@ describe("runExport", () => {
   it("does not write over a file that is already there", async () => {
     await updateEntry(run, "3", { title: "cake" });
     await runExport({ fcpxml, inDir: run, to });
-    await writeFile(join(to, "cake.jpg"), "edited since");
+    await writeFile(join(to, "cake.png"), "edited since");
 
     await updateEntry(run, "4", { title: "candles" });
     await runExport({ fcpxml, inDir: run, to });
 
-    expect(await readFile(join(to, "cake.jpg"), "utf8")).toBe("edited since");
+    expect(await readFile(join(to, "cake.png"), "utf8")).toBe("edited since");
     expect(await readFile(join(to, "candles.jpg"), "utf8")).toBe("pic4");
     expect(process.stdout.write).toHaveBeenCalledWith(
-      expect.stringContaining("cake.jpg is already there"),
+      expect.stringContaining("cake.png is already there"),
     );
   });
 

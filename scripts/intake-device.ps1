@@ -29,7 +29,7 @@
 
 .PARAMETER Extensions
     Optional. Comma-separated file extensions to copy.
-    Defaults to: mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,jpg,JPG,jpeg,JPEG,heic,HEIC
+    Defaults to: mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,png,PNG,jpg,JPG,jpeg,JPEG,heic,HEIC
 
 .PARAMETER KeepLiveClips
     Optional. A Live Photo is a still and a short clip under the same name. By
@@ -63,7 +63,7 @@
 [CmdletBinding()]
 param(
     [string]  $DeviceName  = "",
-    [string]  $Extensions = "mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,jpg,JPG,jpeg,JPEG,heic,HEIC",
+    [string]  $Extensions = "mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,png,PNG,jpg,JPG,jpeg,JPEG,heic,HEIC",
     [int]     $MaxAgeDays = 7,
     [switch]  $KeepLiveClips,
     [string]  $WslDistro  = ""
@@ -197,7 +197,7 @@ $cutoffDate  = if ($MaxAgeDays -gt 0) { (Get-Date).AddDays(-$MaxAgeDays) } else 
 
 # A Live Photo is two files under one name: the still, and a clip of a second or two
 # around it. The still is the photo, so the clip is left on the device.
-$stillExts = @(".jpg", ".jpeg", ".heic")
+$stillExts = @(".jpg", ".png", ".jpeg", ".heic")
 $clipExts  = @(".mov")
 $script:liveClips = 0
 
