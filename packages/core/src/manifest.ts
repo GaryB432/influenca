@@ -11,6 +11,22 @@ export type AudioEntry = EntryBase & {
   sampleRate?: number;
 };
 
+/** What you set about a file on the web page. The rest of an entry is what accession found. */
+export type Curation = {
+  /** Unwanted. The file itself is still in the run folder. */
+  deleted?: boolean;
+  /** Words you file it under, such as "interview" or "drone". */
+  tags?: string[];
+  /** What you call the file once you have seen what is in it, as you would say it: "Pool b-roll". Its name on disk stays outputName. */
+  title?: string;
+};
+
+/** What the tools worked out about a file once it was kept. */
+export type Findings = {
+  analysis?: EntryAnalysis;
+  transcript?: Transcript;
+};
+
 export type ImageEntry = EntryBase & {
   frameCount: 1;
   kind: "image";
@@ -40,22 +56,6 @@ export type VideoEntry = EntryBase & {
   hasAudio?: boolean;
   kind: "video";
   videoCodec?: string;
-};
-
-/** What you set about a file on the web page. The rest of an entry is what accession found. */
-export type Curation = {
-  /** Unwanted. The file itself is still in the run folder. */
-  deleted?: boolean;
-  /** Words you file it under, such as "interview" or "drone". */
-  tags?: string[];
-  /** What you call the file once you have seen what is in it, as you would say it: "Pool b-roll". Its name on disk stays outputName. */
-  title?: string;
-};
-
-/** What the tools worked out about a file once it was kept. */
-export type Findings = {
-  analysis?: EntryAnalysis;
-  transcript?: Transcript;
 };
 
 type EntryBase = Curation &

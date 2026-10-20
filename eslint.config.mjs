@@ -16,16 +16,6 @@ export default defineConfig([
     ...perfectionist.configs["recommended-natural"],
   },
   {
-    // Sorting is for sets with no order of their own: imports, object keys, unions.
-    // A module's members and a type's fields stay in the order that reads best.
-    files: ["**/*.{js,mjs,cjs,ts,mts,cts,svelte}"],
-    rules: {
-      "perfectionist/sort-interfaces": "off",
-      "perfectionist/sort-modules": "off",
-      "perfectionist/sort-object-types": "off",
-    },
-  },
-  {
     // The order of a parser's keys is the order of its usage line and help.
     files: ["apps/cli/src/bin.ts", "packages/core/src/fcp-timeline.ts"],
     rules: {
@@ -47,9 +37,6 @@ export default defineConfig([
       "**/*.test.{js,ts,mjs,mts,cjs,cts}",
       "**/*.spec.{js,ts,mjs,mts,cjs,cts}",
     ],
-    rules: {
-      "no-console": "off",
-    },
   },
   ...tseslint.configs.recommended,
   ...svelte.configs.recommended.map((config) =>

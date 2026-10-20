@@ -4,7 +4,7 @@ import type { Manifest } from "./manifest.js";
 
 import { FcpTimeline, type FcpxmlDocument } from "./fcp-timeline.js";
 
-const specimens: { manifest: Manifest; fcp: FcpxmlDocument } = {
+const specimens: { fcp: FcpxmlDocument; manifest: Manifest } = {
   fcp: {
     fcpxml: {
       ":@": {
