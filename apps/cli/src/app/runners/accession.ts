@@ -15,16 +15,16 @@ import {
 } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 
-import type { OnProgress } from "./ffmpeg.js";
+import type { OnProgress } from "../service/ffmpeg.js";
 
-import { convert } from "./convert.js";
-import { copy } from "./copy.js";
-import { classify, type IntakeFile, planEntries } from "./entries.js";
-import { invocation } from "./invocation.js";
-import { startTable } from "./live.js";
-import { hasManifest, mediaDir, stamp } from "./paths.js";
-import { applyProbe, isFfprobeMissing, probe } from "./probe.js";
-import { accent, log, next, warn } from "./theme.js";
+import { applyProbe, isFfprobeMissing, probe } from "../service/probe.js";
+import { accent, log, next, warn } from "../theme.js";
+import { convert } from "../utils/convert.js";
+import { copy } from "../utils/copy.js";
+import { classify, type IntakeFile, planEntries } from "../utils/entries.js";
+import { invocation } from "../utils/invocation.js";
+import { startTable } from "../utils/live.js";
+import { hasManifest, mediaDir, stamp } from "../utils/paths.js";
 import { transcribeRun } from "./transcribe.js";
 
 export type AccessionOptions = {

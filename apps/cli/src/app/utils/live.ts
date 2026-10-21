@@ -1,8 +1,8 @@
 import { stripVTControlCharacters, styleText } from "node:util";
 
-import type { OnProgress } from "./ffmpeg.js";
+import type { OnProgress } from "../service/ffmpeg.js";
 
-import { accent, dim } from "./theme.js";
+import { accent, dim } from "../theme.js";
 
 export type RowState = "done" | "failed" | "skipped" | "waiting" | "working";
 

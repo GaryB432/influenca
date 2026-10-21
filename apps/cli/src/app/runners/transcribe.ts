@@ -7,12 +7,16 @@ import { readManifest, updateEntry } from "@influenca/core/node";
 import { writeFile } from "node:fs/promises";
 import { join, parse, resolve } from "node:path";
 
-import { identify } from "./entries.js";
-import { invocation } from "./invocation.js";
-import { type RowState, startTable } from "./live.js";
-import { latestRun, mediaDir } from "./paths.js";
-import { accent, dim, log, next } from "./theme.js";
-import { RejectedError, transcribe, WHISPER_MODEL } from "./whisper.js";
+import {
+  RejectedError,
+  transcribe,
+  WHISPER_MODEL,
+} from "../service/whisper.js";
+import { accent, dim, log, next } from "../theme.js";
+import { identify } from "../utils/entries.js";
+import { invocation } from "../utils/invocation.js";
+import { type RowState, startTable } from "../utils/live.js";
+import { latestRun, mediaDir } from "../utils/paths.js";
 
 export type TranscribeOptions = {
   inDir?: string;

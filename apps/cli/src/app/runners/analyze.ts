@@ -10,12 +10,12 @@ import {
 import { readManifest, updateManifest } from "@influenca/core/node";
 import { join, resolve } from "node:path";
 
-import { identify } from "./entries.js";
-import { invocation } from "./invocation.js";
-import { startTable } from "./live.js";
-import { measure } from "./measure.js";
-import { latestRun, mediaDir } from "./paths.js";
-import { accent, dim, log, next } from "./theme.js";
+import { accent, dim, log, next } from "../theme.js";
+import { identify } from "../utils/entries.js";
+import { invocation } from "../utils/invocation.js";
+import { startTable } from "../utils/live.js";
+import { measure } from "../utils/measure.js";
+import { latestRun, mediaDir } from "../utils/paths.js";
 
 export type AnalyzeOptions = {
   inDir?: string;

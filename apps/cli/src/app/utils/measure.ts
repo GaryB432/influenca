@@ -1,7 +1,7 @@
 import type { EntryAnalysis } from "@influenca/core";
 
+import { type OnProgress, runFfmpeg } from "../service/ffmpeg.js";
 import { round3 } from "./entries.js";
-import { type OnProgress, runFfmpeg } from "./ffmpeg.js";
 
 // Shrinking each frame to a thumbnail averages sensor noise away, so only real movement
 // counts as change. Five frames a second is plenty to tell a parked scene from a busy one.
