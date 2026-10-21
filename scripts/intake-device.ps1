@@ -288,43 +288,85 @@ if ($null -eq $destShellFolder) {
     exit 1
 }
 
+function Get-ShellItemBytes ([object]$item) {
+    # Size reads 0 for some portable-device items; System.Size is the fallback.
+    $bytes = [int64]$item.Size
+    if ($bytes -le 0) {
+        $prop = $item.ExtendedProperty("System.Size")
+        if ($prop) { $bytes = [int64]$prop }
+    }
+    return $bytes
+}
+
+function Test-FileClosed ([string]$path) {
+    # Windows holds the file open while it writes, so an exclusive open fails until it is done.
+    try {
+        [System.IO.File]::Open($path, 'Open', 'Read', 'None').Dispose()
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Wait-ShellCopy ([string]$path, [int64]$expectedBytes, [scriptblock]$OnProgress) {
+    # CopyHere returns at once and never says when it is done, so watch the file instead.
+    # Done means full size (or steady, when the size is unknown) and no longer held open.
+    # Gives up when the file stops growing, not after a fixed time, so big clips can take as long as they need.
+    $stalled = [System.Diagnostics.Stopwatch]::StartNew()
+    $last    = [int64]-1
+    while ($true) {
+        Start-Sleep -Milliseconds 500
+        $bytes = [int64]0
+        if (Test-Path -LiteralPath $path) { $bytes = (Get-Item -LiteralPath $path).Length }
+        $steady = $bytes -eq $last
+        if (-not $steady) { $last = $bytes; $stalled.Restart() }
+
+        if ($expectedBytes -gt 0) { & $OnProgress ([math]::Min(1.0, $bytes / $expectedBytes)) }
+        $full = if ($expectedBytes -gt 0) { $bytes -ge $expectedBytes } else { $bytes -gt 0 -and $steady }
+        if ($full -and (Test-FileClosed $path)) { return $true }
+
+        # A file already at full size may only be being flushed, so it gets longer.
+        $limitSecs = if ($full) { 300 } else { 30 }
+        if ($stalled.Elapsed.TotalSeconds -ge $limitSecs) { return $false }
+    }
+}
+
 $copied  = 0
 $skipped = 0
 $failed  = 0
 
+# One at a time: the device sends one file at a time anyway, and each is checked before the next starts.
 foreach ($entry in $mediaItems) {
-    $destFile = Join-Path $destWin $entry.Name
-    if (Test-Path $destFile) {
-        Write-Warn "  Skip (exists): $($entry.Name)"
+    $name     = $entry.Name
+    $destFile = Join-Path $destWin $name
+    if (Test-Path -LiteralPath $destFile) {
+        Write-Warn "  Skip (exists): $name"
         $skipped++
         continue
     }
+    Write-Host "  … $name" -NoNewline -ForegroundColor Cyan
     try {
         # CopyHere flags: 4 = no progress dialog, 16 = yes to all, 1024 = no error UI
         $destShellFolder.CopyHere($entry.Item, 4 -bor 16 -bor 1024)
-        Write-Host "  ✓ $($entry.Name)" -ForegroundColor DarkGreen
-        $copied++
     } catch {
-        Write-Warn "  Failed to copy $($entry.Name): $_"
+        Write-Host "`r`e[2K" -NoNewline
+        Write-Warn "  Failed to copy ${name}: $_"
+        $failed++
+        continue
+    }
+    $done = Wait-ShellCopy $destFile (Get-ShellItemBytes $entry.Item) {
+        param($fraction)
+        Write-Host "`r`e[2K  … $name $([int]($fraction * 100))%" -NoNewline -ForegroundColor Cyan
+    }
+    Write-Host "`r`e[2K" -NoNewline
+    if ($done) {
+        Write-Host "  ✓ $name" -ForegroundColor DarkGreen
+        $copied++
+    } else {
+        Write-Warn "  Gave up on ${name}: it stopped growing"
         $failed++
     }
 }
-
-# CopyHere is asynchronous — poll until all expected files appear.
-Write-Step "Waiting for Shell copy to complete..."
-$expectedCount = $copied
-$waitSecs      = 0
-$maxWaitSecs   = 120
-do {
-    Start-Sleep -Seconds 2
-    $waitSecs += 2
-    $present = @(Get-ChildItem -Path $destWin -File -ErrorAction SilentlyContinue).Count
-    if ($present -ge $expectedCount) { break }
-    if ($waitSecs -ge $maxWaitSecs) {
-        Write-Warn "Timed out waiting for all files. Proceeding with what arrived."
-        break
-    }
-} while ($true)
 
 Write-Ok "Copy complete — copied: $copied, skipped: $skipped, failed: $failed"
 
