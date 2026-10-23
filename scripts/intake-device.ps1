@@ -332,12 +332,12 @@ Write-Ok "Copy complete — copied: $copied, skipped: $skipped, failed: $failed"
 # 6. List copied files and print the WSL-native accession command
 # ---------------------------------------------------------------------------
 
-$copiedFiles = Get-ChildItem -Path $destWin -File
-Write-Host ""
-Write-Host "Files in intake directory:" -ForegroundColor DarkGray
-foreach ($f in $copiedFiles) {
-    Write-Host "  $($f.Name)" -ForegroundColor DarkGray
-}
+# $copiedFiles = Get-ChildItem -Path $destWin -File
+# Write-Host ""
+# Write-Host "Files in intake directory:" -ForegroundColor DarkGray
+# foreach ($f in $copiedFiles) {
+#     Write-Host "  $($f.Name)" -ForegroundColor DarkGray
+# }
 
 # The same closing line the CLI ends on: plain, with the command to paste in its accent.
 Write-Host ""
