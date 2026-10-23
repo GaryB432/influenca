@@ -8,9 +8,8 @@ import { writeFile } from "node:fs/promises";
 import { join, parse, resolve } from "node:path";
 
 import {
+  createTranscriber,
   RejectedError,
-  transcribe,
-  WHISPER_MODEL,
 } from "../service/whisper.js";
 import { accent, dim, log, next } from "../theme.js";
 import { identify } from "../utils/entries.js";
@@ -20,8 +19,9 @@ import { latestRun, mediaDir } from "../utils/paths.js";
 
 export type TranscribeOptions = {
   inDir?: string;
-  /** Send every file again, including those already transcribed. This is paid for again. */
+  /** Transcribe every file again, including those already done. */
   redo?: boolean;
+  transcriber?: string;
 };
 
 type Media = Exclude<ManifestEntry, { kind: "image" }>;
@@ -30,39 +30,39 @@ type Media = Exclude<ManifestEntry, { kind: "image" }>;
 export async function runTranscribe(opts: TranscribeOptions): Promise<void> {
   const dir = opts.inDir ? resolve(opts.inDir) : await latestRun(mediaDir());
   log(accent(dir));
-  if ((await transcribeRun(dir, opts.redo)) === 0) {
-    log(dim("Nothing left to transcribe; pass --redo to send it again."));
+  if ((await transcribeRun(dir, opts.redo, opts.transcriber)) === 0) {
+    log(dim("Nothing left to transcribe; pass --redo to run it again."));
   }
   next(`${invocation()} analyze ${/\s/.test(dir) ? `"${dir}"` : dir}`);
 }
 
 /**
- * Sends each file with sound to Whisper, once, and writes its transcript beside it. A
- * file Whisper turns down is recorded as failed and not sent again; anything else that
- * goes wrong throws, and the next call sends only what is still missing. Resolves with
- * how many files there were to do.
+ * Transcribes each file with sound once and writes its transcript beside it. A
+ * file the provider turns down is recorded as failed and not tried again; anything else
+ * that goes wrong throws, and the next call tries only what is still missing. Resolves
+ * with how many files there were to do.
  */
 export async function transcribeRun(
   dir: string,
   redo = false,
+  provider?: string,
 ): Promise<number> {
   const manifest = await readManifest(dir);
   const media = manifest.entries.filter((e) => e.kind !== "image");
-  // Asked to redo, what was heard before is passed over and every file is sent again.
+  // Asked to redo, what was heard before is passed over and every file is tried again.
   const before = (e: Media) => (redo ? undefined : e.transcript);
   const todo = media.filter(
     (e) => (e.kind === "audio" || e.hasAudio) && !before(e),
   );
   if (todo.length === 0) return 0;
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("Set OPENAI_API_KEY in .env to transcribe.");
+  const selection = createTranscriber(provider);
 
   const names = vttNames(media);
   const made: Transcript[] = [];
   // Every file with sound gets a row, so what was done before shows beside what is done now.
   const heardable = media.filter((e) => e.kind === "audio" || e.hasAudio);
   log(
-    `Transcribing ${todo.length} of ${heardable.length} with ${WHISPER_MODEL}`,
+    `Transcribing ${todo.length} of ${heardable.length} with ${selection.name} (${selection.model})`,
   );
   const identity = identify(manifest.entries);
   const table = startTable(
@@ -83,17 +83,15 @@ export async function transcribeRun(
         i,
         async (report): Promise<Transcript> => {
           try {
-            const heard = await transcribe(
+            const heard = await selection.transcriber.transcribe(
               join(dir, e.outputName),
-              apiKey,
-              e.durationSec,
-              report,
+              { durationSec: e.durationSec, onProgress: report },
             );
             if (!heard) return { status: "silent" };
             await writeFile(join(dir, vttName), heard.vtt);
             return {
               language: heard.language,
-              model: WHISPER_MODEL,
+              model: selection.model,
               status: "done",
               vttName,
               words: heard.words,
@@ -101,7 +99,7 @@ export async function transcribeRun(
           } catch (error) {
             if (!(error instanceof RejectedError)) throw error;
             return {
-              model: WHISPER_MODEL,
+              model: selection.model,
               reason: error.message,
               status: "failed",
             };
@@ -110,7 +108,7 @@ export async function transcribeRun(
         outcome,
       );
       made.push(transcript);
-      // After every file, so a run that is stopped has paid for nothing it lost.
+      // After every file, so a run that is stopped has lost no completed result.
       await updateEntry(dir, e.id, { transcript });
     }
   } finally {
