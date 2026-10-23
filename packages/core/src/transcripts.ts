@@ -1,4 +1,4 @@
-/** What came of sending one file to be transcribed. Kept on its manifest entry; it cost money to make. */
+/** What came of transcribing one file. Kept on its manifest entry. */
 
 export type Transcript =
   | {
@@ -9,9 +9,9 @@ export type Transcript =
       vttName: string;
       words: number;
     }
-  /** Whisper turned the file down. Not sent again unless asked. */
+  /** The provider turned the file down. Not tried again unless asked. */
   | { model: string; reason: string; status: "failed" }
-  /** Too little sound to send. */
+  /** Too little sound to transcribe. */
   | { status: "silent" };
 
 /** Pure: what a .vtt says, with the header and cue timings taken out. */

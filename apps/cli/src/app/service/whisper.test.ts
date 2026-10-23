@@ -1,6 +1,57 @@
 import { describe, expect, it } from "vitest";
 
-import { errorMessage, toVtt } from "./whisper.js";
+import {
+  createTranscriber,
+  errorMessage,
+  localModelPath,
+  toVtt,
+} from "./whisper.js";
+
+describe("createTranscriber", () => {
+  it("keeps OpenAI as the default provider", () => {
+    expect(
+      createTranscriber(undefined, { OPENAI_API_KEY: "test-key" }),
+    ).toMatchObject({ model: "whisper-1", name: "openai" });
+  });
+
+  it("selects the configured local provider and model cache", () => {
+    const selection = createTranscriber(undefined, {
+      INFLUENCA_TRANSCRIBER: "local",
+      XDG_DATA_HOME: "/home/test/data",
+    });
+    expect(selection).toMatchObject({
+      model: "ggml-base.en.bin",
+      name: "local",
+    });
+    expect(localModelPath({ XDG_DATA_HOME: "/home/test/data" })).toBe(
+      "/home/test/data/influenca/models/ggml-base.en.bin",
+    );
+  });
+
+  it("fails clearly when a local model is missing", async () => {
+    const { transcriber } = createTranscriber("local", {
+      INFLUENCA_WHISPER_MODEL: "/missing/model.bin",
+    });
+    await expect(
+      transcriber.transcribe("unused", {
+        durationSec: 1,
+        onProgress: () => {},
+      }),
+    ).rejects.toThrow(/Local Whisper model not found at \/missing\/model\.bin/);
+  });
+
+  it("requires a key only for the OpenAI provider", () => {
+    expect(() => createTranscriber("openai", {})).toThrow(
+      "Set OPENAI_API_KEY in .env to transcribe with OpenAI.",
+    );
+  });
+
+  it("rejects an unknown provider instead of silently changing backends", () => {
+    expect(() => createTranscriber("other", {})).toThrow(
+      'Unknown transcriber "other"; choose openai or local.',
+    );
+  });
+});
 
 describe("errorMessage", () => {
   it("reads the message out of an OpenAI error body", () => {
