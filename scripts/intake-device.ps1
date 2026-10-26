@@ -31,9 +31,11 @@
     Optional. Comma-separated file extensions to copy.
     Defaults to: mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,png,PNG,jpg,JPG,jpeg,JPEG,heic,HEIC
 
-.PARAMETER KeepLiveClips
-    Optional. A Live Photo is a still and a short clip under the same name. By
-    default only the still is copied; this brings the clip as well.
+.PARAMETER KeepOnDevice
+    Optional. By default each file whose copy finished at the size the device
+    reported is then deleted from the device, which has no trash to undo it.
+    This leaves everything on the device. A file that was not copied, failed,
+    or whose size the device did not report is never deleted.
 
 .PARAMETER MaxAgeDays
     Optional. Only copy files modified within this many days. Default: 7.
@@ -65,7 +67,7 @@ param(
     [string]  $DeviceName  = "",
     [string]  $Extensions = "mp4,MP4,mov,MOV,avi,AVI,wav,WAV,m4a,M4A,png,PNG,jpg,JPG,jpeg,JPEG,heic,HEIC",
     [int]     $MaxAgeDays = 7,
-    [switch]  $KeepLiveClips,
+    [switch]  $KeepOnDevice,
     [string]  $WslDistro  = ""
 )
 
@@ -145,7 +147,7 @@ $deviceSlug         = ConvertTo-KebabCase $deviceFriendlyName
 Write-Ok "Found device: $deviceFriendlyName  →  slug: $deviceSlug"
 
 # ---------------------------------------------------------------------------
-# 2. Find the camera folder (walk: device → Internal Storage → DCIM)
+# 2. Find the media folders (walk: device → Internal Storage → DCIM, Movies)
 # ---------------------------------------------------------------------------
 
 function Find-ShellFolder ([object]$parentFolder, [string]$targetName) {
@@ -175,40 +177,50 @@ if ($null -eq $storageFolder) {
     $storageFolder = $deviceFolder
 }
 
-$mediaFolder = Find-ShellFolder $storageFolder "DCIM"
-if ($null -ne $mediaFolder) {
-    Write-Step "Found DCIM on $deviceFriendlyName"
-} elseif (@($storageFolder.Items()).Count -gt 0) {
+# DCIM holds the camera's files; Movies holds what the phone itself records, such as a Pixel's screen recordings.
+$mediaFolders = @()
+foreach ($mediaName in @("DCIM", "Movies")) {
+    $found = Find-ShellFolder $storageFolder $mediaName
+    if ($null -ne $found) {
+        Write-Step "Found $mediaName on $deviceFriendlyName"
+        $mediaFolders += $found
+    }
+}
+if ($mediaFolders.Count -eq 0) {
+    if (@($storageFolder.Items()).Count -eq 0) {
+        Write-Fail "Nothing to read on $deviceFriendlyName."
+        Write-Host "  • Make sure the phone is unlocked and File Transfer mode is active."
+        exit 1
+    }
     # Some devices show no DCIM folder. This iPad's dated camera folders sit at the top.
     Write-Step "No DCIM folder on $deviceFriendlyName; scanning all of its storage"
-    $mediaFolder = $storageFolder
-} else {
-    Write-Fail "Nothing to read on $deviceFriendlyName."
-    Write-Host "  • Make sure the phone is unlocked and File Transfer mode is active."
-    exit 1
+    $mediaFolders = @($storageFolder)
 }
 
 # ---------------------------------------------------------------------------
-# 3. Collect matching files recursively from the camera folder
+# 3. Collect matching files recursively from the media folders
 # ---------------------------------------------------------------------------
 
 $allowedExts = $Extensions -split ',' | ForEach-Object { ".$($_.Trim())" }
 $cutoffDate  = if ($MaxAgeDays -gt 0) { (Get-Date).AddDays(-$MaxAgeDays) } else { $null }
 
-# A Live Photo is two files under one name: the still, and a clip of a second or two
-# around it. The still is the photo, so the clip is left on the device.
+# A Live Photo is two files under one name: the still, and a clip of a few seconds
+# around it. The still is the photo. The clip is never copied, and goes with its still
+# when that is deleted, so it is not left behind to look like a video of its own.
 $stillExts = @(".jpg", ".png", ".jpeg", ".heic")
 $clipExts  = @(".mov")
-$script:liveClips = 0
 
 function Collect-MediaItems ([object]$folder, [ref]$results) {
     # Listed once: every pass over a folder is a round trip to the device.
     $items  = @($folder.Items())
     $stills = @{}
+    $clips  = @{}
     foreach ($item in $items) {
-        if (-not $item.IsFolder -and [System.IO.Path]::GetExtension($item.Name) -in $stillExts) {
-            $stills[[System.IO.Path]::GetFileNameWithoutExtension($item.Name)] = $true
-        }
+        if ($item.IsFolder) { continue }
+        $ext  = [System.IO.Path]::GetExtension($item.Name)
+        $stem = [System.IO.Path]::GetFileNameWithoutExtension($item.Name)
+        if ($ext -in $stillExts) { $stills[$stem] = $true }
+        if ($ext -in $clipExts)  { $clips[$stem]  = $item }
     }
 
     foreach ($item in $items) {
@@ -218,10 +230,7 @@ function Collect-MediaItems ([object]$folder, [ref]$results) {
             $ext = [System.IO.Path]::GetExtension($item.Name)
             if ($ext -notin $allowedExts) { continue }
             $stem = [System.IO.Path]::GetFileNameWithoutExtension($item.Name)
-            if (-not $KeepLiveClips -and $ext -in $clipExts -and $stills.ContainsKey($stem)) {
-                $script:liveClips++
-                continue
-            }
+            if ($ext -in $clipExts -and $stills.ContainsKey($stem)) { continue }
 
             # ModifyDate is detail column 3 for most Shell namespaces
             $modStr = $folder.GetDetailsOf($item, 3)
@@ -235,6 +244,7 @@ function Collect-MediaItems ([object]$folder, [ref]$results) {
                 Folder  = $folder
                 Name    = $item.Name
                 ModDate = $modDate
+                Clip    = if ($ext -in $stillExts) { $clips[$stem] } else { $null }
             }
         }
     }
@@ -243,7 +253,7 @@ function Collect-MediaItems ([object]$folder, [ref]$results) {
 Write-Step "Scanning for media files (MaxAgeDays=$MaxAgeDays)..."
 $mediaItems = [System.Collections.Generic.List[object]]::new()
 $listRef    = [ref]$mediaItems
-Collect-MediaItems $mediaFolder $listRef
+foreach ($mediaFolder in $mediaFolders) { Collect-MediaItems $mediaFolder $listRef }
 
 if ($mediaItems.Count -eq 0) {
     $ageNote = if ($MaxAgeDays -gt 0) { " in the last $MaxAgeDays day(s)" } else { "" }
@@ -253,9 +263,6 @@ if ($mediaItems.Count -eq 0) {
 }
 
 Write-Ok "Found $($mediaItems.Count) file(s) to copy"
-if ($script:liveClips -gt 0) {
-    Write-Step "Left $($script:liveClips) Live Photo clip(s) on the device (-KeepLiveClips brings them too)"
-}
 
 # ---------------------------------------------------------------------------
 # 4. Build the Windows destination path
@@ -334,14 +341,18 @@ function Wait-ShellCopy ([string]$path, [int64]$expectedBytes, [scriptblock]$OnP
 $copied  = 0
 $skipped = 0
 $failed  = 0
+# Copies that are whole on disk, so the device's file may go.
+$verified = [System.Collections.Generic.List[object]]::new()
 
 # One at a time: the device sends one file at a time anyway, and each is checked before the next starts.
 foreach ($entry in $mediaItems) {
     $name     = $entry.Name
     $destFile = Join-Path $destWin $name
+    $expected = Get-ShellItemBytes $entry.Item
     if (Test-Path -LiteralPath $destFile) {
         Write-Warn "  Skip (exists): $name"
         $skipped++
+        if ($expected -gt 0 -and (Get-Item -LiteralPath $destFile).Length -eq $expected) { $verified.Add($entry) }
         continue
     }
     Write-Host "  … $name" -NoNewline -ForegroundColor Cyan
@@ -354,7 +365,7 @@ foreach ($entry in $mediaItems) {
         $failed++
         continue
     }
-    $done = Wait-ShellCopy $destFile (Get-ShellItemBytes $entry.Item) {
+    $done = Wait-ShellCopy $destFile $expected {
         param($fraction)
         Write-Host "`r`e[2K  … $name $([int]($fraction * 100))%" -NoNewline -ForegroundColor Cyan
     }
@@ -362,6 +373,7 @@ foreach ($entry in $mediaItems) {
     if ($done) {
         Write-Host "  ✓ $name" -ForegroundColor DarkGreen
         $copied++
+        if ($expected -gt 0) { $verified.Add($entry) }
     } else {
         Write-Warn "  Gave up on ${name}: it stopped growing"
         $failed++
@@ -371,7 +383,42 @@ foreach ($entry in $mediaItems) {
 Write-Ok "Copy complete — copied: $copied, skipped: $skipped, failed: $failed"
 
 # ---------------------------------------------------------------------------
-# 6. List copied files and print the WSL-native accession command
+# 6. Delete what was copied whole from the device
+# ---------------------------------------------------------------------------
+
+# Only once every copy is settled, so a run stopped partway deletes nothing.
+if (-not $KeepOnDevice -and $verified.Count -gt 0) {
+    Write-Step "Deleting $($verified.Count) copied file(s) from $deviceFriendlyName (-KeepOnDevice keeps them)..."
+    $removed = 0
+    foreach ($entry in $verified) {
+        try {
+            $entry.Item.InvokeVerb("delete")
+        } catch {
+            Write-Warn "  Could not delete $($entry.Name): $_"
+            continue
+        }
+        # The verb does not report back, so look for the file again.
+        if ($null -ne $entry.Folder.ParseName($entry.Name)) {
+            Write-Warn "  Still on the device: $($entry.Name)"
+            continue
+        }
+        $removed++
+
+        # A Live Photo's clip goes with its still. The device may have removed it already.
+        if ($null -eq $entry.Clip) { continue }
+        $clipName = $entry.Clip.Name
+        $clip     = $entry.Folder.ParseName($clipName)
+        if ($null -eq $clip) { continue }
+        try { $clip.InvokeVerb("delete") } catch { }
+        if ($null -ne $entry.Folder.ParseName($clipName)) {
+            Write-Warn "  Still on the device: $clipName"
+        }
+    }
+    Write-Ok "Deleted $removed of $($verified.Count) copied file(s) from $deviceFriendlyName"
+}
+
+# ---------------------------------------------------------------------------
+# 7. List copied files and print the WSL-native accession command
 # ---------------------------------------------------------------------------
 
 # $copiedFiles = Get-ChildItem -Path $destWin -File
