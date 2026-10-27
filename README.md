@@ -129,9 +129,11 @@ pwsh.exe -File scripts\intake-device.ps1 -DeviceName "Pixel" -MaxAgeDays 3
 pwsh.exe -File scripts\intake-device.ps1 -DeviceName "iPad" -MaxAgeDays 0
 ```
 
-Videos, sound and stills (JPEG or HEIC) are copied; accession turns HEIC into
-JPEG. A Live Photo is a still with a short clip under the same name; only the
-still is taken unless you pass `-KeepLiveClips`.
+Videos, sound and stills (JPEG, PNG or HEIC) are copied from `DCIM` and `Movies`;
+accession turns HEIC into JPEG.
+
+Each file whose copy finished whole is then deleted from the device, which has
+no trash to undo it. Pass `-KeepOnDevice` to leave everything there.
 
 Or start it from a WSL terminal, with `pwsh.exe` on the Windows `PATH`:
 
