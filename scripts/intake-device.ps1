@@ -305,6 +305,70 @@ function Get-ShellItemBytes ([object]$item) {
     return $bytes
 }
 
+# Explorer's Delete verb asks before every file on a device. IFileOperation is the engine
+# behind it and takes a flag not to, but PowerShell can only reach it through C#.
+Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+
+public static class ShellDelete {
+    [ComImport, Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    interface IShellItem { }
+
+    // Slots must stay in the order Windows declares them; only the delete ones are called.
+    [ComImport, Guid("947aab5f-0a5c-4c13-b4d6-4bf7836fc9f8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    interface IFileOperation {
+        void Advise(IntPtr sink, out uint cookie);
+        void Unadvise(uint cookie);
+        void SetOperationFlags(uint flags);
+        void SetProgressMessage([MarshalAs(UnmanagedType.LPWStr)] string message);
+        void SetProgressDialog(IntPtr dialog);
+        void SetProperties(IntPtr properties);
+        void SetOwnerWindow(IntPtr hwnd);
+        void ApplyPropertiesToItem(IShellItem item);
+        void ApplyPropertiesToItems(IntPtr items);
+        void RenameItem(IShellItem item, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr sink);
+        void RenameItems(IntPtr items, [MarshalAs(UnmanagedType.LPWStr)] string name);
+        void MoveItem(IShellItem item, IShellItem dest, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr sink);
+        void MoveItems(IntPtr items, IShellItem dest);
+        void CopyItem(IShellItem item, IShellItem dest, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr sink);
+        void CopyItems(IntPtr items, IShellItem dest);
+        void DeleteItem(IShellItem item, IntPtr sink);
+        void DeleteItems(IntPtr items);
+        void NewItem(IShellItem dest, uint attributes, [MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] string template, IntPtr sink);
+        void PerformOperations();
+        [return: MarshalAs(UnmanagedType.Bool)] bool GetAnyOperationsAborted();
+    }
+
+    [DllImport("shell32.dll", PreserveSig = false)]
+    static extern void SHGetIDListFromObject([MarshalAs(UnmanagedType.IUnknown)] object punk, out IntPtr pidl);
+
+    [DllImport("shell32.dll", PreserveSig = false)]
+    static extern void SHCreateItemFromIDList(IntPtr pidl, [In] ref Guid iid, out IShellItem item);
+
+    [DllImport("ole32.dll")]
+    static extern void CoTaskMemFree(IntPtr p);
+
+    // Takes the Shell.Application item itself: a device file's Path cannot be looked up again.
+    public static void Delete(object folderItem) {
+        IntPtr pidl;
+        SHGetIDListFromObject(folderItem, out pidl);
+        IShellItem item;
+        try {
+            Guid iid = typeof(IShellItem).GUID;
+            SHCreateItemFromIDList(pidl, ref iid, out item);
+        } finally { CoTaskMemFree(pidl); }
+        Type type = Type.GetTypeFromCLSID(new Guid("3ad05575-8857-4850-9277-11b85bdb8e09"));
+        IFileOperation op = (IFileOperation)Activator.CreateInstance(type);
+        // FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI: no progress, no "are you sure", no error dialogs.
+        op.SetOperationFlags(0x4 | 0x10 | 0x400);
+        op.DeleteItem(item, IntPtr.Zero);
+        op.PerformOperations();
+        if (op.GetAnyOperationsAborted()) throw new Exception("the delete was cancelled");
+    }
+}
+'@
+
 function Test-FileClosed ([string]$path) {
     # Windows holds the file open while it writes, so an exclusive open fails until it is done.
     try {
@@ -392,12 +456,12 @@ if (-not $KeepOnDevice -and $verified.Count -gt 0) {
     $removed = 0
     foreach ($entry in $verified) {
         try {
-            $entry.Item.InvokeVerb("delete")
+            [ShellDelete]::Delete($entry.Item)
         } catch {
             Write-Warn "  Could not delete $($entry.Name): $_"
             continue
         }
-        # The verb does not report back, so look for the file again.
+        # A device can accept the delete and keep the file, so look for it again.
         if ($null -ne $entry.Folder.ParseName($entry.Name)) {
             Write-Warn "  Still on the device: $($entry.Name)"
             continue
@@ -409,7 +473,7 @@ if (-not $KeepOnDevice -and $verified.Count -gt 0) {
         $clipName = $entry.Clip.Name
         $clip     = $entry.Folder.ParseName($clipName)
         if ($null -eq $clip) { continue }
-        try { $clip.InvokeVerb("delete") } catch { }
+        try { [ShellDelete]::Delete($clip) } catch { }
         if ($null -ne $entry.Folder.ParseName($clipName)) {
             Write-Warn "  Still on the device: $clipName"
         }
