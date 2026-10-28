@@ -3,6 +3,11 @@ apps/cli/dist
 apps/web/.svelte-kit
 apps/web/build
 .DS_Store
+
 .env
+.env.*
+!.env.example
+!.env.test
+
 Thumbs.db
 tmp
