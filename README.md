@@ -36,7 +36,7 @@ flowchart TD
   end
 
   subgraph transcribe ["then, still in accession"]
-    whisper["Send the sound to Whisper<br/>(network, paid, once per file)"]
+    whisper["Transcribe the sound<br/>(OpenAI or local whisper.cpp)"]
   end
 
   subgraph analyze ["influenca analyze"]
@@ -58,13 +58,13 @@ flowchart TD
 ```
 
 The steps take very different amounts of time. Accession re-encodes video,
-which runs at a few times playback speed, and then waits on OpenAI for the
-transcripts. Analyze only decodes, at thumbnail size, and gets through the same
-footage many times faster.
+which runs at a few times playback speed, and then transcribes each file with
+the selected Whisper backend. Analyze only decodes, at thumbnail size, and gets
+through the same footage many times faster.
 
-Transcribing is the only step that uses the network or costs money. It happens
-after the manifest is written, so a run is whole before anything is sent, and
-nothing that goes wrong with OpenAI can cost you the run.
+OpenAI transcription uses the network and is billed by audio minute; local
+transcription can run offline. Transcription happens after the manifest is
+written, so a run is whole before it starts.
 
 ## Getting started
 
@@ -81,7 +81,7 @@ git clone https://github.com/GaryB432/influenca.git
 cd influenca
 pnpm install
 cp .env.example .env   # set INFLUENCA_MEDIA_DIR, where runs are kept
-                       # and OPENAI_API_KEY, to have what is said transcribed
+                       # and optionally OPENAI_API_KEY for OpenAI transcription
 pnpm build
 pnpm influenca --help
 ```
@@ -154,7 +154,7 @@ pnpm influenca accession /path/to/intake                 # -> $INFLUENCA_MEDIA_D
 pnpm influenca accession /path/to/intake --dry-run       # show the plan, write nothing
 pnpm influenca accession /path/to/intake --out-dir runs  # -> runs/<timestamp>/
 pnpm influenca accession /path/to/intake --out-dir runs/one --no-timestamp
-pnpm influenca accession /path/to/intake --no-transcribe # keep the files, send nothing to OpenAI
+pnpm influenca accession /path/to/intake --no-transcribe # keep the files without transcribing
 ```
 
 Leave the intake folder off and you are asked for it. Only the top level of the
@@ -178,35 +178,60 @@ folder is read, and files of other types are left behind (`--verbose` lists them
 
 ## Transcripts
 
-Once the manifest is written, accession sends the sound of each file to OpenAI's
-`whisper-1` and writes what comes back as WebVTT beside the file, under the
-name players look for: `VID00010.vtt` for `VID00010.mp4`. It needs
-`OPENAI_API_KEY` in `.env`. Without one, or if OpenAI cannot be reached, the
-run is still kept and accession tells you how to finish:
+Once the manifest is written, accession transcribes each file with OpenAI's
+`whisper-1` by default, and writes the result as WebVTT beside the file, under
+the name players look for: `VID00010.vtt` for `VID00010.mp4`. Set
+`OPENAI_API_KEY` in `.env` for OpenAI, or choose a local whisper.cpp backend:
 
 ```sh
+pnpm influenca transcribe --transcriber openai # hosted Whisper; default
+pnpm influenca transcribe --transcriber local  # local whisper.cpp
+pnpm influenca accession /path/to/intake --transcriber local
 pnpm influenca transcribe              # newest run under $INFLUENCA_MEDIA_DIR
 pnpm influenca transcribe /path/to/run
-pnpm influenca transcribe --redo       # send every file again, and pay again
+pnpm influenca transcribe --redo       # transcribe every file again
 ```
 
 `transcribe` does only what is left to do, so it is also how a run accessioned
 with `--no-transcribe` gets its transcripts later.
 
-- Only sound leaves your machine, as mono mp3 at 32 kb/s. OpenAI charges by the
-  minute of audio.
-- Each file is sent once. What came of it (the language Whisper heard, the word
+- Set `INFLUENCA_TRANSCRIBER=local` to make local transcription the default, or
+  `INFLUENCA_TRANSCRIBER=openai` to select OpenAI. The `--transcriber` option
+  overrides this setting for one command. OpenAI remains the default.
+- Local mode runs `whisper-cli` from whisper.cpp. Install a whisper.cpp build
+  that provides that executable, then put a GGML model in the default cache:
+
+  ```sh
+  model_dir="${XDG_DATA_HOME:-$HOME/.local/share}/influenca/models"
+  mkdir -p "$model_dir"
+  curl -fL \
+    https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin \
+    -o "$model_dir/ggml-base.en.bin"
+  ```
+
+  The cache defaults to `~/.local/share/influenca/models` (or
+  `$XDG_DATA_HOME/influenca/models`). Set `INFLUENCA_WHISPER_MODEL` to use
+  another model file and `INFLUENCA_WHISPER_BIN` if the executable is not named
+  `whisper-cli`. Models are not downloaded automatically. If the model or
+  executable is missing, local mode stops with a setup error and does not fall
+  back to uploading audio.
+- Both backends receive mono 16 kHz audio and write the same `.vtt`, detected
+  language, word count, and transcript metadata.
+- Each file is transcribed once. What came of it (the language Whisper heard, the word
   count) is recorded on the file's entry in the manifest, saved after every
-  file, so a run that stops has lost nothing. Run it again and it sends what is
-  left.
-- A file with less than a second of sound above -40 dB is not sent, and is
+  file, so a run that stops has lost nothing. Run it again and it transcribes
+  what is left.
+- A file with less than a second of sound above -40 dB is not submitted to the
+  provider, and is
   recorded as `silent`. Whisper invents words for silence.
 - A file OpenAI turns down, such as one over its 25 MB upload limit (about 100
   minutes), is recorded as `failed` with the reason and not sent again.
-- Any other failure, such as a refused key or no network, stops the
-  transcribing there. What was done is kept.
+- Any other failure, such as a refused key, no network, or a local runtime
+  error, stops transcribing there. What was done is kept.
 
-The model and the audio settings are in `apps/cli/src/whisper.ts`.
+For local troubleshooting, check that `whisper-cli --help` works, the model
+path exists and is readable, and the model format is supported by your
+whisper.cpp build. Local runs need no API key or network after setup.
 
 ## Analyze
 
