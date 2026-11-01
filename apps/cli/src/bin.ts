@@ -68,10 +68,15 @@ const accession = command(
         negatableFlag(
           { negative: ["--no-transcribe"], positive: ["--transcribe"] },
           {
-            description: message`Send what is said in each file to OpenAI and keep it as subtitles. On unless switched off.`,
+            description: message`Transcribe each file and keep it as subtitles. On unless switched off.`,
           },
         ),
         true,
+      ),
+      transcriber: optional(
+        option("--transcriber", string({ metavar: "PROVIDER" }), {
+          description: message`Transcription backend: openai or local. Defaults to ${envVar("INFLUENCA_TRANSCRIBER")} or openai.`,
+        }),
       ),
       dryRun: option("--dry-run", {
         description: message`Show what would be kept and write nothing.`,
@@ -101,14 +106,19 @@ const transcribe = command(
     object({
       inDir: runDir(),
       redo: option("--redo", {
-        description: message`Send every file again, including those already done. This is paid for again.`,
+        description: message`Transcribe every file again, including those already done.`,
       }),
+      transcriber: optional(
+        option("--transcriber", string({ metavar: "PROVIDER" }), {
+          description: message`Transcription backend: openai or local. Defaults to ${envVar("INFLUENCA_TRANSCRIBER")} or openai.`,
+        }),
+      ),
     }),
     (v) => ({ ...v, command: "transcribe" as const }),
   ),
   {
     brief: message`Finish transcribing a run.`,
-    description: message`Sends each file with sound that has no transcript yet to OpenAI, and writes what comes back beside it.`,
+    description: message`Transcribes each file with sound that has no transcript yet, and writes the result beside it.`,
   },
 );
 

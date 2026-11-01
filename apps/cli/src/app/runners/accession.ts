@@ -35,6 +35,7 @@ export type AccessionOptions = {
   timestamp: boolean;
   /** Send what was kept to Whisper. Off keeps the files and stops there. */
   transcribe: boolean;
+  transcriber?: string;
   verbose: boolean;
 };
 
@@ -107,7 +108,7 @@ export async function runAccession(opts: AccessionOptions): Promise<void> {
   if (opts.transcribe) {
     // The run is whole from here on: the manifest is written, and nothing below can undo it.
     try {
-      await transcribeRun(outDir);
+      await transcribeRun(outDir, false, opts.transcriber);
     } catch (error) {
       warn(
         `Kept, but not all transcribed: ${error instanceof Error ? error.message : String(error)}`,
