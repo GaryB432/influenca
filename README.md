@@ -134,6 +134,8 @@ accession turns HEIC into JPEG.
 
 Each file whose copy finished whole is then deleted from the device, which has
 no trash to undo it. Pass `-KeepOnDevice` to leave everything there.
+After a successful deletion, `~/.local/state/influenca/archive.json` records the
+latest run and the names of the files removed, keyed by the device slug.
 
 Or start it from a WSL terminal, with `pwsh.exe` on the Windows `PATH`:
 
