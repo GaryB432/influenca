@@ -454,6 +454,7 @@ Write-Ok "Copy complete — copied: $copied, skipped: $skipped, failed: $failed"
 if (-not $KeepOnDevice -and $verified.Count -gt 0) {
     Write-Step "Deleting $($verified.Count) copied file(s) from $deviceFriendlyName (-KeepOnDevice keeps them)..."
     $removed = 0
+    $removedFiles = [System.Collections.Generic.List[string]]::new()
     foreach ($entry in $verified) {
         try {
             [ShellDelete]::Delete($entry.Item)
@@ -467,6 +468,7 @@ if (-not $KeepOnDevice -and $verified.Count -gt 0) {
             continue
         }
         $removed++
+        $removedFiles.Add($entry.Name)
 
         # A Live Photo's clip goes with its still. The device may have removed it already.
         if ($null -eq $entry.Clip) { continue }
@@ -479,6 +481,27 @@ if (-not $KeepOnDevice -and $verified.Count -gt 0) {
         }
     }
     Write-Ok "Deleted $removed of $($verified.Count) copied file(s) from $deviceFriendlyName"
+
+    if ($removed -gt 0) {
+        $archivePath = Join-Path $wslHomeWin ".local\state\influenca\archive.json"
+        $archive = if (Test-Path -LiteralPath $archivePath) {
+            Get-Content -LiteralPath $archivePath -Raw | ConvertFrom-Json -AsHashtable
+        } else {
+            @{}
+        }
+        if ($archive -isnot [System.Collections.IDictionary]) {
+            throw "Device archive is not a JSON object: $archivePath"
+        }
+        $archive[$deviceSlug] = @{
+            run   = $timestamp
+            path  = $destPosix
+            files = @($removedFiles.ToArray())
+        }
+        $archiveTemp = "$archivePath.$PID.tmp"
+        $archive | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $archiveTemp -Encoding utf8
+        Move-Item -LiteralPath $archiveTemp -Destination $archivePath -Force
+        Write-Ok "Updated device archive: $archivePath"
+    }
 }
 
 # ---------------------------------------------------------------------------
